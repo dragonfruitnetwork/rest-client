@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>2019.12</Version>
+    <Authors>DragonFruit Network</Authors>
+    <Product>DragonFruit Storage Manager</Product>
+    <Copyright>Copyright 2019 (C) DragonFruit Network</Copyright>
+    <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
+    <PackageTags>json, storage, lock, files</PackageTags>
+    <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
+    <Description>Easy to use Web/File based access and storage methods.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+</Project>
