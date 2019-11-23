@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>2019.12</Version>
+    <Version>2019.12.1</Version>
     <Authors>DragonFruit Network</Authors>
     <Product>DragonFruit Storage Manager</Product>
     <Copyright>Copyright 2019 (C) DragonFruit Network</Copyright>

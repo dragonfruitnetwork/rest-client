@@ -37,9 +37,7 @@ namespace DragonFruit.Common.Storage.Web
             using (Stream s = client.GetStreamAsync(uri).Result)
             using (StreamReader sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
-            {
                 return Shared.Newtonsoft.Serializer.Deserialize<T>(reader);
-            }
         }
 
 
@@ -52,12 +50,7 @@ namespace DragonFruit.Common.Storage.Web
         public static T StreamObject<T>(string uri)
         {
             using (HttpClient client = new HttpClient())
-            using (Stream s = client.GetStreamAsync(uri).Result)
-            using (StreamReader sr = new StreamReader(s))
-            using (JsonReader reader = new JsonTextReader(sr))
-            {
-                return Shared.Newtonsoft.Serializer.Deserialize<T>(reader);
-            }
+                return StreamObject<T>(uri, client);
         }
 
         /// <summary>
@@ -67,14 +60,12 @@ namespace DragonFruit.Common.Storage.Web
         /// <param name="uri">The Uri containing the resource</param>
         /// <param name="client"><see cref="HttpClient" /> to use when downloading</param>
         /// <returns>JObject containing downloaded data</returns>
-        public static JObject StreamJObject(string uri, HttpClient client)
+        public static JObject StreamObject(string uri, HttpClient client)
         {
             using (Stream s = client.GetStreamAsync(uri).Result)
             using (StreamReader sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
-            {
                 return JObject.Load(reader);
-            }
         }
 
 
@@ -83,15 +74,64 @@ namespace DragonFruit.Common.Storage.Web
         /// </summary>
         /// <param name="uri">The Uri containing the resource</param>
         /// <returns>JObject containing downloaded data</returns>
-        public static JObject StreamJObject(string uri)
+        public static JObject StreamObject(string uri)
         {
             using (HttpClient client = new HttpClient())
-            using (Stream s = client.GetStreamAsync(uri).Result)
+                return StreamObject(uri, client);
+        }
+
+        /// <summary>
+        /// Make a POST Request and get response as JObject
+        /// </summary>
+        /// <param name="uri">Intended Target</param>
+        /// <param name="content">HttpContent Data</param>
+        /// <param name="client">HttpClient to use</param>
+        /// <returns>JObject containing response data</returns>
+        public static JObject PostData(string uri, HttpContent content, HttpClient client)
+        {
+            using (Stream s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
             using (StreamReader sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
-            {
                 return JObject.Load(reader);
-            }
+        }
+
+        /// <summary>
+        /// Make a POST Request and get response as JObject
+        /// </summary>
+        /// <param name="uri">Intended Target</param>
+        /// <param name="content">HttpContent Data</param>
+        /// <returns>JObject containing response data</returns>
+        public static JObject PostData(string uri, HttpContent content)
+        {
+            using (HttpClient client = new HttpClient())
+                return PostData(uri, content, client);
+        }
+
+        /// <summary>
+        /// Make a POST Request and get response as specified type
+        /// </summary>
+        /// <param name="uri">Intended Target</param>
+        /// <param name="content">HttpContent Data</param>
+        /// <param name="client">HttpClient to use</param>
+        /// <returns>Type containing response data</returns>
+        public static T PostData<T>(string uri, HttpContent content, HttpClient client)
+        {
+            using (Stream s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
+            using (StreamReader sr = new StreamReader(s))
+            using (JsonReader reader = new JsonTextReader(sr))
+                return Shared.Newtonsoft.Serializer.Deserialize<T>(reader);
+        }
+
+        /// <summary>
+        /// Make a POST Request and get response as specified type
+        /// </summary>
+        /// <param name="uri">Intended Target</param>
+        /// <param name="content">HttpContent Data</param>
+        /// <returns>Type containing response data</returns>
+        public static T PostData<T>(string uri, HttpContent content)
+        {
+            using (HttpClient client = new HttpClient())
+                return PostData<T>(uri, content, client);
         }
     }
 }

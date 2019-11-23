@@ -3,6 +3,7 @@
 
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DragonFruit.Common.Storage.File
 {
@@ -12,7 +13,7 @@ namespace DragonFruit.Common.Storage.File
     public static class FileServices
     {
         /// <summary>
-        ///     Read data from file
+        ///     Read data from file as specified type
         /// </summary>
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
@@ -30,6 +31,28 @@ namespace DragonFruit.Common.Storage.File
                 using (var jsonReader = new JsonTextReader(textReader))
                 {
                     return Shared.Newtonsoft.Serializer.Deserialize<T>(jsonReader);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Read data from file as JObject
+        /// </summary>
+        /// <param name="location">Location of the file</param>
+        /// <returns>JObject with data</returns>
+        public static JObject ReadFile(string location)
+        {
+            lock (location)
+            {
+                if (!System.IO.File.Exists(location))
+                    throw new FileNotFoundException(
+                        $"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+
+                using (var reader = System.IO.File.OpenRead(location))
+                using (var textReader = new StreamReader(reader))
+                using (var jsonReader = new JsonTextReader(textReader))
+                {
+                    return JObject.Load(jsonReader);
                 }
             }
         }

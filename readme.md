@@ -22,7 +22,7 @@ In order to use a component, you must install each one separately from NuGet (No
 
 |Read|Write|
 |--|--|
-|`var file = FileServices.ReadFile<T>(@"C:\Users\Demo\Desktop\demofile.info");`|`FileServices.WriteFile<T>(@"C:\Users\Demo\Desktop\demofile.info", data);`|
+|`var file = FileServices.ReadFile<T>(@"C:\Users\Demo\Desktop\demofile.info");`|`FileServices.WriteFile(@"C:\Users\Demo\Desktop\demofile.info", data);`|
 
 ### Web:
 > In each use case, `T` is the class/datatype being stored and `url` is a link that points to a JSON-based response string
