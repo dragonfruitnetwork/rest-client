@@ -5,6 +5,7 @@ using System;
 
 namespace DragonFruit.Common.API.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class ApiPath : Attribute
     {
         public ApiPath(string path, Methods method = Methods.Get, bool requireAuth = false, string acceptedContent = null)
