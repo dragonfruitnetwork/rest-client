@@ -6,19 +6,11 @@ DragonFruit.Common is aimed to reduce code repetition and make common tasks easi
 
 # Components
 
-In order to use a component, you must install each one separately from NuGet (Note more are in development but are not finished yet):
+In order to use a component, you must install each one separately from NuGet (some more are in development but are not finished yet):
 
 |Name|Link|Description
 |--|--|--|
 |`DragonFruit.Common.Storage`|[NuGet](https://www.nuget.org/packages/DragonFruit.Common.Storage)|Easy to use Web/File based access and storage methods.|
-
-## DragonFruit.Common.API
-> API framework for effortless communication
-
-### Files:
-> `T` is the class/datatype that represents the result
-
-Steps:
-- The class holding the request must inherit `ApiRequest` (see )
-- A `new ApiClient()` must be created, but can be cached as a service
-- The ApiClient calls for the ApiRequest to be performed
+|`DragonFruit.Common.API`|[NuGet](https://www.nuget.org/packages/DragonFruit.Common.API)|An API Framework.|
+|`DragonFruit.Common.WPF`|Not Avaliable yet|WPF UI Helpers and extensions|
+|`DragonFruit.Common.WPF.Telerik`|Not Avaliable yet|Telerik-Specific UI Helpers and extensions|

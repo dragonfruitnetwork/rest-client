@@ -6,7 +6,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DragonFruit.Common.Storage.Web
+namespace DragonFruit.Common.Storage
 {
     public static class WebServices
     {

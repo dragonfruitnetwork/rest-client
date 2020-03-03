@@ -18,10 +18,10 @@ namespace DragonFruit.Common.Storage.File.Tests
         {
             Assert.IsTrue(new FileInfo(_tempFile).Length == 0);
 
-            File.FileServices.WriteFile(_tempFile, _data);
+            Storage.FileServices.WriteFile(_tempFile, _data);
             Assert.IsTrue(System.IO.File.Exists(_tempFile));
 
-            var readData = File.FileServices.ReadFile<TestData>(_tempFile);
+            var readData = Storage.FileServices.ReadFile<TestData>(_tempFile);
             Assert.IsTrue(_data.FirstName == readData.FirstName && _data.DoB == readData.DoB);
         }
     }

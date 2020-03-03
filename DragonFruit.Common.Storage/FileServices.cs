@@ -5,7 +5,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DragonFruit.Common.Storage.File
+namespace DragonFruit.Common.Storage
 {
     /// <summary>
     ///     Lock-enabled file based I/O Methods
