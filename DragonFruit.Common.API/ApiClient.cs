@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using DragonFruit.Common.API.Attributes;
-using DragonFruit.Common.API.Enums;
 using DragonFruit.Common.API.Serializers;
 
 namespace DragonFruit.Common.API

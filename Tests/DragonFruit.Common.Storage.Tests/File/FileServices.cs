@@ -2,10 +2,9 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System.IO;
-using DragonFruit.Common.Storage.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DragonFruit.Common.Storage.File.Tests
+namespace DragonFruit.Common.Storage.Tests.File
 {
     [TestClass]
     public class FileServices
