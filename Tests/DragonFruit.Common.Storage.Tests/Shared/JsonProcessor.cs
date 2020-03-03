@@ -1,4 +1,4 @@
-﻿// DragonFruit.Common Copyright 2019 DragonFruit Network
+﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
@@ -13,11 +13,11 @@ namespace DragonFruit.Common.Storage.Shared.Tests
     [TestClass]
     public class JsonProcessor
     {
-        private readonly string _tempFile = Path.GetTempFileName();
         private readonly TestData _data = new TestData();
+        private readonly JObject _object;
 
         private readonly Shared.JsonProcessor _processor;
-        private readonly JObject _object;
+        private readonly string _tempFile = Path.GetTempFileName();
 
         //each method tests the extension AND the jsonprocessor class
         public JsonProcessor()

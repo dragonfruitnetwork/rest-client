@@ -12,23 +12,13 @@ In order to use a component, you must install each one separately from NuGet (No
 |--|--|--|
 |`DragonFruit.Common.Storage`|[NuGet](https://www.nuget.org/packages/DragonFruit.Common.Storage)|Easy to use Web/File based access and storage methods.|
 
-## DragonFruit.Common.Storage
-> An easy to use Web/File based access and storage methods.
+## DragonFruit.Common.API
+> API framework for effortless communication
 
 ### Files:
-> In each use case, `T` is the class/datatype being stored
+> `T` is the class/datatype that represents the result
 
-> Add the `using` statement: `using DragonFruit.Common.Storage.File` to the top of each file using these libraries
-
-|Read|Write|
-|--|--|
-|`var file = FileServices.ReadFile<T>(@"C:\Users\Demo\Desktop\demofile.info");`|`FileServices.WriteFile(@"C:\Users\Demo\Desktop\demofile.info", data);`|
-
-### Web:
-> In each use case, `T` is the class/datatype being stored and `url` is a link that points to a JSON-based response string
-
-> Add the `using` statement: `using DragonFruit.Common.Storage.Web` to the top of each file using these libraries
-
-|Read as Object|Read as JObject| 
-|--|--|
-|`var data = WebServices.StreamObject<T>(url);`|`var jData = WebServices.StreamJObject(url);`|
+Steps:
+- The class holding the request must inherit `ApiRequest` (see )
+- A `new ApiClient()` must be created, but can be cached as a service
+- The ApiClient calls for the ApiRequest to be performed
