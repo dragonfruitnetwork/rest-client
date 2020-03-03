@@ -8,7 +8,7 @@
     <Authors>DragonFruit Network</Authors>
     <Description>Simple API Framework</Description>
     <Copyright>Copyright 2020 DragonFruit Network</Copyright>
-    <PackageLicenseExpression>mit</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
   </PropertyGroup>
 
