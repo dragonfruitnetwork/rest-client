@@ -40,13 +40,13 @@ namespace DragonFruit.Common.Data
         public ISerializer Serializer { get; set; } = new ApiJsonSerializer();
 
         ///Hashes to determine whether we replace the <see cref="HttpClient" />
-        public string LastClientHash { get; set; }
+        private string _lastClientHash = string.Empty;
         public string ClientHash => $"{HashCodeOf(UserAgent)}.{HashCodeOf(CustomHeaders)}.{HashCodeOf(Handler)}.{HashCodeOf(Authorization)}";
         /// end hashes
         
         ///Clients and thread locks
+        private bool _clientAdjustmentInProgress;
         private HttpClient Client { get; set; }
-        private bool ClientAdjustmentInProgress { get; set; }
         ///end clients
 
         /// <summary>
@@ -54,12 +54,12 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public T Perform<T>(ApiRequest requestData) where T : class
         {
-            while (ClientAdjustmentInProgress)
+            while (_clientAdjustmentInProgress)
                 Thread.Sleep(200);
 
-            if (!LastClientHash.Equals(ClientHash))
+            if (!_lastClientHash.Equals(ClientHash))
             {
-                ClientAdjustmentInProgress = true;
+                _clientAdjustmentInProgress = true;
 
                 //cleanup from old attempts
                 Client?.Dispose();
@@ -82,8 +82,8 @@ namespace DragonFruit.Common.Data
                 foreach (var header in CustomHeaders)
                     Client.DefaultRequestHeaders.Add(header.Key, header.Value);
 
-                LastClientHash = ClientHash;
-                ClientAdjustmentInProgress = false;
+                _lastClientHash = ClientHash;
+                _clientAdjustmentInProgress = false;
             }
 
             //method specific modes and returns

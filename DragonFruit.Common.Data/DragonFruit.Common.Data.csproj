@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2020.3.1.1</Version>
+    <Version>2020.3.1.2</Version>
     <Authors>DragonFruit Network</Authors>
     <Product>DragonFruit Common (Data)</Product>
     <Description>I/O Framework for Web, API and Files</Description>
