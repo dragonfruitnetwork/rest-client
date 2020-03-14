@@ -5,11 +5,12 @@ VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4DBAFC16-FC14-44CD-ACD6-01BFE2485315}"
 	ProjectSection(SolutionItems) = preProject
+		.travis.yml.alpha = .travis.yml.alpha
 		license.md = license.md
 		readme.md = readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Common.Data", "DragonFruit.Common.Data\DragonFruit.Common.Data.csproj", "{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragonFruit.Common.Data", "DragonFruit.Common.Data\DragonFruit.Common.Data.csproj", "{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
