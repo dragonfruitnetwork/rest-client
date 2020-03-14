@@ -41,7 +41,7 @@ namespace DragonFruit.Common.Data
 
         ///Hashes to determine whether we replace the <see cref="HttpClient" />
         public string LastClientHash { get; set; }
-        public string ClientHash => $"{UserAgent.GetHashCode()}.{CustomHeaders.GetHashCode()}.{Handler.GetHashCode()}.{Authorization.GetHashCode()}.{Serializer.GetHashCode()}";
+        public string ClientHash => $"{HashCodeOf(UserAgent)}.{HashCodeOf(CustomHeaders)}.{HashCodeOf(Handler)}.{HashCodeOf(Authorization)}";
         /// end hashes
         
         ///Clients and thread locks
@@ -54,8 +54,6 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public T Perform<T>(ApiRequest requestData) where T : class
         {
-            var clienthash = ClientHash;
-
             while (ClientAdjustmentInProgress)
                 Thread.Sleep(200);
 
@@ -89,28 +87,28 @@ namespace DragonFruit.Common.Data
             }
 
             //method specific modes and returns
-            var url = requestData.Path + requestData.Query;
-
             switch (requestData.Method)
             {
                 case Methods.Get:
-                    return Serializer.Deserialize<T>(Client.GetStreamAsync(url));
+                    return Serializer.Deserialize<T>(Client.GetStreamAsync(requestData.Url));
 
                 case Methods.PostForm:
-                    return Serializer.Deserialize<T>(Client.PostAsync(url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(Client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PostString:
-                    return Serializer.Deserialize<T>(Client.PostAsync(url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(Client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PutForm:
-                    return Serializer.Deserialize<T>(Client.PutAsync(url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(Client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PutString:
-                    return Serializer.Deserialize<T>(Client.PutAsync(url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(Client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
 
                 default:
                     throw new NotImplementedException();
             }
         }
+
+        private string HashCodeOf(object data) => data == null ? "!" : data.GetHashCode().ToString();
     }
 }

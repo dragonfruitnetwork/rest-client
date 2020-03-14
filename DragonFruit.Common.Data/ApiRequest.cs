@@ -19,6 +19,8 @@ namespace DragonFruit.Common.Data
 
         public virtual string AcceptedContent => string.Empty;
 
+        public string Url => Path + Query;
+
         public FormUrlEncodedContent FormContent => new FormUrlEncodedContent(GetParameter<FormParameter>());
 
         public string Query
