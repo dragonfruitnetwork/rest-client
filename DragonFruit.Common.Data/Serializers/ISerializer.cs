@@ -5,7 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace DragonFruit.Common.API.Serializers
+namespace DragonFruit.Common.Data.Serializers
 {
     public interface ISerializer
     {

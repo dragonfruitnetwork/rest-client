@@ -3,9 +3,9 @@
 
 using System;
 
-namespace DragonFruit.Common.API.Attributes
+namespace DragonFruit.Common.Data.Parameters
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
     public class QueryParameter : Attribute, IProperty
     {
         public QueryParameter(string name)

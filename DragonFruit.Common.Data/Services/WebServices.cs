@@ -6,8 +6,11 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DragonFruit.Common.Storage
+namespace DragonFruit.Common.Data.Services
 {
+    /// <summary>
+    /// Basic web client methods for simpler tasks
+    /// </summary>
     public static class WebServices
     {
         /// <summary>
@@ -32,12 +35,12 @@ namespace DragonFruit.Common.Storage
         /// <param name="uri">The Uri containing the resource</param>
         /// <param name="client"><see cref="HttpClient" /> to use when downloading</param>
         /// <returns>The specified tye <see cref="T" />, with the data converted</returns>
-        public static T StreamObject<T>(string uri, HttpClient client)
+        public static T StreamObject<T>(string uri, HttpClient client, JsonSerializer serializer)
         {
-            using (Stream s = client.GetStreamAsync(uri).Result)
-            using (StreamReader sr = new StreamReader(s))
+            using (var s = client.GetStreamAsync(uri).Result)
+            using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
-                return Shared.Newtonsoft.Serializer.Deserialize<T>(reader);
+                return serializer.Deserialize<T>(reader);
         }
 
 
@@ -49,8 +52,8 @@ namespace DragonFruit.Common.Storage
         /// <returns>The specified tye <see cref="T" />, with the data converted</returns>
         public static T StreamObject<T>(string uri)
         {
-            using (HttpClient client = new HttpClient())
-                return StreamObject<T>(uri, client);
+            using (var client = new HttpClient())
+                return StreamObject<T>(uri, client, JsonSerializer.CreateDefault());
         }
 
         /// <summary>
@@ -62,8 +65,8 @@ namespace DragonFruit.Common.Storage
         /// <returns>JObject containing downloaded data</returns>
         public static JObject StreamObject(string uri, HttpClient client)
         {
-            using (Stream s = client.GetStreamAsync(uri).Result)
-            using (StreamReader sr = new StreamReader(s))
+            using (var s = client.GetStreamAsync(uri).Result)
+            using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
                 return JObject.Load(reader);
         }
@@ -76,7 +79,7 @@ namespace DragonFruit.Common.Storage
         /// <returns>JObject containing downloaded data</returns>
         public static JObject StreamObject(string uri)
         {
-            using (HttpClient client = new HttpClient())
+            using (var client = new HttpClient())
                 return StreamObject(uri, client);
         }
 
@@ -89,8 +92,8 @@ namespace DragonFruit.Common.Storage
         /// <returns>JObject containing response data</returns>
         public static JObject PostData(string uri, HttpContent content, HttpClient client)
         {
-            using (Stream s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
-            using (StreamReader sr = new StreamReader(s))
+            using (var s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
+            using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
                 return JObject.Load(reader);
         }
@@ -103,7 +106,7 @@ namespace DragonFruit.Common.Storage
         /// <returns>JObject containing response data</returns>
         public static JObject PostData(string uri, HttpContent content)
         {
-            using (HttpClient client = new HttpClient())
+            using (var client = new HttpClient())
                 return PostData(uri, content, client);
         }
 
@@ -114,12 +117,12 @@ namespace DragonFruit.Common.Storage
         /// <param name="content">HttpContent Data</param>
         /// <param name="client">HttpClient to use</param>
         /// <returns>Type containing response data</returns>
-        public static T PostData<T>(string uri, HttpContent content, HttpClient client)
+        public static T PostData<T>(string uri, HttpContent content, HttpClient client, JsonSerializer serializer)
         {
-            using (Stream s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
-            using (StreamReader sr = new StreamReader(s))
+            using (var s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
+            using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
-                return Shared.Newtonsoft.Serializer.Deserialize<T>(reader);
+                return serializer.Deserialize<T>(reader);
         }
 
         /// <summary>
@@ -130,8 +133,8 @@ namespace DragonFruit.Common.Storage
         /// <returns>Type containing response data</returns>
         public static T PostData<T>(string uri, HttpContent content)
         {
-            using (HttpClient client = new HttpClient())
-                return PostData<T>(uri, content, client);
+            using (var client = new HttpClient())
+                return PostData<T>(uri, content, client, JsonSerializer.CreateDefault());
         }
     }
 }

@@ -7,12 +7,12 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using DragonFruit.Common.API.Attributes;
+using DragonFruit.Common.Data.Parameters;
 using Newtonsoft.Json;
 
-namespace DragonFruit.Common.API.Serializers
+namespace DragonFruit.Common.Data.Serializers
 {
-    public class Json : ISerializer
+    public class ApiJsonSerializer : ISerializer
     {
         public JsonSerializer Serializer { get; set; } = JsonSerializer.Create(new JsonSerializerSettings
         {
@@ -40,9 +40,9 @@ namespace DragonFruit.Common.API.Serializers
 
         public T Deserialize<T>(Task<Stream> input) where T : class
         {
-            using var sr = new StreamReader(input.Result);
-            using JsonReader reader = new JsonTextReader(sr);
-            return Serializer.Deserialize<T>(reader);
+            using (var sr = new StreamReader(input.Result))
+            using (JsonReader reader = new JsonTextReader(sr))
+                return Serializer.Deserialize<T>(reader);
         }
     }
 }

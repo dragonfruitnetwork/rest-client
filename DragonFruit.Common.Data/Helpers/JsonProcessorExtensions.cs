@@ -4,16 +4,13 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace DragonFruit.Common.Storage.Shared
+namespace DragonFruit.Common.Data.Helpers
 {
-    /// <summary>
-    ///     Extension implementation of the <see cref="JsonProcessor" />
-    /// </summary>
     public static class JsonProcessorExtensions
     {
         public static string GetString(this JObject source, string key, string @default = "") =>
             (string) GetBase(source, key) ?? @default;
-
+        
         public static bool GetBool(this JObject source, string key, bool @default = false) =>
             ((bool?) GetBase(source, key)).GetValueOrDefault(@default);
 

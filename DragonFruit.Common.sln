@@ -3,21 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragonFruit.Common.Storage", "DragonFruit.Common.Storage\DragonFruit.Common.Storage.csproj", "{6CC71EC7-1BFF-426F-8182-D24EEB5311AC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{ABB50929-CF64-4F33-A700-6CC25550A97F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4DBAFC16-FC14-44CD-ACD6-01BFE2485315}"
 	ProjectSection(SolutionItems) = preProject
 		license.md = license.md
 		readme.md = readme.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragonFruit.Common.API", "DragonFruit.Common.API\DragonFruit.Common.API.csproj", "{85C4C984-81FA-4970-8056-38D9B822AED1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragonFruit.Common.Storage.Tests", "Tests\DragonFruit.Common.Storage.Tests\DragonFruit.Common.Storage.Tests.csproj", "{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragonFruit.Common.API.Tests", "Tests\DragonFruit.Common.API.Tests\DragonFruit.Common.API.Tests.csproj", "{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Common.Data", "DragonFruit.Common.Data\DragonFruit.Common.Data.csproj", "{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,29 +17,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6CC71EC7-1BFF-426F-8182-D24EEB5311AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CC71EC7-1BFF-426F-8182-D24EEB5311AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CC71EC7-1BFF-426F-8182-D24EEB5311AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CC71EC7-1BFF-426F-8182-D24EEB5311AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85C4C984-81FA-4970-8056-38D9B822AED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85C4C984-81FA-4970-8056-38D9B822AED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85C4C984-81FA-4970-8056-38D9B822AED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85C4C984-81FA-4970-8056-38D9B822AED1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29999EF4-E1FA-498A-AE2C-9A1B81F1C5A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{7E95A937-C3A0-4D04-9D02-E7BAF2C5EBFF} = {ABB50929-CF64-4F33-A700-6CC25550A97F}
-		{6D916C9C-EB12-4409-ADF3-1F8CCEBCB288} = {ABB50929-CF64-4F33-A700-6CC25550A97F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {368819C7-3F6F-4B76-BBF1-F581D180EA8F}

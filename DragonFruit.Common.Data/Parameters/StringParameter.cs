@@ -3,12 +3,12 @@
 
 using System;
 
-namespace DragonFruit.Common.API.Attributes
+namespace DragonFruit.Common.Data.Parameters
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class FormParameter : Attribute, IProperty
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
+    public class StringParameter : Attribute, IProperty
     {
-        public FormParameter(string name)
+        public StringParameter(string name = null)
         {
             Name = name;
         }
