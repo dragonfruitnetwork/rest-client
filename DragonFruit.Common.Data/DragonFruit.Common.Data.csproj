@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,7 +8,7 @@
     <Product>DragonFruit Common (Data)</Product>
     <Description>I/O framework for Web, API and Files</Description>
     <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
-    <PackageLicenseExpression>mit</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/31821773</PackageIconUrl>
     <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
