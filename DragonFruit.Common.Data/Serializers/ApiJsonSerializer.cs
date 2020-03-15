@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -14,11 +15,22 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public class ApiJsonSerializer : ISerializer
     {
-        public JsonSerializer Serializer { get; set; } = JsonSerializer.Create(new JsonSerializerSettings
+        public ApiJsonSerializer()
+            : this(CultureInfo.InvariantCulture)
         {
-            Formatting = Formatting.Indented,
-            DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind
-        });
+        }
+
+        public ApiJsonSerializer(CultureInfo culture)
+        {
+            Serializer = JsonSerializer.Create(new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+                Culture = culture
+            });
+        }
+
+        public JsonSerializer Serializer { get; set; }
 
         public StringContent Serialize<T>(T input) where T : ApiRequest
         {

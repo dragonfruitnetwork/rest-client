@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using DragonFruit.Common.Data.Serializers;
@@ -14,6 +15,16 @@ namespace DragonFruit.Common.Data
     /// </summary>
     public class ApiClient
     {
+        public ApiClient()
+        {
+            Serializer = new ApiJsonSerializer();
+        }
+
+        public ApiClient(CultureInfo culture)
+        {
+            Serializer = new ApiJsonSerializer(culture);
+        }
+
         /// <summary>
         /// The User-Agent string sent as a header
         /// </summary>
@@ -37,7 +48,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Method for getting data
         /// </summary>
-        public ISerializer Serializer { get; set; } = new ApiJsonSerializer();
+        public ISerializer Serializer { get; set; }
 
         ///Hashes to determine whether we replace the <see cref="HttpClient" />
         private string _lastClientHash = string.Empty;
@@ -52,7 +63,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Perform a web request with an <see cref="ApiRequest"/>
         /// </summary>
-        public T Perform<T>(ApiRequest requestData) where T : class
+        public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
             while (_clientAdjustmentInProgress)
                 Thread.Sleep(200);
