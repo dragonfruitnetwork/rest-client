@@ -4,14 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using DragonFruit.Common.Data.Serializers;
 
 namespace DragonFruit.Common.Data
 {
     /// <summary>
-    /// <see cref="HttpClient"/>-related data
+    /// <see cref="Http_client"/>-related data
     /// </summary>
     public class ApiClient
     {
@@ -55,15 +57,13 @@ namespace DragonFruit.Common.Data
         public string ClientHash => $"{HashCodeOf(UserAgent)}.{HashCodeOf(CustomHeaders)}.{HashCodeOf(Handler)}.{HashCodeOf(Authorization)}";
         /// end hashes
         
-        ///Clients and thread locks
+        ///_clients and thread locks
         private bool _clientAdjustmentInProgress;
-        private HttpClient Client { get; set; }
-        ///end clients
+        private HttpClient _client;
 
-        /// <summary>
-        /// Perform a web request with an <see cref="ApiRequest"/>
-        /// </summary>
-        public virtual T Perform<T>(ApiRequest requestData) where T : class
+        ///end _clients
+
+        public virtual HttpClient GetClient(ApiRequest requestData)
         {
             while (_clientAdjustmentInProgress)
                 Thread.Sleep(200);
@@ -73,8 +73,8 @@ namespace DragonFruit.Common.Data
                 _clientAdjustmentInProgress = true;
 
                 //cleanup from old attempts
-                Client?.Dispose();
-                Client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
+                _client?.Dispose();
+                _client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
                 if (requestData.RequireAuth && !hasAuthData)
@@ -82,44 +82,96 @@ namespace DragonFruit.Common.Data
                     throw new Exception("Authorization data expected, but not found");
 
                 if (hasAuthData)
-                    Client.DefaultRequestHeaders.Add("Authorization", Authorization);
+                    _client.DefaultRequestHeaders.Add("Authorization", Authorization);
 
                 if (!string.IsNullOrEmpty(UserAgent))
-                    Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                    _client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
                 if (!string.IsNullOrEmpty(requestData.AcceptedContent))
-                    Client.DefaultRequestHeaders.Accept.ParseAdd(requestData.AcceptedContent);
+                    _client.DefaultRequestHeaders.Accept.ParseAdd(requestData.AcceptedContent);
 
                 foreach (var header in CustomHeaders)
-                    Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    _client.DefaultRequestHeaders.Add(header.Key, header.Value);
 
                 _lastClientHash = ClientHash;
                 _clientAdjustmentInProgress = false;
             }
 
+            return _client;
+        }
+
+        /// <summary>
+        /// Perform a web request with an <see cref="ApiRequest"/>
+        /// </summary>
+        public virtual T Perform<T>(ApiRequest requestData) where T : class
+        {
+            var client = GetClient(requestData);
+
             //method specific modes and returns
             switch (requestData.Method)
             {
                 case Methods.Get:
-                    return Serializer.Deserialize<T>(Client.GetStreamAsync(requestData.Url));
+                    return Serializer.Deserialize<T>(client.GetStreamAsync(requestData.Url));
 
                 case Methods.PostForm:
-                    return Serializer.Deserialize<T>(Client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PostString:
-                    return Serializer.Deserialize<T>(Client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PutForm:
-                    return Serializer.Deserialize<T>(Client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
 
                 case Methods.PutString:
-                    return Serializer.Deserialize<T>(Client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
+                    return Serializer.Deserialize<T>(client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
 
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private string HashCodeOf(object data) => data == null ? "!" : data.GetHashCode().ToString();
+        /// <summary>
+        /// Perform a web request with an <see cref="ApiRequest"/>
+        /// </summary>
+        public virtual string PerformString(ApiRequest requestData)
+        {
+            var client = GetClient(requestData);
+            Task<string> requestResponseTask;
+
+            //method specific modes and returns
+            switch (requestData.Method)
+            {
+                case Methods.Get:
+                    requestResponseTask = client.GetStringAsync(requestData.Url);
+                    break;
+
+                case Methods.PostForm:
+                    requestResponseTask =  client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStringAsync();
+                    break;
+
+                case Methods.PostString:
+                    requestResponseTask =  client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStringAsync();
+                    break;
+
+                case Methods.PutForm:
+                    requestResponseTask =  client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStringAsync();
+                    break;
+
+                case Methods.PutString:
+                    requestResponseTask =  client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStringAsync();
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            using (requestResponseTask)
+            {
+                requestResponseTask.Wait();
+                return requestResponseTask.Result;
+            }
+        }
+
+        private static string HashCodeOf(object data) => data == null ? "!" : data.GetHashCode().ToString();
     }
 }
