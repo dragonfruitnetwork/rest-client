@@ -8,12 +8,14 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using DragonFruit.Common.Data.Exceptions;
+using DragonFruit.Common.Data.Helpers;
 using DragonFruit.Common.Data.Serializers;
 
 namespace DragonFruit.Common.Data
 {
     /// <summary>
-    /// <see cref="Http_client"/>-related data
+    /// <see cref="HttpClient"/>-related data
     /// </summary>
     public class ApiClient
     {
@@ -54,16 +56,18 @@ namespace DragonFruit.Common.Data
 
         ///Hashes to determine whether we replace the <see cref="HttpClient" />
         private string _lastClientHash = string.Empty;
-        public string ClientHash => $"{HashCodeOf(UserAgent)}.{HashCodeOf(CustomHeaders)}.{HashCodeOf(Handler)}.{HashCodeOf(Authorization)}";
+        public string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
         /// end hashes
         
-        ///_clients and thread locks
+        ///clients and locking mechanisms
         private bool _clientAdjustmentInProgress;
         private HttpClient _client;
+        ///end clients
 
-        ///end _clients
-
-        public virtual HttpClient GetClient(ApiRequest requestData)
+        /// <summary>
+        /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
+        /// </summary>
+        protected virtual HttpClient GetClient(ApiRequest requestData)
         {
             while (_clientAdjustmentInProgress)
                 Thread.Sleep(200);
@@ -78,8 +82,7 @@ namespace DragonFruit.Common.Data
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
                 if (requestData.RequireAuth && !hasAuthData)
-                    //todo custom exceptions
-                    throw new Exception("Authorization data expected, but not found");
+                    throw new ClientValidationException("Authorization data expected, but not found");
 
                 if (hasAuthData)
                     _client.DefaultRequestHeaders.Add("Authorization", Authorization);
@@ -101,77 +104,52 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Perform a web request with an <see cref="ApiRequest"/>
+        /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
         /// </summary>
-        public virtual T Perform<T>(ApiRequest requestData) where T : class
+        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
         {
-            var client = GetClient(requestData);
+            if (!response.Result.IsSuccessStatusCode)
+                throw new HttpRequestException("Response was not successful");
 
-            //method specific modes and returns
-            switch (requestData.Method)
-            {
-                case Methods.Get:
-                    return Serializer.Deserialize<T>(client.GetStreamAsync(requestData.Url));
-
-                case Methods.PostForm:
-                    return Serializer.Deserialize<T>(client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
-
-                case Methods.PostString:
-                    return Serializer.Deserialize<T>(client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
-
-                case Methods.PutForm:
-                    return Serializer.Deserialize<T>(client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStreamAsync());
-
-                case Methods.PutString:
-                    return Serializer.Deserialize<T>(client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStreamAsync());
-
-                default:
-                    throw new NotImplementedException();
-            }
+            return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
         }
 
         /// <summary>
         /// Perform a web request with an <see cref="ApiRequest"/>
         /// </summary>
-        public virtual string PerformString(ApiRequest requestData)
+        public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
             var client = GetClient(requestData);
-            Task<string> requestResponseTask;
+            Task<HttpResponseMessage> response;
 
-            //method specific modes and returns
+            //method specific request methods
             switch (requestData.Method)
             {
                 case Methods.Get:
-                    requestResponseTask = client.GetStringAsync(requestData.Url);
+                    response = client.GetAsync(requestData.Url);
                     break;
 
                 case Methods.PostForm:
-                    requestResponseTask =  client.PostAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStringAsync();
+                    response = client.PostAsync(requestData.Url, requestData.FormContent);
                     break;
 
                 case Methods.PostString:
-                    requestResponseTask =  client.PostAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStringAsync();
+                    response = client.PostAsync(requestData.Url, Serializer.Serialize(requestData));
                     break;
 
                 case Methods.PutForm:
-                    requestResponseTask =  client.PutAsync(requestData.Url, requestData.FormContent).Result.Content.ReadAsStringAsync();
+                    response = client.PutAsync(requestData.Url, requestData.FormContent);
                     break;
 
                 case Methods.PutString:
-                    requestResponseTask =  client.PutAsync(requestData.Url, Serializer.Serialize(requestData)).Result.Content.ReadAsStringAsync();
+                    response = client.PutAsync(requestData.Url, Serializer.Serialize(requestData));
                     break;
 
                 default:
                     throw new NotImplementedException();
             }
 
-            using (requestResponseTask)
-            {
-                requestResponseTask.Wait();
-                return requestResponseTask.Result;
-            }
+            return ValidateAndProcess<T>(response);
         }
-
-        private static string HashCodeOf(object data) => data == null ? "!" : data.GetHashCode().ToString();
     }
 }
