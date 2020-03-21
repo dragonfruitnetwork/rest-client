@@ -19,6 +19,8 @@ namespace DragonFruit.Common.Data
     /// </summary>
     public class ApiClient
     {
+        #region Constructors
+
         public ApiClient()
         {
             Serializer = new ApiJsonSerializer();
@@ -29,18 +31,22 @@ namespace DragonFruit.Common.Data
             Serializer = new ApiJsonSerializer(culture);
         }
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
-        /// The User-Agent string sent as a header
+        /// The User-Agent header value
         /// </summary>
         public string UserAgent { get; set; }
 
         /// <summary>
-        /// Any additional headers to be sent
+        /// Additional headers to be sent with the requests
         /// </summary>
         public List<KeyValuePair<string, string>> CustomHeaders { get; set; } = new List<KeyValuePair<string, string>>();
 
         /// <summary>
-        /// The Authorization header
+        /// The Authorization value
         /// </summary>
         public string Authorization { get; set; } = null;
 
@@ -54,15 +60,20 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public ISerializer Serializer { get; set; }
 
-        ///Hashes to determine whether we replace the <see cref="HttpClient" />
-        private string _lastClientHash = string.Empty;
-        public string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
-        /// end hashes
-        
-        ///clients and locking mechanisms
+        #endregion
+
+        /// <summary>
+        /// Checksum that determines whether we replace the <see cref="HttpClient"/>
+        /// </summary>
+        public virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+
+        #region Clients, Hashes and Locks
+
         private bool _clientAdjustmentInProgress;
+        private string _lastClientHash = string.Empty;
         private HttpClient _client;
-        ///end clients
+
+        #endregion
 
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
@@ -96,6 +107,8 @@ namespace DragonFruit.Common.Data
                 foreach (var header in CustomHeaders)
                     _client.DefaultRequestHeaders.Add(header.Key, header.Value);
 
+                SetupClient(_client);
+
                 _lastClientHash = ClientHash;
                 _clientAdjustmentInProgress = false;
             }
@@ -104,15 +117,10 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
+        /// Add your own headers/settings to the <see cref="HttpClient"/> being created. Runs after the headers have been added
         /// </summary>
-        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
-        {
-            if (!response.Result.IsSuccessStatusCode)
-                throw new HttpRequestException("Response was not successful");
-
-            return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
-        }
+        /// <param name="client"></param>
+        public virtual void SetupClient(HttpClient client) { }
 
         /// <summary>
         /// Perform a web request with an <see cref="ApiRequest"/>
@@ -150,6 +158,17 @@ namespace DragonFruit.Common.Data
             }
 
             return ValidateAndProcess<T>(response);
+        }
+
+        /// <summary>
+        /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
+        /// </summary>
+        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
+        {
+            if (!response.Result.IsSuccessStatusCode)
+                throw new HttpRequestException("Response was not successful");
+
+            return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
         }
     }
 }
