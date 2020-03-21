@@ -65,7 +65,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Checksum that determines whether we replace the <see cref="HttpClient"/>
         /// </summary>
-        public virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
 
         #region Clients, Hashes and Locks
 
@@ -120,7 +120,7 @@ namespace DragonFruit.Common.Data
         /// Add your own headers/settings to the <see cref="HttpClient"/> being created. Runs after the headers have been added
         /// </summary>
         /// <param name="client"></param>
-        public virtual void SetupClient(HttpClient client) { }
+        protected virtual void SetupClient(HttpClient client) { }
 
         /// <summary>
         /// Perform a web request with an <see cref="ApiRequest"/>
