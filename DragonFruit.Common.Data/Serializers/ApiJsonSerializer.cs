@@ -47,7 +47,7 @@ namespace DragonFruit.Common.Data.Serializers
             using (var jsonWriter = new JsonTextWriter(writer))
                 Serializer.Serialize(jsonWriter, data);
 
-            return new StringContent(builder.ToString());
+            return new StringContent(builder.ToString(), Encoding.Default, "application/json");
         }
 
         public virtual T Deserialize<T>(Task<Stream> input) where T : class
