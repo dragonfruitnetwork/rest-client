@@ -32,7 +32,7 @@ namespace DragonFruit.Common.Data.Serializers
 
         public JsonSerializer Serializer { get; set; }
 
-        public StringContent Serialize<T>(T input) where T : ApiRequest
+        public virtual StringContent Serialize<T>(T input) where T : ApiRequest
         {
             var data = new Dictionary<string, object>();
             foreach (var property in GetType().GetProperties())
@@ -50,7 +50,7 @@ namespace DragonFruit.Common.Data.Serializers
             return new StringContent(builder.ToString());
         }
 
-        public T Deserialize<T>(Task<Stream> input) where T : class
+        public virtual T Deserialize<T>(Task<Stream> input) where T : class
         {
             using (var sr = new StreamReader(input.Result))
             using (JsonReader reader = new JsonTextReader(sr))
