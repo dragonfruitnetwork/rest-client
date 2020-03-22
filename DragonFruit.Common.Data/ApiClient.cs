@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -102,7 +103,7 @@ namespace DragonFruit.Common.Data
                     _client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
                 if (!string.IsNullOrEmpty(requestData.AcceptedContent))
-                    _client.DefaultRequestHeaders.Accept.ParseAdd(requestData.AcceptedContent);
+                    _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
 
                 foreach (var header in CustomHeaders)
                     _client.DefaultRequestHeaders.Add(header.Key, header.Value);
@@ -166,7 +167,7 @@ namespace DragonFruit.Common.Data
         protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
         {
             if (!response.Result.IsSuccessStatusCode)
-                throw new HttpRequestException("Response was not successful");
+                throw new HttpRequestException($"Response was not successful ({response.Result.StatusCode})");
 
             return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
         }
