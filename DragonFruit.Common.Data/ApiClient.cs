@@ -61,6 +61,11 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public ISerializer Serializer { get; set; }
 
+        /// <summary>
+        /// Last <see cref="ApiRequest"/> made for using with 
+        /// </summary>
+        private ApiRequest CachedRequest { get; set; }
+
         #endregion
 
         /// <summary>
@@ -128,6 +133,11 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
+            if(string.IsNullOrWhiteSpace(requestData.Path))
+                throw new NullRequestException();
+
+            CachedRequest = requestData;
+
             var client = GetClient(requestData);
             Task<HttpResponseMessage> response;
 
@@ -160,6 +170,17 @@ namespace DragonFruit.Common.Data
 
             return ValidateAndProcess<T>(response);
         }
+
+        /// <summary>
+        /// Perform the last <see cref="ApiRequest"/> on this <see cref="ApiClient"/> again
+        /// </summary>
+        public T PerformLast<T>() where T : class
+        {
+            if (CachedRequest == null)
+                throw new NullRequestException();
+
+            return Perform<T>(CachedRequest);
+        } 
 
         /// <summary>
         /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
