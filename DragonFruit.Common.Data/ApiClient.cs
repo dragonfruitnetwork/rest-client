@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Helpers;
+using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Serializers;
 
 namespace DragonFruit.Common.Data
@@ -24,7 +26,7 @@ namespace DragonFruit.Common.Data
 
         public ApiClient()
         {
-            Serializer = new ApiJsonSerializer();
+            Serializer = new ApiJsonSerializer(CultureInfo.InvariantCulture);
         }
 
         public ApiClient(CultureInfo culture)
@@ -68,18 +70,20 @@ namespace DragonFruit.Common.Data
 
         #endregion
 
-        /// <summary>
-        /// Checksum that determines whether we replace the <see cref="HttpClient"/>
-        /// </summary>
-        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
-
         #region Clients, Hashes and Locks
 
         private bool _clientAdjustmentInProgress;
         private string _lastClientHash = string.Empty;
         private HttpClient _client;
 
+        /// <summary>
+        /// Checksum that determines whether we replace the <see cref="HttpClient"/>
+        /// </summary>
+        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+
         #endregion
+
+        #region Default Creations
 
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
@@ -123,10 +127,67 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
+        /// Creates the default <see cref="HttpResponseMessage"/>, which can then be overriden by <see cref="SetupRequest"/>
+        /// </summary>
+        private HttpRequestMessage GetRequest(ApiRequest requestData)
+        {
+            var request = new HttpRequestMessage { RequestUri = new Uri(requestData.Url) };
+
+            //generic setup
+            switch (requestData.Method)
+            {
+                case Methods.Get:
+                    request.Method = HttpMethod.Get;
+                    break;
+
+                case Methods.PostForm:
+                    request.Method = HttpMethod.Post;
+                    request.Content = requestData.FormContent;
+                    break;
+
+                case Methods.PostString:
+                    request.Method = HttpMethod.Post;
+                    request.Content = Serializer.Serialize(requestData);
+                    break;
+
+                //todo putfile???
+                case Methods.PutForm:
+                    request.Method = HttpMethod.Put;
+                    request.Content = requestData.FormContent;
+                    break;
+
+                case Methods.PutString:
+                    request.Method = HttpMethod.Put;
+                    request.Content = Serializer.Serialize(requestData);
+                    break;
+
+                case Methods.Head:
+                    request.Method = HttpMethod.Head;
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return request;
+        }
+
+        #endregion
+
+        #region Empty Overrides (Inherited)
+
+        /// <summary>
         /// Add your own headers/settings to the <see cref="HttpClient"/> being created. Runs after the headers have been added
         /// </summary>
         /// <param name="client"></param>
         protected virtual void SetupClient(HttpClient client) { }
+
+        /// <summary>
+        /// When overridden, this can be used to alter the <see cref="HttpRequestMessage"/> post-creation
+        /// </summary>
+        protected virtual void SetupRequest(HttpRequestMessage request) { }
+
+        #endregion
 
         /// <summary>
         /// Perform a web request with an <see cref="ApiRequest"/>
@@ -136,39 +197,28 @@ namespace DragonFruit.Common.Data
             if(string.IsNullOrWhiteSpace(requestData.Path))
                 throw new NullRequestException();
 
+            //cache in case we need to PerformLast<T>();
             CachedRequest = requestData;
 
+            //get client and request (disposables)
             var client = GetClient(requestData);
-            Task<HttpResponseMessage> response;
+            var request = GetRequest(requestData);
 
-            //method specific request methods
-            switch (requestData.Method)
-            {
-                case Methods.Get:
-                    response = client.GetAsync(requestData.Url);
-                    break;
+            //post-modification
+            SetupRequest(request);
 
-                case Methods.PostForm:
-                    response = client.PostAsync(requestData.Url, requestData.FormContent);
-                    break;
+            //send request
+            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-                case Methods.PostString:
-                    response = client.PostAsync(requestData.Url, Serializer.Serialize(requestData));
-                    break;
+            //validate and process
+            var output = ValidateAndProcess<T>(response);
 
-                case Methods.PutForm:
-                    response = client.PutAsync(requestData.Url, requestData.FormContent);
-                    break;
+            //dispose
+            request.Dispose();
+            response.Dispose();
 
-                case Methods.PutString:
-                    response = client.PutAsync(requestData.Url, Serializer.Serialize(requestData));
-                    break;
-
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return ValidateAndProcess<T>(response);
+            //return
+            return output;
         }
 
         /// <summary>
@@ -183,12 +233,45 @@ namespace DragonFruit.Common.Data
         } 
 
         /// <summary>
+        /// Download a file with an <see cref="ApiRequest"/>. Incompatible with <see cref="PerformLast{T}"/> and <see cref="ValidateAndProcess{T}"/>
+        /// </summary>
+        public virtual void Perform(ApiFileRequest requestData)
+        {
+            //check for nulls
+            if(string.IsNullOrWhiteSpace(requestData.Path) || string.IsNullOrWhiteSpace(requestData.Destination))
+                throw new NullRequestException();
+
+            //get client and request (disposables)
+            var client = GetClient(requestData);
+            var request = GetRequest(requestData);
+
+            //post-modification
+            SetupRequest(request);
+
+            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            //validate
+            if (response.Result.IsSuccessStatusCode)
+            {
+                using (var stream = File.Open(requestData.Destination, FileMode.Create))
+                using (var networkStream = response.Result.Content.ReadAsStreamAsync().Result)
+                {
+                    networkStream.CopyTo(stream);
+                }
+            }
+
+            //dispose
+            request.Dispose();
+            response.Dispose();
+        }
+
+        /// <summary>
         /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
         /// </summary>
         protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
         {
             if (!response.Result.IsSuccessStatusCode)
-                throw new HttpRequestException($"Response was not successful ({response.Result.StatusCode})");
+                throw new HttpRequestException($"Response was unsuccessful ({response.Result.StatusCode})");
 
             return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
         }

@@ -6,6 +6,7 @@ namespace DragonFruit.Common.Data
     public enum Methods
     {
         Get,
+        Head,
         PostForm,
         PostString,
         PutForm,
