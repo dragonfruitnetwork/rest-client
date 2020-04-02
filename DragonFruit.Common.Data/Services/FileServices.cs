@@ -71,7 +71,8 @@ namespace DragonFruit.Common.Data.Services
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>
-        public static void WriteFile<T>(string location, T data) => WriteFile(location, data, JsonSerializer.CreateDefault());
+        public static void WriteFile<T>(string location, T data) =>
+            WriteFile(location, data, JsonSerializer.CreateDefault());
 
         /// <summary>
         ///     Writes data to a file. If the file exists then it is overwritten with no notice

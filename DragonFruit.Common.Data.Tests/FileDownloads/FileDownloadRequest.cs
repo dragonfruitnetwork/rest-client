@@ -1,4 +1,7 @@
-﻿namespace DragonFruit.Common.Data.Tests.FileDownloads
+﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
+// Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
+
+namespace DragonFruit.Common.Data.Tests.FileDownloads
 {
     /// <summary>
     ///     Simple file download request with a path and a destination

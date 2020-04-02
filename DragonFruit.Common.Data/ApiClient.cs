@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -46,7 +47,8 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Additional headers to be sent with the requests
         /// </summary>
-        public List<KeyValuePair<string, string>> CustomHeaders { get; set; } = new List<KeyValuePair<string, string>>();
+        public List<KeyValuePair<string, string>> CustomHeaders { get; set; } =
+            new List<KeyValuePair<string, string>>();
 
         /// <summary>
         /// The Authorization value
@@ -79,7 +81,8 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Checksum that determines whether we replace the <see cref="HttpClient"/>
         /// </summary>
-        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash =>
+            $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
 
         #endregion
 
@@ -112,7 +115,8 @@ namespace DragonFruit.Common.Data
                     _client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
                 if (!string.IsNullOrEmpty(requestData.AcceptedContent))
-                    _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
+                    _client.DefaultRequestHeaders.Accept.Add(
+                        new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
 
                 foreach (var header in CustomHeaders)
                     _client.DefaultRequestHeaders.Add(header.Key, header.Value);
@@ -131,7 +135,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         private HttpRequestMessage GetRequest(ApiRequest requestData)
         {
-            var request = new HttpRequestMessage { RequestUri = new Uri(requestData.Url) };
+            var request = new HttpRequestMessage {RequestUri = new Uri(requestData.FullUrl)};
 
             //generic setup
             switch (requestData.Method)
@@ -140,25 +144,20 @@ namespace DragonFruit.Common.Data
                     request.Method = HttpMethod.Get;
                     break;
 
-                case Methods.PostForm:
+                case Methods.Post:
                     request.Method = HttpMethod.Post;
-                    request.Content = requestData.FormContent;
-                    break;
-
-                case Methods.PostString:
-                    request.Method = HttpMethod.Post;
-                    request.Content = Serializer.Serialize(requestData);
+                    request.Content = GetContent(requestData);
                     break;
 
                 //todo putfile???
-                case Methods.PutForm:
+                case Methods.Put:
                     request.Method = HttpMethod.Put;
-                    request.Content = requestData.FormContent;
+                    request.Content = GetContent(requestData);
                     break;
 
-                case Methods.PutString:
-                    request.Method = HttpMethod.Put;
-                    request.Content = Serializer.Serialize(requestData);
+                case Methods.Delete:
+                    request.Method = HttpMethod.Delete;
+                    request.Content = GetContent(requestData);
                     break;
 
                 case Methods.Head:
@@ -172,6 +171,29 @@ namespace DragonFruit.Common.Data
             return request;
         }
 
+        private HttpContent GetContent(ApiRequest requestData)
+        {
+            switch (requestData.DataType)
+            {
+                case DataTypes.Encoded:
+                    return new FormUrlEncodedContent(requestData.GetParameter<FormParameter>());
+
+                case DataTypes.Serialized:
+                    return Serializer.Serialize(requestData);
+
+                case DataTypes.SerializedProperty:
+                    var body = Serializer.Serialize(requestData.GetSingleParameterObject<RequestBody>());
+                    return body;
+
+                case DataTypes.Custom:
+                    return requestData.GetContent;
+
+                default:
+                    //todo custom exception - there should have been a datatype specified
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         #endregion
 
         #region Empty Overrides (Inherited)
@@ -180,12 +202,16 @@ namespace DragonFruit.Common.Data
         /// Add your own headers/settings to the <see cref="HttpClient"/> being created. Runs after the headers have been added
         /// </summary>
         /// <param name="client"></param>
-        protected virtual void SetupClient(HttpClient client) { }
+        protected virtual void SetupClient(HttpClient client)
+        {
+        }
 
         /// <summary>
         /// When overridden, this can be used to alter the <see cref="HttpRequestMessage"/> post-creation
         /// </summary>
-        protected virtual void SetupRequest(HttpRequestMessage request) { }
+        protected virtual void SetupRequest(HttpRequestMessage request)
+        {
+        }
 
         #endregion
 
@@ -194,7 +220,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
-            if(string.IsNullOrWhiteSpace(requestData.Path))
+            if (string.IsNullOrWhiteSpace(requestData.Path))
                 throw new NullRequestException();
 
             //cache in case we need to PerformLast<T>();
@@ -230,7 +256,7 @@ namespace DragonFruit.Common.Data
                 throw new NullRequestException();
 
             return Perform<T>(CachedRequest);
-        } 
+        }
 
         /// <summary>
         /// Download a file with an <see cref="ApiRequest"/>. Incompatible with <see cref="PerformLast{T}"/> and <see cref="ValidateAndProcess{T}"/>
@@ -238,7 +264,7 @@ namespace DragonFruit.Common.Data
         public virtual void Perform(ApiFileRequest requestData)
         {
             //check for nulls
-            if(string.IsNullOrWhiteSpace(requestData.Path) || string.IsNullOrWhiteSpace(requestData.Destination))
+            if (string.IsNullOrWhiteSpace(requestData.Path) || string.IsNullOrWhiteSpace(requestData.Destination))
                 throw new NullRequestException();
 
             //get client and request (disposables)

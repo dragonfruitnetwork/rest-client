@@ -9,7 +9,7 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public interface ISerializer
     {
-        StringContent Serialize<T>(T input) where T : ApiRequest;
+        StringContent Serialize<T>(T input) where T : class;
 
         T Deserialize<T>(Task<Stream> input) where T : class;
     }
