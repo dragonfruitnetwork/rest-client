@@ -11,6 +11,7 @@ namespace DragonFruit.Common.Data
         Head,
         Post,
         Put,
+        Patch,
         Delete
     }
 

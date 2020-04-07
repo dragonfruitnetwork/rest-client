@@ -155,6 +155,11 @@ namespace DragonFruit.Common.Data
                     request.Content = GetContent(requestData);
                     break;
 
+                case Methods.Patch:
+                    request.Method = new HttpMethod("PATCH"); //in .NET standard 2 patch isn't implemented...
+                    request.Content = GetContent(requestData);
+                    break;
+
                 case Methods.Delete:
                     request.Method = HttpMethod.Delete;
                     request.Content = GetContent(requestData);
