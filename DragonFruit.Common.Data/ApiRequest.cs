@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using DragonFruit.Common.Data.Parameters;
 using Newtonsoft.Json;
 
@@ -40,7 +41,7 @@ namespace DragonFruit.Common.Data
 
         public IEnumerable<KeyValuePair<string, string>> GetParameter<T>() where T : IProperty
         {
-            foreach (var property in GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Instance))
+            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T parameter))
                     continue;
