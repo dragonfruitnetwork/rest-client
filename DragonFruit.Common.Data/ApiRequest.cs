@@ -40,7 +40,7 @@ namespace DragonFruit.Common.Data
 
         public IEnumerable<KeyValuePair<string, string>> GetParameter<T>() where T : IProperty
         {
-            foreach (var property in GetType().GetProperties())
+            foreach (var property in GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T parameter))
                     continue;
