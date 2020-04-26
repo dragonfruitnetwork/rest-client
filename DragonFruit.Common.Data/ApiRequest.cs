@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using DragonFruit.Common.Data.Parameters;
 using Newtonsoft.Json;
 
@@ -42,7 +43,7 @@ namespace DragonFruit.Common.Data
         {
             var type = typeof(T);
 
-            foreach (var property in GetType().GetProperties())
+            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (!(Attribute.GetCustomAttribute(property, type) is T parameter))
                     continue;
