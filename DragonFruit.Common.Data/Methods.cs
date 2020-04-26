@@ -33,7 +33,7 @@ namespace DragonFruit.Common.Data
         SerializedProperty,
 
         /// <summary>
-        /// Tells the client to use the <see cref="ApiRequest.GetContent"/> property override to get the content
+        /// Tells the client to use the <see cref="ApiRequest.BodyContent"/> property override to get the content
         /// </summary>
         Custom
     }

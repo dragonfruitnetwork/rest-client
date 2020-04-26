@@ -7,16 +7,22 @@ namespace DragonFruit.Common.Data.Tests.SteamNews
 {
     public class SteamNewsItem
     {
-        [JsonProperty("gid")] public string ID { get; set; }
+        [JsonProperty("gid")]
+        public string Id { get; set; }
 
-        [JsonProperty("title")] public string Title { get; set; }
+        [JsonProperty("title")]
+        public string Title { get; set; }
 
-        [JsonProperty("url")] public string Link { get; set; }
+        [JsonProperty("url")]
+        public string Link { get; set; }
 
-        [JsonProperty("date")] public double Epoch { get; set; }
+        [JsonProperty("date")]
+        public double Epoch { get; set; }
 
-        [JsonProperty("author")] public string Author { get; set; }
+        [JsonProperty("author")]
+        public string Author { get; set; }
 
-        [JsonProperty("feedlabel")] public string Feed { get; set; }
+        [JsonProperty("feedlabel")]
+        public string Feed { get; set; }
     }
 }

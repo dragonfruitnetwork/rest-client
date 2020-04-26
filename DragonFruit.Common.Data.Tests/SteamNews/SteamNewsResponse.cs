@@ -8,13 +8,16 @@ namespace DragonFruit.Common.Data.Tests.SteamNews
 {
     public class SteamNewsResponse
     {
-        [JsonProperty("appnews")] public SteamAppNewsContainer Container { get; set; }
+        [JsonProperty("appnews")]
+        public SteamAppNewsContainer Container { get; set; }
     }
 
     public class SteamAppNewsContainer
     {
-        [JsonProperty("appid")] public int AppId { get; set; }
+        [JsonProperty("appid")]
+        public int AppId { get; set; }
 
-        [JsonProperty("newsitems")] public IEnumerable<SteamNewsItem> NewsItems { get; set; }
+        [JsonProperty("newsitems")]
+        public IEnumerable<SteamNewsItem> NewsItems { get; set; }
     }
 }

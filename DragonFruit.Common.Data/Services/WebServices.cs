@@ -43,7 +43,6 @@ namespace DragonFruit.Common.Data.Services
                 return serializer.Deserialize<T>(reader);
         }
 
-
         /// <summary>
         ///     Download a JSON-based object with low memory consumption
         /// </summary>
@@ -70,7 +69,6 @@ namespace DragonFruit.Common.Data.Services
             using (JsonReader reader = new JsonTextReader(sr))
                 return JObject.Load(reader);
         }
-
 
         /// <summary>
         ///     Download a JSON-based object as a <see cref="JObject" /> with low memory consumption

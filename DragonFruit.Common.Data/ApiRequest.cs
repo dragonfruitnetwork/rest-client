@@ -25,7 +25,7 @@ namespace DragonFruit.Common.Data
 
         public string FullUrl => Path + QueryString;
 
-        public virtual HttpContent GetContent { get; }
+        public virtual HttpContent BodyContent { get; }
 
         public string QueryString
         {
@@ -40,9 +40,11 @@ namespace DragonFruit.Common.Data
 
         public IEnumerable<KeyValuePair<string, string>> GetParameter<T>() where T : IProperty
         {
+            var type = typeof(T);
+
             foreach (var property in GetType().GetProperties())
             {
-                if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T parameter))
+                if (!(Attribute.GetCustomAttribute(property, type) is T parameter))
                     continue;
 
                 var value = property.GetValue(this, null);
@@ -54,7 +56,7 @@ namespace DragonFruit.Common.Data
         public object GetSingleParameterObject<T>() where T : Attribute
         {
             var property = GetType().GetProperties()
-                .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T);
+                                    .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T);
 
             return property.GetValue(this, null);
         }

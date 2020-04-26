@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -69,6 +67,11 @@ namespace DragonFruit.Common.Data
         /// Last <see cref="ApiRequest"/> made for using with 
         /// </summary>
         private ApiRequest CachedRequest { get; set; }
+
+        /// <summary>
+        /// <see cref="HttpClient"/> used by these requests. This is used by the library and as such, should **not** be disposed in any way
+        /// </summary>
+        public HttpClient Client => _client;
 
         #endregion
 
@@ -135,7 +138,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         private HttpRequestMessage GetRequest(ApiRequest requestData)
         {
-            var request = new HttpRequestMessage {RequestUri = new Uri(requestData.FullUrl)};
+            var request = new HttpRequestMessage { RequestUri = new Uri(requestData.FullUrl) };
 
             //generic setup
             switch (requestData.Method)
@@ -191,7 +194,7 @@ namespace DragonFruit.Common.Data
                     return body;
 
                 case DataTypes.Custom:
-                    return requestData.GetContent;
+                    return requestData.BodyContent;
 
                 default:
                     //todo custom exception - there should have been a datatype specified
@@ -221,7 +224,7 @@ namespace DragonFruit.Common.Data
         #endregion
 
         /// <summary>
-        /// Perform a web request with an <see cref="ApiRequest"/>
+        /// Perform an <see cref="ApiRequest"/> with a specified return type.
         /// </summary>
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
@@ -245,10 +248,46 @@ namespace DragonFruit.Common.Data
             var output = ValidateAndProcess<T>(response);
 
             //dispose
-            request.Dispose();
+            response.Result.Content.Dispose();
+            response.Result.Dispose();
             response.Dispose();
 
+            request.Dispose();
+
             //return
+            return output;
+        }
+
+        /// <summary>
+        /// Perform a <see cref="ApiRequest"/> that returns the response message. The <see cref="HttpResponseMessage"/> returned cannot be used for reading data, as the underlying <see cref="Task"/> will be disposed.
+        /// </summary>
+        /// <param name="requestData"></param>
+        public virtual HttpResponseMessage Perform(ApiRequest requestData)
+        {
+            if (string.IsNullOrWhiteSpace(requestData.Path))
+                throw new NullRequestException();
+
+            //cache in case we need to PerformLast<T>();
+            CachedRequest = requestData;
+
+            //get client and request (disposables)
+            var client = GetClient(requestData);
+            var request = GetRequest(requestData);
+
+            //post-modification
+            SetupRequest(request);
+
+            //send request
+            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var output = response.Result;
+
+            //dispose
+            response.Result.Content.Dispose();
+            response.Result.Dispose();
+            response.Dispose();
+
+            request.Dispose();
+
             return output;
         }
 
@@ -261,6 +300,17 @@ namespace DragonFruit.Common.Data
                 throw new NullRequestException();
 
             return Perform<T>(CachedRequest);
+        }
+
+        /// <summary>
+        /// Perform the last <see cref="ApiRequest"/> on this <see cref="ApiClient"/> again. Returns a <see cref="HttpResponseMessage"/>, where deserializing the data may not be desired
+        /// </summary>
+        public HttpResponseMessage PerformLast()
+        {
+            if (CachedRequest == null)
+                throw new NullRequestException();
+
+            return Perform(CachedRequest);
         }
 
         /// <summary>
@@ -292,8 +342,11 @@ namespace DragonFruit.Common.Data
             }
 
             //dispose
-            request.Dispose();
+            response.Result.Content.Dispose();
+            response.Result.Dispose();
             response.Dispose();
+
+            request.Dispose();
         }
 
         /// <summary>
