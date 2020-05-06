@@ -13,7 +13,7 @@ namespace DragonFruit.Common.Data.Helpers
     {
         public override int GetHashCode()
         {
-            int hash = 21;
+            int hash = Count;
 
             unchecked //doesn't matter if we get an overflow here
             {
