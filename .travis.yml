@@ -19,6 +19,11 @@ jobs:
     script:
       - choco install resharper-clt.portable
       - InspectCode.exe DragonFruit.Common.sln -o=results.xml
+
+  - stage: test
+    name: "Unit Tests"
+    script:
+      - dotnet test
       
   - stage: deploy
     name: "Beta"
