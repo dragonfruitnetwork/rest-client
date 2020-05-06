@@ -8,12 +8,14 @@ using DragonFruit.Common.Data.Tests.Threading.Objects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
+#pragma warning disable 1998
+
 namespace DragonFruit.Common.Data.Tests.Threading
 {
     [TestClass]
     public class MultiThreadSyncTests
     {
-        private const int MaxRequests = 10;
+        private const int Requests = 10;
 
         [TestMethod]
         public void MultiThreadSyncTest()
@@ -22,21 +24,19 @@ namespace DragonFruit.Common.Data.Tests.Threading
             var echoRequest = new EchoRequest();
             var rng = new Random();
 
-            Task PerformTest()
+            async Task PerformTest()
             {
                 var headerValue = rng.Next().ToString();
                 specialClient.ChangeHeaders(headerValue);
 
                 var response = specialClient.Perform<JObject>(echoRequest);
                 Assert.AreEqual(response["headers"]![ThreadingApiClient.HeaderName], headerValue);
-
-                return null;
             }
 
-            for (int i = 0; i < MaxRequests; i++)
+            for (int i = 0; i < Requests; i++)
             {
                 Thread.Sleep(rng.Next(200, 500));
-                PerformTest();
+                _ = PerformTest();
             }
         }
     }
