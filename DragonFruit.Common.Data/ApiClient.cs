@@ -2,7 +2,6 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -45,8 +44,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Additional headers to be sent with the requests
         /// </summary>
-        public List<KeyValuePair<string, string>> CustomHeaders { get; set; } =
-            new List<KeyValuePair<string, string>>();
+        public HashableDictionary<string, string> CustomHeaders { get; set; } = new HashableDictionary<string, string>();
 
         /// <summary>
         /// The Authorization value
@@ -56,12 +54,12 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Optional <see cref="HttpClient"/> settings sent by the <see cref="HttpClientHandler"/>
         /// </summary>
-        public HttpClientHandler Handler { get; set; } = null;
+        protected HttpClientHandler Handler { get; set; } = null;
 
         /// <summary>
         /// Method for getting data
         /// </summary>
-        public ISerializer Serializer { get; set; }
+        protected ISerializer Serializer { get; set; }
 
         /// <summary>
         /// Last <see cref="ApiRequest"/> made for using with 
@@ -71,7 +69,12 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// <see cref="HttpClient"/> used by these requests. This is used by the library and as such, should **not** be disposed in any way
         /// </summary>
-        public HttpClient Client => _client;
+        protected HttpClient Client { get; private set; }
+
+        /// <summary>
+        /// Time, in milliseconds to wait to modify a <see cref="HttpClient"/> before failing the request
+        /// </summary>
+        protected int AdjustmentTimeout { get; set; } = 200;
 
         #endregion
 
@@ -79,13 +82,14 @@ namespace DragonFruit.Common.Data
 
         private bool _clientAdjustmentInProgress;
         private string _lastClientHash = string.Empty;
-        private HttpClient _client;
+
+        private readonly object _clientAdjustmentLock = new object();
+        private long _currentRequests = 0;
 
         /// <summary>
         /// Checksum that determines whether we replace the <see cref="HttpClient"/>
         /// </summary>
-        protected virtual string ClientHash =>
-            $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
 
         #endregion
 
@@ -96,41 +100,61 @@ namespace DragonFruit.Common.Data
         /// </summary>
         protected virtual HttpClient GetClient(ApiRequest requestData)
         {
-            while (_clientAdjustmentInProgress)
-                Thread.Sleep(200);
+            if (_clientAdjustmentInProgress)
+                Thread.Sleep(AdjustmentTimeout / 2);
 
-            if (!_lastClientHash.Equals(ClientHash))
+            //if there's no edits return the current client
+            if (_lastClientHash == ClientHash)
+                return Client;
+
+            try
             {
                 _clientAdjustmentInProgress = true;
 
-                //cleanup from old attempts
-                _client?.Dispose();
-                _client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
+                //lock for modification
+                var lockTaken = false;
+                Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout, ref lockTaken);
+
+                if (!lockTaken)
+                {
+                    throw new TimeoutException(
+                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                }
+
+                //wait for all ongoing requests to end
+                while (_currentRequests > 0)
+                    Thread.Sleep(AdjustmentTimeout / 2);
+
+                //cleanup current client
+                Client?.Dispose();
+                Client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
                 if (requestData.RequireAuth && !hasAuthData)
                     throw new ClientValidationException("Authorization data expected, but not found");
 
                 if (hasAuthData)
-                    _client.DefaultRequestHeaders.Add("Authorization", Authorization);
+                    Client.DefaultRequestHeaders.Add("Authorization", Authorization);
 
                 if (!string.IsNullOrEmpty(UserAgent))
-                    _client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                    Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
 
                 if (!string.IsNullOrEmpty(requestData.AcceptedContent))
-                    _client.DefaultRequestHeaders.Accept.Add(
-                        new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
+                    Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
 
                 foreach (var header in CustomHeaders)
-                    _client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    Client.DefaultRequestHeaders.Add(header.Key, header.Value);
 
-                SetupClient(_client);
+                SetupClient(Client);
 
                 _lastClientHash = ClientHash;
-                _clientAdjustmentInProgress = false;
+                return Client;
             }
-
-            return _client;
+            finally
+            {
+                _clientAdjustmentInProgress = false;
+                Monitor.Exit(_clientAdjustmentLock);
+            }
         }
 
         /// <summary>
@@ -236,6 +260,8 @@ namespace DragonFruit.Common.Data
 
             //get client and request (disposables)
             var client = GetClient(requestData);
+            Interlocked.Increment(ref _currentRequests);
+
             var request = GetRequest(requestData);
 
             //post-modification
@@ -243,6 +269,9 @@ namespace DragonFruit.Common.Data
 
             //send request
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            //un-bump reqs
+            Interlocked.Decrement(ref _currentRequests);
 
             //validate and process
             var output = ValidateAndProcess<T>(response);
@@ -272,6 +301,8 @@ namespace DragonFruit.Common.Data
 
             //get client and request (disposables)
             var client = GetClient(requestData);
+            Interlocked.Increment(ref _currentRequests);
+
             var request = GetRequest(requestData);
 
             //post-modification
@@ -279,6 +310,9 @@ namespace DragonFruit.Common.Data
 
             //send request
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            Interlocked.Decrement(ref _currentRequests);
+
             var output = response.Result;
 
             //dispose
@@ -324,12 +358,16 @@ namespace DragonFruit.Common.Data
 
             //get client and request (disposables)
             var client = GetClient(requestData);
+            Interlocked.Increment(ref _currentRequests);
+
             var request = GetRequest(requestData);
 
             //post-modification
             SetupRequest(request);
 
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            Interlocked.Decrement(ref _currentRequests);
 
             //validate
             if (response.Result.IsSuccessStatusCode)

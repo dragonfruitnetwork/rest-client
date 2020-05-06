@@ -20,8 +20,4 @@
     <ProjectReference Include="..\DragonFruit.Common.Data\DragonFruit.Common.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="SteamNews\" />
-  </ItemGroup>
-
 </Project>

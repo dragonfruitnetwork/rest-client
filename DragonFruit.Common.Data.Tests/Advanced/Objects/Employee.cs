@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace DragonFruit.Common.Data.Tests.BodySerialization
+namespace DragonFruit.Common.Data.Tests.Advanced.Objects
 {
     internal class Employee
     {

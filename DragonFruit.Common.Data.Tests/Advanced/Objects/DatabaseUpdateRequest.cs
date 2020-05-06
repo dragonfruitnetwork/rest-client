@@ -4,7 +4,7 @@
 using System;
 using DragonFruit.Common.Data.Parameters;
 
-namespace DragonFruit.Common.Data.Tests.BodySerialization
+namespace DragonFruit.Common.Data.Tests.Advanced.Objects
 {
     internal class DatabaseUpdateRequest : ApiRequest
     {

@@ -3,7 +3,7 @@
 
 using DragonFruit.Common.Data.Parameters;
 
-namespace DragonFruit.Common.Data.Tests.SteamNews
+namespace DragonFruit.Common.Data.Tests.Basic.Objects
 {
     public class SteamNewsRequest : ApiRequest
     {

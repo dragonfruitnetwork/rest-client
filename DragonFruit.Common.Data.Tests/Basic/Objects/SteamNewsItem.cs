@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace DragonFruit.Common.Data.Tests.SteamNews
+namespace DragonFruit.Common.Data.Tests.Basic.Objects
 {
     public class SteamNewsItem
     {
