@@ -100,7 +100,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         protected virtual HttpClient GetClient(ApiRequest requestData)
         {
-            if (_clientAdjustmentInProgress)
+            while (_clientAdjustmentInProgress)
                 Thread.Sleep(AdjustmentTimeout / 2);
 
             //if there's no edits return the current client
