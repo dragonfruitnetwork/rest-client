@@ -83,7 +83,7 @@ namespace DragonFruit.Common.Data
         private bool _clientAdjustmentInProgress;
         private string _lastClientHash = string.Empty;
 
-        private readonly object _clientAdjustmentLock = new object();
+        //private readonly object _clientAdjustmentLock = new object();
         private long _currentRequests = 0;
 
         /// <summary>
@@ -112,11 +112,11 @@ namespace DragonFruit.Common.Data
                 _clientAdjustmentInProgress = true;
 
                 //lock for modification
-                if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
-                {
-                    throw new TimeoutException(
-                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
-                }
+                //if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
+                //{
+                //    throw new TimeoutException(
+                //        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                //}
 
                 //wait for all ongoing requests to end
                 while (_currentRequests > 0)
@@ -150,7 +150,7 @@ namespace DragonFruit.Common.Data
             finally
             {
                 _clientAdjustmentInProgress = false;
-                Monitor.Exit(_clientAdjustmentLock);
+                //Monitor.Exit(_clientAdjustmentLock);
             }
         }
 
