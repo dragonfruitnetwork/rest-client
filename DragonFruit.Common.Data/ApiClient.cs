@@ -112,10 +112,7 @@ namespace DragonFruit.Common.Data
                 _clientAdjustmentInProgress = true;
 
                 //lock for modification
-                var lockTaken = false;
-                Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout, ref lockTaken);
-
-                if (!lockTaken)
+                if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
                 {
                     throw new TimeoutException(
                         $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
