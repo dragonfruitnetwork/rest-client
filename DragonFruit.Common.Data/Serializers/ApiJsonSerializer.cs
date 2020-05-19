@@ -32,19 +32,23 @@ namespace DragonFruit.Common.Data.Serializers
         public virtual StringContent Serialize<T>(T input) where T : class
         {
             var builder = new StringBuilder();
-            var writer = new StringWriter(builder);
 
+            using (var writer = new StringWriter(builder))
             using (var jsonWriter = new JsonTextWriter(writer))
+            {
                 Serializer.Serialize(jsonWriter, input);
 
-            return new StringContent(builder.ToString(), writer.Encoding, "application/json");
+                return new StringContent(builder.ToString(), writer.Encoding, "application/json");
+            }
         }
 
         public virtual T Deserialize<T>(Task<Stream> input) where T : class
         {
             using (var sr = new StreamReader(input.Result))
             using (JsonReader reader = new JsonTextReader(sr))
+            {
                 return Serializer.Deserialize<T>(reader);
+            }
         }
     }
 }

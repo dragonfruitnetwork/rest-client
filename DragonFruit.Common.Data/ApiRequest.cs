@@ -28,7 +28,7 @@ namespace DragonFruit.Common.Data
 
         public virtual HttpContent BodyContent { get; }
 
-        public string QueryString
+        internal string QueryString
         {
             get
             {
@@ -39,7 +39,7 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        public IEnumerable<KeyValuePair<string, string>> GetParameter<T>() where T : IProperty
+        internal IEnumerable<KeyValuePair<string, string>> GetParameter<T>() where T : IProperty
         {
             var type = typeof(T);
 
@@ -54,12 +54,14 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        public object GetSingleParameterObject<T>() where T : Attribute
+        internal object GetSingleParameterObject<T>() where T : Attribute
         {
             var property = GetType().GetProperties()
                                     .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T);
 
             return property.GetValue(this, null);
         }
+
+        internal ApiRequest Clone() => (ApiRequest)MemberwiseClone();
     }
 }

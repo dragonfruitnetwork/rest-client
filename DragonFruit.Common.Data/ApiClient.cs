@@ -62,7 +62,7 @@ namespace DragonFruit.Common.Data
         protected ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// Last <see cref="ApiRequest"/> made for using with 
+        /// Last <see cref="ApiRequest"/> made for using with
         /// </summary>
         private ApiRequest CachedRequest { get; set; }
 
@@ -74,7 +74,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Time, in milliseconds to wait to modify a <see cref="HttpClient"/> before failing the request
         /// </summary>
-        protected int AdjustmentTimeout { get; set; } = 200;
+        protected virtual int AdjustmentTimeout => 200;
 
         #endregion
 
@@ -83,8 +83,8 @@ namespace DragonFruit.Common.Data
         private bool _clientAdjustmentInProgress;
         private string _lastClientHash = string.Empty;
 
-        //private readonly object _clientAdjustmentLock = new object();
-        private long _currentRequests = 0;
+        private readonly object _clientAdjustmentLock = new object();
+        private long _currentRequests;
 
         /// <summary>
         /// Checksum that determines whether we replace the <see cref="HttpClient"/>
@@ -112,15 +112,17 @@ namespace DragonFruit.Common.Data
                 _clientAdjustmentInProgress = true;
 
                 //lock for modification
-                //if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
-                //{
-                //    throw new TimeoutException(
-                //        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
-                //}
+                if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
+                {
+                    throw new TimeoutException(
+                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                }
 
                 //wait for all ongoing requests to end
                 while (_currentRequests > 0)
+                {
                     Thread.Sleep(AdjustmentTimeout / 2);
+                }
 
                 //cleanup current client
                 Client?.Dispose();
@@ -128,19 +130,29 @@ namespace DragonFruit.Common.Data
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
                 if (requestData.RequireAuth && !hasAuthData)
+                {
                     throw new ClientValidationException("Authorization data expected, but not found");
+                }
 
                 if (hasAuthData)
+                {
                     Client.DefaultRequestHeaders.Add("Authorization", Authorization);
+                }
 
                 if (!string.IsNullOrEmpty(UserAgent))
+                {
                     Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                }
 
                 if (!string.IsNullOrEmpty(requestData.AcceptedContent))
+                {
                     Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
+                }
 
                 foreach (var header in CustomHeaders)
+                {
                     Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
 
                 SetupClient(Client);
 
@@ -150,7 +162,7 @@ namespace DragonFruit.Common.Data
             finally
             {
                 _clientAdjustmentInProgress = false;
-                //Monitor.Exit(_clientAdjustmentLock);
+                Monitor.Exit(_clientAdjustmentLock);
             }
         }
 
@@ -173,7 +185,6 @@ namespace DragonFruit.Common.Data
                     request.Content = GetContent(requestData);
                     break;
 
-                //todo putfile???
                 case Methods.Put:
                     request.Method = HttpMethod.Put;
                     request.Content = GetContent(requestData);
@@ -250,10 +261,12 @@ namespace DragonFruit.Common.Data
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
             if (string.IsNullOrWhiteSpace(requestData.Path))
+            {
                 throw new NullRequestException();
+            }
 
             //cache in case we need to PerformLast<T>();
-            CachedRequest = requestData;
+            CachedRequest = requestData.Clone();
 
             //get client and request (disposables)
             var client = GetClient(requestData);
@@ -267,21 +280,25 @@ namespace DragonFruit.Common.Data
             //send request
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-            //un-bump reqs
-            Interlocked.Decrement(ref _currentRequests);
+            try
+            {
+                //validate and process
+                var output = ValidateAndProcess<T>(response);
 
-            //validate and process
-            var output = ValidateAndProcess<T>(response);
+                //return
+                return output;
+            }
+            finally
+            {
+                //un-bump reqs
+                Interlocked.Decrement(ref _currentRequests);
 
-            //dispose
-            response.Result.Content.Dispose();
-            response.Result.Dispose();
-            response.Dispose();
+                //dispose
+                response.Result.Dispose();
+                response.Dispose();
 
-            request.Dispose();
-
-            //return
-            return output;
+                request.Dispose();
+            }
         }
 
         /// <summary>
@@ -291,10 +308,12 @@ namespace DragonFruit.Common.Data
         public virtual HttpResponseMessage Perform(ApiRequest requestData)
         {
             if (string.IsNullOrWhiteSpace(requestData.Path))
+            {
                 throw new NullRequestException();
+            }
 
             //cache in case we need to PerformLast<T>();
-            CachedRequest = requestData;
+            CachedRequest = requestData.Clone();
 
             //get client and request (disposables)
             var client = GetClient(requestData);
@@ -308,22 +327,28 @@ namespace DragonFruit.Common.Data
             //send request
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-            Interlocked.Decrement(ref _currentRequests);
+            try
+            {
+                //all possible exceptions from client.SendAsync() will be released here
+                return response.Result;
+            }
+            finally
+            {
+                //un-bump reqs
+                Interlocked.Decrement(ref _currentRequests);
 
-            var output = response.Result;
+                //dispose
+                response.Result.Dispose();
+                response.Dispose();
 
-            //dispose
-            response.Result.Content.Dispose();
-            response.Result.Dispose();
-            response.Dispose();
-
-            request.Dispose();
-
-            return output;
+                request.Dispose();
+            }
         }
 
+        #region PerformLast
+
         /// <summary>
-        /// Perform the last <see cref="ApiRequest"/> on this <see cref="ApiClient"/> again
+        /// Perform the last <see cref="ApiRequest"/> made (regardless of failure) on this <see cref="ApiClient"/> again
         /// </summary>
         public T PerformLast<T>() where T : class
         {
@@ -334,7 +359,7 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Perform the last <see cref="ApiRequest"/> on this <see cref="ApiClient"/> again. Returns a <see cref="HttpResponseMessage"/>, where deserializing the data may not be desired
+        /// Perform the last <see cref="ApiRequest"/> made (regardless of failure) on this <see cref="ApiClient"/> again. Returns a <see cref="HttpResponseMessage"/>, where deserializing the data may not be desired
         /// </summary>
         public HttpResponseMessage PerformLast()
         {
@@ -344,8 +369,10 @@ namespace DragonFruit.Common.Data
             return Perform(CachedRequest);
         }
 
+        #endregion
+
         /// <summary>
-        /// Download a file with an <see cref="ApiRequest"/>. Incompatible with <see cref="PerformLast{T}"/> and <see cref="ValidateAndProcess{T}"/>
+        /// Download a file with an <see cref="ApiRequest"/>. Incompatible with <see cref="PerformLast{T}"/> and bypasses <see cref="ValidateAndProcess{T}"/>
         /// </summary>
         public virtual void Perform(ApiFileRequest requestData)
         {
@@ -364,24 +391,29 @@ namespace DragonFruit.Common.Data
 
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-            Interlocked.Decrement(ref _currentRequests);
-
-            //validate
-            if (response.Result.IsSuccessStatusCode)
+            try
             {
+                //validate
+                response.Result.EnsureSuccessStatusCode();
+
+                //copy result to file
                 using (var stream = File.Open(requestData.Destination, FileMode.Create))
                 using (var networkStream = response.Result.Content.ReadAsStreamAsync().Result)
                 {
                     networkStream.CopyTo(stream);
                 }
             }
+            finally
+            {
+                //un-bump reqs
+                Interlocked.Decrement(ref _currentRequests);
 
-            //dispose
-            response.Result.Content.Dispose();
-            response.Result.Dispose();
-            response.Dispose();
+                //dispose
+                response.Result.Dispose();
+                response.Dispose();
 
-            request.Dispose();
+                request.Dispose();
+            }
         }
 
         /// <summary>
