@@ -1,15 +1,8 @@
-# DragonFruit.Common
+# DragonFruit.Common.Data
 
-## Overview
-DragonFruit.Common is aimed to reduce code repetition and make common tasks easier and faster.
-All Component Packages are licensed under MIT. Please refer to the `LICENSE` file for more information
+![CI](https://github.com/dragonfruitnetwork/DragonFruit.Common/workflows/Publish/badge.svg)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/55343888c7e945b3b7d9d4760309ccb4)](https://www.codacy.com/gh/dragonfruitnetwork/DragonFruit.Common?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dragonfruitnetwork/DragonFruit.Common&amp;utm_campaign=Badge_Grade)
+[![DragonFruit Discord](https://img.shields.io/discord/482528405292843018?label=Discord&style=popout)](https://discord.gg/VA26u5Z)
 
-# Components
-
-In order to use a component, you must install each one separately from NuGet (some more are in development but are not finished yet):
-
-|Name|Link|Description
-|--|--|--|
-|`DragonFruit.Common.Data`|[NuGet](https://www.nuget.org/packages/DragonFruit.Common.Data)|Easy to use Web/API/File-based access and storage methods.|
-|`DragonFruit.Common.WPF`|Not Avaliable yet|WPF UI Helpers and extensions|
-|`DragonFruit.Common.WPF.Telerik`|Not Avaliable yet|Telerik-Specific UI Helpers and extensions|
+### Overview
+DragonFruit.Common.Data is aimed to reduce code repetition and make common IO-based tasks easier and faster.
