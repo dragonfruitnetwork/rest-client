@@ -23,7 +23,9 @@ namespace DragonFruit.Common.Data.Services
             var client = new HttpClient();
 
             if (!string.IsNullOrWhiteSpace(userAgent))
+            {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+            }
 
             return client;
         }
@@ -40,7 +42,9 @@ namespace DragonFruit.Common.Data.Services
             using (var s = client.GetStreamAsync(uri).Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
+            {
                 return serializer.Deserialize<T>(reader);
+            }
         }
 
         /// <summary>
@@ -52,7 +56,9 @@ namespace DragonFruit.Common.Data.Services
         public static T StreamObject<T>(string uri)
         {
             using (var client = new HttpClient())
+            {
                 return StreamObject<T>(uri, client, JsonSerializer.CreateDefault());
+            }
         }
 
         /// <summary>
@@ -67,7 +73,9 @@ namespace DragonFruit.Common.Data.Services
             using (var s = client.GetStreamAsync(uri).Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
+            {
                 return JObject.Load(reader);
+            }
         }
 
         /// <summary>
@@ -78,7 +86,9 @@ namespace DragonFruit.Common.Data.Services
         public static JObject StreamObject(string uri)
         {
             using (var client = new HttpClient())
+            {
                 return StreamObject(uri, client);
+            }
         }
 
         /// <summary>
@@ -93,7 +103,9 @@ namespace DragonFruit.Common.Data.Services
             using (var s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
+            {
                 return JObject.Load(reader);
+            }
         }
 
         /// <summary>
@@ -105,7 +117,9 @@ namespace DragonFruit.Common.Data.Services
         public static JObject PostData(string uri, HttpContent content)
         {
             using (var client = new HttpClient())
+            {
                 return PostData(uri, content, client);
+            }
         }
 
         /// <summary>
@@ -120,7 +134,9 @@ namespace DragonFruit.Common.Data.Services
             using (var s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
+            {
                 return serializer.Deserialize<T>(reader);
+            }
         }
 
         /// <summary>
@@ -132,7 +148,9 @@ namespace DragonFruit.Common.Data.Services
         public static T PostData<T>(string uri, HttpContent content)
         {
             using (var client = new HttpClient())
+            {
                 return PostData<T>(uri, content, client, JsonSerializer.CreateDefault());
+            }
         }
     }
 }

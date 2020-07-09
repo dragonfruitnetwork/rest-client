@@ -28,7 +28,7 @@ namespace DragonFruit.Common.Data
         Serialized,
 
         /// <summary>
-        /// Finds the <see cref="RequestBody"/> marked property and serializes it
+        /// Finds the single <see cref="RequestBody"/>-marked property and serializes it
         /// </summary>
         SerializedProperty,
 

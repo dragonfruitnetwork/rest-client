@@ -10,9 +10,9 @@ namespace DragonFruit.Common.Data.Tests.Advanced.Objects
     {
         public override string Path => "https://postman-echo.com/post";
 
-        public override Methods Method => Methods.Post;
+        protected override Methods Method => Methods.Post;
 
-        public override DataTypes DataType => DataTypes.SerializedProperty;
+        protected override DataTypes DataType => DataTypes.SerializedProperty;
 
         [RequestBody]
         public Employee Employee { get; set; } = new Employee

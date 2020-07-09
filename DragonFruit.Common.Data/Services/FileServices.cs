@@ -32,8 +32,9 @@ namespace DragonFruit.Common.Data.Services
             lock (location)
             {
                 if (!File.Exists(location))
-                    throw new FileNotFoundException(
-                        $"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                {
+                    throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                }
 
                 using (var reader = File.OpenRead(location))
                 using (var textReader = new StreamReader(reader))
@@ -54,8 +55,9 @@ namespace DragonFruit.Common.Data.Services
             lock (location)
             {
                 if (!File.Exists(location))
-                    throw new FileNotFoundException(
-                        $"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                {
+                    throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                }
 
                 using (var reader = File.OpenRead(location))
                 using (var textReader = new StreamReader(reader))

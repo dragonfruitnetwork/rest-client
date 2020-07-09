@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using DragonFruit.Common.Data.Parameters;
+using DragonFruit.Common.Data.Serializers;
 using Newtonsoft.Json;
 
 namespace DragonFruit.Common.Data
@@ -16,9 +17,9 @@ namespace DragonFruit.Common.Data
     {
         public abstract string Path { get; }
 
-        public virtual Methods Method => Methods.Get;
+        protected virtual Methods Method => Methods.Get;
 
-        public virtual DataTypes DataType { get; }
+        protected virtual DataTypes DataType { get; }
 
         public virtual bool RequireAuth => false;
 
@@ -46,11 +47,16 @@ namespace DragonFruit.Common.Data
             foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (!(Attribute.GetCustomAttribute(property, type) is T parameter))
+                {
                     continue;
+                }
 
                 var value = property.GetValue(this, null);
+
                 if (value != null)
+                {
                     yield return new KeyValuePair<string, string>(parameter.Name, value.ToString());
+                }
             }
         }
 
@@ -60,6 +66,74 @@ namespace DragonFruit.Common.Data
                                     .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T);
 
             return property.GetValue(this, null);
+        }
+
+        /// <summary>
+        /// Creates the default <see cref="HttpResponseMessage"/>, which can then be overriden by <see cref="SetupRequest"/>
+        /// </summary>
+        internal HttpRequestMessage GetRequest(ISerializer serializer)
+        {
+            var request = new HttpRequestMessage { RequestUri = new Uri(FullUrl) };
+
+            //generic setup
+            switch (Method)
+            {
+                case Methods.Get:
+                    request.Method = HttpMethod.Get;
+                    break;
+
+                case Methods.Post:
+                    request.Method = HttpMethod.Post;
+                    request.Content = GetContent(serializer);
+                    break;
+
+                case Methods.Put:
+                    request.Method = HttpMethod.Put;
+                    request.Content = GetContent(serializer);
+                    break;
+
+                case Methods.Patch:
+                    request.Method = new HttpMethod("PATCH"); //in .NET standard 2 patch isn't implemented...
+                    request.Content = GetContent(serializer);
+                    break;
+
+                case Methods.Delete:
+                    request.Method = HttpMethod.Delete;
+                    request.Content = GetContent(serializer);
+                    break;
+
+                case Methods.Head:
+                    request.Method = HttpMethod.Head;
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return request;
+        }
+
+        private HttpContent GetContent(ISerializer serializer)
+        {
+            switch (DataType)
+            {
+                case DataTypes.Encoded:
+                    return new FormUrlEncodedContent(GetParameter<FormParameter>());
+
+                case DataTypes.Serialized:
+                    return serializer.Serialize(this);
+
+                case DataTypes.SerializedProperty:
+                    var body = serializer.Serialize(GetSingleParameterObject<RequestBody>());
+                    return body;
+
+                case DataTypes.Custom:
+                    return BodyContent;
+
+                default:
+                    //todo custom exception - there should have been a datatype specified
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         internal ApiRequest Clone() => (ApiRequest)MemberwiseClone();
