@@ -21,7 +21,6 @@ namespace DragonFruit.Common.Data.Tests.Threading
         public void MultiThreadSyncTest()
         {
             var specialClient = new ThreadingApiClient();
-            var echoRequest = new EchoRequest();
             var rng = new Random();
 
             async Task PerformTest()
@@ -29,7 +28,7 @@ namespace DragonFruit.Common.Data.Tests.Threading
                 var headerValue = rng.Next().ToString();
                 specialClient.ChangeHeaders(headerValue);
 
-                var response = specialClient.Perform<JObject>(echoRequest);
+                var response = specialClient.Perform<JObject>(new EchoRequest());
                 Assert.AreEqual(response["headers"]![ThreadingApiClient.HeaderName], headerValue);
             }
 

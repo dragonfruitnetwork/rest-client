@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Helpers;
-using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Serializers;
 
 namespace DragonFruit.Common.Data
@@ -32,6 +31,12 @@ namespace DragonFruit.Common.Data
             Serializer = new ApiJsonSerializer(culture);
         }
 
+        ~ApiClient()
+        {
+            Client?.Dispose();
+            Handler?.Dispose();
+        }
+
         #endregion
 
         #region Properties
@@ -49,12 +54,12 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// The Authorization value
         /// </summary>
-        public string Authorization { get; set; } = null;
+        public string Authorization { get; set; }
 
         /// <summary>
         /// Optional <see cref="HttpClient"/> settings sent by the <see cref="HttpClientHandler"/>
         /// </summary>
-        protected HttpClientHandler Handler { get; set; } = null;
+        protected HttpClientHandler Handler { get; set; }
 
         /// <summary>
         /// Method for getting data
@@ -101,11 +106,15 @@ namespace DragonFruit.Common.Data
         protected virtual HttpClient GetClient(ApiRequest requestData)
         {
             while (_clientAdjustmentInProgress)
+            {
                 Thread.Sleep(AdjustmentTimeout / 2);
+            }
 
             //if there's no edits return the current client
             if (_lastClientHash == ClientHash)
+            {
                 return Client;
+            }
 
             try
             {
@@ -114,8 +123,7 @@ namespace DragonFruit.Common.Data
                 //lock for modification
                 if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
                 {
-                    throw new TimeoutException(
-                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                    throw new TimeoutException($"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
                 }
 
                 //wait for all ongoing requests to end
@@ -129,14 +137,13 @@ namespace DragonFruit.Common.Data
                 Client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
-                if (requestData.RequireAuth && !hasAuthData)
-                {
-                    throw new ClientValidationException("Authorization data expected, but not found");
-                }
-
                 if (hasAuthData)
                 {
                     Client.DefaultRequestHeaders.Add("Authorization", Authorization);
+                }
+                else if (requestData.RequireAuth)
+                {
+                    throw new ClientValidationException("Authorization data expected, but not found");
                 }
 
                 if (!string.IsNullOrEmpty(UserAgent))
@@ -163,74 +170,6 @@ namespace DragonFruit.Common.Data
             {
                 _clientAdjustmentInProgress = false;
                 Monitor.Exit(_clientAdjustmentLock);
-            }
-        }
-
-        /// <summary>
-        /// Creates the default <see cref="HttpResponseMessage"/>, which can then be overriden by <see cref="SetupRequest"/>
-        /// </summary>
-        private HttpRequestMessage GetRequest(ApiRequest requestData)
-        {
-            var request = new HttpRequestMessage { RequestUri = new Uri(requestData.FullUrl) };
-
-            //generic setup
-            switch (requestData.Method)
-            {
-                case Methods.Get:
-                    request.Method = HttpMethod.Get;
-                    break;
-
-                case Methods.Post:
-                    request.Method = HttpMethod.Post;
-                    request.Content = GetContent(requestData);
-                    break;
-
-                case Methods.Put:
-                    request.Method = HttpMethod.Put;
-                    request.Content = GetContent(requestData);
-                    break;
-
-                case Methods.Patch:
-                    request.Method = new HttpMethod("PATCH"); //in .NET standard 2 patch isn't implemented...
-                    request.Content = GetContent(requestData);
-                    break;
-
-                case Methods.Delete:
-                    request.Method = HttpMethod.Delete;
-                    request.Content = GetContent(requestData);
-                    break;
-
-                case Methods.Head:
-                    request.Method = HttpMethod.Head;
-                    break;
-
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return request;
-        }
-
-        private HttpContent GetContent(ApiRequest requestData)
-        {
-            switch (requestData.DataType)
-            {
-                case DataTypes.Encoded:
-                    return new FormUrlEncodedContent(requestData.GetParameter<FormParameter>());
-
-                case DataTypes.Serialized:
-                    return Serializer.Serialize(requestData);
-
-                case DataTypes.SerializedProperty:
-                    var body = Serializer.Serialize(requestData.GetSingleParameterObject<RequestBody>());
-                    return body;
-
-                case DataTypes.Custom:
-                    return requestData.BodyContent;
-
-                default:
-                    //todo custom exception - there should have been a datatype specified
-                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -272,7 +211,7 @@ namespace DragonFruit.Common.Data
             var client = GetClient(requestData);
             Interlocked.Increment(ref _currentRequests);
 
-            var request = GetRequest(requestData);
+            var request = requestData.GetRequest(Serializer);
 
             //post-modification
             SetupRequest(request);
@@ -319,7 +258,7 @@ namespace DragonFruit.Common.Data
             var client = GetClient(requestData);
             Interlocked.Increment(ref _currentRequests);
 
-            var request = GetRequest(requestData);
+            var request = requestData.GetRequest(Serializer);
 
             //post-modification
             SetupRequest(request);
@@ -345,7 +284,7 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        #region PerformLast
+        #region Perform Last Request
 
         /// <summary>
         /// Perform the last <see cref="ApiRequest"/> made (regardless of failure) on this <see cref="ApiClient"/> again
@@ -353,7 +292,9 @@ namespace DragonFruit.Common.Data
         public T PerformLast<T>() where T : class
         {
             if (CachedRequest == null)
+            {
                 throw new NullRequestException();
+            }
 
             return Perform<T>(CachedRequest);
         }
@@ -364,7 +305,9 @@ namespace DragonFruit.Common.Data
         public HttpResponseMessage PerformLast()
         {
             if (CachedRequest == null)
+            {
                 throw new NullRequestException();
+            }
 
             return Perform(CachedRequest);
         }
@@ -378,13 +321,14 @@ namespace DragonFruit.Common.Data
         {
             //check for nulls
             if (string.IsNullOrWhiteSpace(requestData.Path) || string.IsNullOrWhiteSpace(requestData.Destination))
+            {
                 throw new NullRequestException();
+            }
 
-            //get client and request (disposables)
             var client = GetClient(requestData);
             Interlocked.Increment(ref _currentRequests);
 
-            var request = GetRequest(requestData);
+            var request = requestData.GetRequest(Serializer);
 
             //post-modification
             SetupRequest(request);
@@ -397,7 +341,7 @@ namespace DragonFruit.Common.Data
                 response.Result.EnsureSuccessStatusCode();
 
                 //copy result to file
-                using (var stream = File.Open(requestData.Destination, FileMode.Create))
+                using (var stream = File.Open(requestData.Destination, requestData.FileCreationMode))
                 using (var networkStream = response.Result.Content.ReadAsStreamAsync().Result)
                 {
                     networkStream.CopyTo(stream);
@@ -422,7 +366,9 @@ namespace DragonFruit.Common.Data
         protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
         {
             if (!response.Result.IsSuccessStatusCode)
+            {
                 throw new HttpRequestException($"Response was unsuccessful ({response.Result.StatusCode})");
+            }
 
             return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
         }

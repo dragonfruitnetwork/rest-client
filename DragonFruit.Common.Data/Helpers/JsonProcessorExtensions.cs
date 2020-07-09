@@ -1,6 +1,8 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+#nullable enable
+
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -8,8 +10,8 @@ namespace DragonFruit.Common.Data.Helpers
 {
     public static class JsonProcessorExtensions
     {
-        public static string GetString(this JObject source, string key, string @default = "") =>
-            (string)GetBase(source, key) ?? @default;
+        public static string GetString(this JObject source, string key, string @default = "") => 
+            (string?)GetBase(source, key) ?? @default;
 
         public static bool GetBool(this JObject source, string key, bool @default = false) =>
             ((bool?)GetBase(source, key)).GetValueOrDefault(@default);
@@ -47,7 +49,7 @@ namespace DragonFruit.Common.Data.Helpers
         public static decimal GetDecimal(this JObject source, string key, decimal @default = 0) =>
             ((decimal?)GetBase(source, key)).GetValueOrDefault(@default);
 
-        public static IEnumerable<T> GetArray<T>(this JObject source, string key)
+        public static IEnumerable<T>? GetArray<T>(this JObject source, string key)
         {
             try
             {
@@ -62,7 +64,7 @@ namespace DragonFruit.Common.Data.Helpers
         /// <summary>
         ///     Gets the value as a <see cref="JToken" /> type from <see cref="source" />, returning null in event of issue.
         /// </summary>
-        private static JToken GetBase(this JObject source, string key)
+        private static JToken? GetBase(this JObject source, string key)
         {
             try
             {
