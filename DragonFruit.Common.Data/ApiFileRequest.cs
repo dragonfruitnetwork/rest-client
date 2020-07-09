@@ -7,7 +7,7 @@ namespace DragonFruit.Common.Data
 {
     public abstract class ApiFileRequest : ApiRequest
     {
-        public override Methods Method => Methods.Get;
+        protected override Methods Method => Methods.Get;
 
         public abstract string Destination { get; }
 

@@ -17,9 +17,9 @@ namespace DragonFruit.Common.Data
     {
         public abstract string Path { get; }
 
-        public virtual Methods Method => Methods.Get;
+        protected virtual Methods Method => Methods.Get;
 
-        public virtual DataTypes DataType { get; }
+        protected virtual DataTypes DataType { get; }
 
         public virtual bool RequireAuth => false;
 
