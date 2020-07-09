@@ -25,7 +25,14 @@ namespace DragonFruit.Common.Data.Helpers
             return hash;
         }
 
-        public bool Equals(HashableDictionary<TKey, TValue> obj)
+        #region IEquatable
+
+        public bool Equals(HashableDictionary<TKey, TValue> other)
+        {
+            return other != null && GetHashCode() == other.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -37,7 +44,14 @@ namespace DragonFruit.Common.Data.Helpers
                 return true;
             }
 
-            return obj.GetType() == GetType() && GetHashCode() == obj.GetHashCode();
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((HashableDictionary<TKey, TValue>)obj);
         }
+
+        #endregion
     }
 }
