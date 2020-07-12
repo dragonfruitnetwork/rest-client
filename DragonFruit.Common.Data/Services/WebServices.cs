@@ -14,7 +14,7 @@ namespace DragonFruit.Common.Data.Services
     public static class WebServices
     {
         /// <summary>
-        ///     Create a <see cref="HttpClient" /> with a specific UserAgent header
+        /// Create a <see cref="HttpClient" /> with a specific UserAgent header
         /// </summary>
         /// <param name="userAgent">string of the UserAgent to be set</param>
         /// <returns><see cref="HttpClient" /> with a set UserAgent</returns>
@@ -31,7 +31,7 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Download a JSON-based object with low memory consumption and custom <see cref="HttpClient" />
+        /// Download a JSON-based object with low memory consumption and custom <see cref="HttpClient" />
         /// </summary>
         /// <typeparam name="T">Type to deserialize the result to</typeparam>
         /// <param name="uri">The Uri containing the resource</param>
@@ -48,7 +48,7 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Download a JSON-based object with low memory consumption
+        /// Download a JSON-based object with low memory consumption
         /// </summary>
         /// <typeparam name="T">Type to deserialize the result to</typeparam>
         /// <param name="uri">The Uri containing the resource</param>
@@ -62,8 +62,8 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Download a JSON-based object as a <see cref="JObject" /> with low memory consumption and custom
-        ///     <see cref="HttpClient" />
+        /// Download a JSON-based object as a <see cref="JObject" /> with low memory consumption and custom
+        /// <see cref="HttpClient" />
         /// </summary>
         /// <param name="uri">The Uri containing the resource</param>
         /// <param name="client"><see cref="HttpClient" /> to use when downloading</param>
@@ -79,7 +79,7 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Download a JSON-based object as a <see cref="JObject" /> with low memory consumption
+        /// Download a JSON-based object as a <see cref="JObject" /> with low memory consumption
         /// </summary>
         /// <param name="uri">The Uri containing the resource</param>
         /// <returns>JObject containing downloaded data</returns>

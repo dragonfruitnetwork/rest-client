@@ -62,7 +62,7 @@ namespace DragonFruit.Common.Data.Helpers
         }
 
         /// <summary>
-        ///     Gets the value as a <see cref="JToken" /> type from <see cref="source" />, returning null in event of issue.
+        /// Gets the value as a <see cref="JToken" /> type from <see cref="source" />, returning null in event of issue.
         /// </summary>
         private static JToken? GetBase(this JObject source, string key)
         {

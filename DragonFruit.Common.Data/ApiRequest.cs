@@ -52,10 +52,17 @@ namespace DragonFruit.Common.Data
                 }
 
                 var value = property.GetValue(this, null);
-
-                if (value != null)
+                string convertedValue = value switch
                 {
-                    yield return new KeyValuePair<string, string>(parameter.Name, value.ToString());
+                    bool boolVar => boolVar.ToString().ToLower(),
+                    null => null,
+
+                    _ => value.ToString()
+                };
+
+                if (convertedValue != null)
+                {
+                    yield return new KeyValuePair<string, string>(parameter.Name, convertedValue);
                 }
             }
         }

@@ -8,12 +8,12 @@ using Newtonsoft.Json.Linq;
 namespace DragonFruit.Common.Data.Services
 {
     /// <summary>
-    ///     Lock-enabled file based I/O Methods
+    /// Lock-enabled file based I/O Methods
     /// </summary>
     public static class FileServices
     {
         /// <summary>
-        ///     Read data from file as specified type
+        /// Read data from file as specified type
         /// </summary>
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
@@ -21,7 +21,30 @@ namespace DragonFruit.Common.Data.Services
         public static T ReadFile<T>(string location) => ReadFile<T>(location, JsonSerializer.CreateDefault());
 
         /// <summary>
-        ///     Read data from file as specified type
+        /// Read data from file as specified type, or return default value if the file doesn't exist
+        /// </summary>
+        /// <typeparam name="T">Type the data was saved in</typeparam>
+        /// <param name="location">Location of the file</param>
+        /// <returns>Type with populated data</returns>
+        public static T ReadFileOrDefault<T>(string location)
+        {
+            return ReadFileOrDefault<T>(location, JsonSerializer.CreateDefault());
+        }
+
+        /// <summary>
+        /// Read data from file as specified type, or return default value if the file doesn't exist
+        /// </summary>
+        /// <typeparam name="T">Type the data was saved in</typeparam>
+        /// <param name="location">Location of the file</param>
+        /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
+        /// <returns>Type with populated data</returns>
+        public static T ReadFileOrDefault<T>(string location, JsonSerializer serializer)
+        {
+            return File.Exists(location) ? ReadFile<T>(location, serializer) : default;
+        }
+
+        /// <summary>
+        /// Read data from file as specified type, or return default value if the file doesn't exist
         /// </summary>
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
@@ -46,7 +69,7 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Read data from file as JObject
+        /// Read data from file as JObject
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <returns>JObject with data</returns>
@@ -69,7 +92,7 @@ namespace DragonFruit.Common.Data.Services
         }
 
         /// <summary>
-        ///     Writes data to a file. If the file exists then it is overwritten with no notice
+        /// Writes data to a file. If the file exists then it is overwritten with no notice
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>
@@ -77,7 +100,7 @@ namespace DragonFruit.Common.Data.Services
             WriteFile(location, data, JsonSerializer.CreateDefault());
 
         /// <summary>
-        ///     Writes data to a file. If the file exists then it is overwritten with no notice
+        /// Writes data to a file. If the file exists then it is overwritten with no notice
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>

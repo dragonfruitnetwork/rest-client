@@ -4,7 +4,7 @@
 namespace DragonFruit.Common.Data.Tests.Files.Objects
 {
     /// <summary>
-    ///     Simple file download request with a path and a destination
+    /// Simple file download request with a path and a destination
     /// </summary>
     public class FileDownloadRequest : ApiFileRequest
     {
