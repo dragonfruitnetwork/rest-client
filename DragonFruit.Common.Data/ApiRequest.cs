@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -29,6 +30,11 @@ namespace DragonFruit.Common.Data
 
         public virtual HttpContent BodyContent { get; }
 
+        /// <summary>
+        /// <see cref="CultureInfo"/> used for ToString() conversions when collecting attributed members/>
+        /// </summary>
+        protected virtual CultureInfo Culture => CultureInfo.InvariantCulture;
+
         internal string QueryString
         {
             get
@@ -54,7 +60,7 @@ namespace DragonFruit.Common.Data
                 var value = property.GetValue(this, null);
                 string convertedValue = value switch
                 {
-                    bool boolVar => boolVar.ToString().ToLower(),
+                    bool boolVar => boolVar.ToString().ToLower(Culture),
                     null => null,
 
                     _ => value.ToString()
