@@ -6,14 +6,14 @@ $WORKINGDIR = Get-Location
 
 #Build files
 
-Write-Output "Building Orbit Version $VERSION"
+Write-Output "Building DragonFruit.Common Version $VERSION"
 dotnet restore
 dotnet build -c Release /p:PackageVersion=$VERSION
 
 #pack into nuget files with the suffix if we have one
 
-Write-Output "Publishing Orbit Version $VERSION"
-dotnet pack ".\DragonFruit.Orbit.API\DragonFruit.Orbit.API.csproj" -o $WORKINGDIR -c Release -p:PackageVersion=$VERSION
+Write-Output "Publishing DragonFruit.Common Version $VERSION"
+dotnet pack ".\DragonFruit.Common.Data\DragonFruit.Common.Data.csproj" -o $WORKINGDIR -c Release -p:PackageVersion=$VERSION
 
 #recursively push all nuget files created
 
