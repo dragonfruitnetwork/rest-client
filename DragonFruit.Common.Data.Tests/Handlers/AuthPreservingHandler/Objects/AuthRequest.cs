@@ -29,7 +29,12 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
                 ? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.User) ?? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.Machine) ?? Environment.GetEnvironmentVariable(var)
                 : Environment.GetEnvironmentVariable(var);
 
-            return envVar ?? throw new AssertInconclusiveException("Environment variable not found");
+            if (envVar == null)
+            {
+                Assert.Inconclusive("Environment variable not found");
+            }
+
+            return envVar;
         }
     }
 }
