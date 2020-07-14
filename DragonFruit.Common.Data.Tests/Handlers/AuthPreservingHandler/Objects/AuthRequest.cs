@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.InteropServices;
 using DragonFruit.Common.Data.Parameters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
 {
@@ -28,11 +27,6 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
             var envVar = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.User) ?? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.Machine) ?? Environment.GetEnvironmentVariable(var)
                 : Environment.GetEnvironmentVariable(var);
-
-            if (envVar == null)
-            {
-                Assert.Inconclusive("Environment variable not found");
-            }
 
             return envVar;
         }
