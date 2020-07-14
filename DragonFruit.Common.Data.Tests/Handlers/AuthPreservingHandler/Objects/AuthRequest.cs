@@ -2,9 +2,9 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using DragonFruit.Common.Data.Parameters;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
 {
@@ -29,7 +29,7 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
                 ? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.User) ?? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.Machine) ?? Environment.GetEnvironmentVariable(var)
                 : Environment.GetEnvironmentVariable(var);
 
-            return envVar ?? throw new KeyNotFoundException();
+            return envVar ?? throw new AssertInconclusiveException("Environment variable not found");
         }
     }
 }
