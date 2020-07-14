@@ -18,7 +18,7 @@ jobs:
       - name: Build
         run: |
           dotnet restore
-          dotnet build -c Release
+          dotnet build -c Debug
 
       - name: Unit Tests
         run: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=false

@@ -14,7 +14,6 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler
         {
             var redirectClient = new HeaderPreservingHandlerClient();
 
-            //get auth token
             var auth = redirectClient.Perform<BasicOrbitAuthResponse>(new AuthRequest());
             redirectClient.Authorization = $"{auth.Type} {auth.AccessToken}";
 
