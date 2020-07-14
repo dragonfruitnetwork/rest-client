@@ -3,9 +3,9 @@
 
 using Newtonsoft.Json;
 
-namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Requests
+namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
 {
-    public class OrbitAuthResponse
+    public class BasicOrbitAuthResponse
     {
         [JsonProperty("token_type")]
         public string Type { get; set; }

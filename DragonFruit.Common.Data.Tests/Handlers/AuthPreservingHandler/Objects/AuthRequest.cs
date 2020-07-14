@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using DragonFruit.Common.Data.Parameters;
 
-namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Requests
+namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
 {
     public class AuthRequest : ApiRequest
     {
