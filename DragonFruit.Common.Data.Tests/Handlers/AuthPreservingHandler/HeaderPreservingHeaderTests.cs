@@ -1,7 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using System.Diagnostics;
+using System;
 using DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,7 +21,7 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler
             //for some reason inconclusive assertion returns a fail, so we'll just "pass" this with a nice message for now
             if (request.ClientSecret == null)
             {
-                Debug.WriteLine("Environment Variables not found, skipping test.");
+                Console.WriteLine("Environment Variables not found, skipping test.");
                 return;
             }
 

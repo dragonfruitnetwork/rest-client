@@ -21,7 +21,7 @@ jobs:
           dotnet build -c Debug
 
       - name: Unit Tests
-        run: dotnet test -v d
+        run: dotnet test -v m
         env:
           orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
           orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
