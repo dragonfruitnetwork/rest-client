@@ -41,7 +41,7 @@ namespace DragonFruit.Common.Data
             {
                 var queries = GetParameter<QueryParameter>();
                 return !queries.Any()
-                    ? string.Empty
+                    ? null
                     : $"?{string.Join("&", queries.Select(kvp => $"{kvp.Key}={kvp.Value}"))}";
             }
         }

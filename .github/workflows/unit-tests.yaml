@@ -18,7 +18,10 @@ jobs:
       - name: Build
         run: |
           dotnet restore
-          dotnet build -c Release
+          dotnet build -c Debug
 
       - name: Unit Tests
-        run: dotnet test
+        run: dotnet test -v m
+        env:
+          orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
+          orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
