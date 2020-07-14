@@ -28,8 +28,12 @@ namespace DragonFruit.Common.Data.Handlers
         }
 
         public HeaderPreservingRedirectHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
         {
+            if (innerHandler is HttpClientHandler clientHandler)
+            {
+                clientHandler.AllowAutoRedirect = false;
+                InnerHandler = clientHandler;
+            }
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
