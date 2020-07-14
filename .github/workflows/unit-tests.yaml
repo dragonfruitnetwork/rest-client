@@ -22,3 +22,6 @@ jobs:
 
       - name: Unit Tests
         run: dotnet test
+        env:
+          orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
+          orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}

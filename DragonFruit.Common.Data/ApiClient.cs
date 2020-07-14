@@ -57,9 +57,18 @@ namespace DragonFruit.Common.Data
         public string Authorization { get; set; }
 
         /// <summary>
-        /// Optional <see cref="HttpClient"/> settings sent by the <see cref="HttpClientHandler"/>
+        /// Optional <see cref="HttpClient"/> settings sent by the <see cref="HttpMessageHandler"/>.
+        /// The old <see cref="HttpMessageHandler"/> will be disposed on setting a new one.
         /// </summary>
-        protected HttpClientHandler Handler { get; set; }
+        protected HttpMessageHandler Handler
+        {
+            get => _handler;
+            set
+            {
+                _handler?.Dispose();
+                _handler = value;
+            }
+        }
 
         /// <summary>
         /// Method for getting data
@@ -90,6 +99,8 @@ namespace DragonFruit.Common.Data
 
         private readonly object _clientAdjustmentLock = new object();
         private long _currentRequests;
+
+        private HttpMessageHandler _handler;
 
         /// <summary>
         /// Checksum that determines whether we replace the <see cref="HttpClient"/>
@@ -134,7 +145,7 @@ namespace DragonFruit.Common.Data
 
                 //cleanup current client
                 Client?.Dispose();
-                Client = Handler != null ? new HttpClient(Handler, true) : new HttpClient();
+                Client = Handler != null ? new HttpClient(Handler, false) : new HttpClient();
                 var hasAuthData = !string.IsNullOrEmpty(Authorization);
 
                 if (hasAuthData)
