@@ -21,7 +21,7 @@ jobs:
           dotnet build -c Release
 
       - name: Unit Tests
-        run: dotnet test
+        run: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=false
         env:
           orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
           orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
