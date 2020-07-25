@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
+using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Serializers;
 using Newtonsoft.Json;
@@ -16,22 +18,53 @@ namespace DragonFruit.Common.Data
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class ApiRequest
     {
+        /// <summary>
+        /// The Path to the web resource
+        /// </summary>
         public abstract string Path { get; }
 
+        /// <summary>
+        /// The method to use/request verb
+        /// </summary>
         protected virtual Methods Method => Methods.Get;
 
+        /// <summary>
+        /// The <see cref="DataType"/> to use (if there is a body to be sent)
+        /// </summary>
         protected virtual DataTypes DataType { get; }
 
+        /// <summary>
+        /// Whether an auth header is required.
+        /// </summary>
+        /// <exception cref="ClientValidationException">This was set to true but no auth header was specified.
+        /// Automatically suppressed if the <see cref="Headers"/> property has been initialised.
+        /// </exception>
         public virtual bool RequireAuth => false;
 
-        public virtual string AcceptedContent => string.Empty;
+        /// <summary>
+        /// Custom Headers to send with this request. Overrides any custom header set in the <see cref="HttpClient"/> with the same name.
+        /// </summary>
+        /// <remarks>
+        /// Headers to be set in all requests should be set at <see cref="ApiClient"/>-level, using the <see cref="ApiClient.CustomHeaders"/> Dictionary.
+        /// </remarks>
+        public Lazy<IDictionary<string, string>> Headers { get; set; } = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
 
+        /// <summary>
+        /// The fully compiled url
+        /// </summary>
         public string FullUrl => Path + QueryString;
 
+        /// <summary>
+        /// Overridable property for configuring a custom body for this request
+        ///
+        /// <para>
+        /// Only used when the <see cref="DataType"/> is equal to <see cref="DataTypes.Custom"/>
+        /// </para>
+        /// </summary>
         public virtual HttpContent BodyContent { get; }
 
         /// <summary>
-        /// <see cref="CultureInfo"/> used for ToString() conversions when collecting attributed members/>
+        /// <see cref="CultureInfo"/> used for ToString() conversions when collecting attributed members
         /// </summary>
         protected virtual CultureInfo Culture => CultureInfo.InvariantCulture;
 
@@ -121,6 +154,16 @@ namespace DragonFruit.Common.Data
 
                 default:
                     throw new NotImplementedException();
+            }
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.ContentType));
+
+            if (Headers.IsValueCreated)
+            {
+                foreach (var header in Headers.Value)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
             }
 
             return request;

@@ -29,6 +29,8 @@ namespace DragonFruit.Common.Data.Serializers
 
         public JsonSerializer Serializer { get; set; }
 
+        public string ContentType => "application/json";
+
         public virtual StringContent Serialize<T>(T input) where T : class
         {
             var builder = new StringBuilder();

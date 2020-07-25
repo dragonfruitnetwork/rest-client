@@ -9,6 +9,8 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public interface ISerializer
     {
+        public string ContentType { get; }
+
         StringContent Serialize<T>(T input) where T : class;
 
         T Deserialize<T>(Task<Stream> input) where T : class;
