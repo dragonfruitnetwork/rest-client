@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DragonFruit.Common.Data.Helpers
 {
-    public static class JsonProcessorExtensions
+    public static class JsonExtensions
     {
         public static string GetString(this JObject source, string key, string @default = "") => 
             (string?)GetBase(source, key) ?? @default;

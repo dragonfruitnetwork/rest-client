@@ -2,6 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using DragonFruit.Common.Data.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -20,11 +21,10 @@ namespace DragonFruit.Common.Data.Tests.Header
         public void PerRequestHeaderTest()
         {
             var headerValue = Rng.Next().ToString();
-            var request = new EchoRequest();
 
-            request.Headers.Value.Add(HeaderName, headerValue);
-
+            var request = new EchoRequest().WithHeader(HeaderName, headerValue);
             var response = Client.Perform<JObject>(request);
+
             Assert.AreEqual(response["headers"]![HeaderName], headerValue);
         }
 
@@ -37,7 +37,7 @@ namespace DragonFruit.Common.Data.Tests.Header
             var requestHeaderValue = Guid.NewGuid().ToString();
 
             Client.CustomHeaders.Add(GlobalHeaderName, globalHeaderValue);
-            request.Headers.Value.Add(HeaderName, requestHeaderValue);
+            request.WithHeader(HeaderName, requestHeaderValue);
 
             var response = Client.Perform<JObject>(request);
             Assert.AreEqual(requestHeaderValue, response["headers"]![HeaderName]);
