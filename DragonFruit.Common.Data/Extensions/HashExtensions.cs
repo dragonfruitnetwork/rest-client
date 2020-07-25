@@ -3,7 +3,7 @@
 
 namespace DragonFruit.Common.Data.Helpers
 {
-    public static class ComponentHashCodes
+    public static class HashExtensions
     {
         public static string ItemHashCode(this object data) => data == null ? "!" : data.GetHashCode().ToString();
     }
