@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -31,6 +30,11 @@ namespace DragonFruit.Common.Data
             Serializer = new ApiJsonSerializer(culture);
         }
 
+        public ApiClient(ISerializer serializer)
+        {
+            Serializer = serializer;
+        }
+
         ~ApiClient()
         {
             Client?.Dispose();
@@ -42,7 +46,7 @@ namespace DragonFruit.Common.Data
         #region Properties
 
         /// <summary>
-        /// The User-Agent header value
+        /// The User-Agent header to pass in all requests
         /// </summary>
         public string UserAgent { get; set; }
 
@@ -52,14 +56,16 @@ namespace DragonFruit.Common.Data
         public HashableDictionary<string, string> CustomHeaders { get; set; } = new HashableDictionary<string, string>();
 
         /// <summary>
-        /// The Authorization value
+        /// The Authorization header
         /// </summary>
         public string Authorization { get; set; }
 
         /// <summary>
-        /// Optional <see cref="HttpClient"/> settings sent by the <see cref="HttpMessageHandler"/>.
-        /// The old <see cref="HttpMessageHandler"/> will be disposed on setting a new one.
+        /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
         /// </summary>
+        /// <remarks>
+        /// The old <see cref="HttpMessageHandler"/> will be disposed on setting a new one.
+        /// </remarks>
         protected HttpMessageHandler Handler
         {
             get => _handler;
@@ -71,14 +77,12 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Method for getting data
+        /// The <see cref="ISerializer"/> to use when encoding/decoding request and response streams.
         /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="ApiJsonSerializer"/>
+        /// </remarks>
         protected ISerializer Serializer { get; set; }
-
-        /// <summary>
-        /// Last <see cref="ApiRequest"/> made for using with
-        /// </summary>
-        private ApiRequest CachedRequest { get; set; }
 
         /// <summary>
         /// <see cref="HttpClient"/> used by these requests. This is used by the library and as such, should **not** be disposed in any way
@@ -90,22 +94,27 @@ namespace DragonFruit.Common.Data
         /// </summary>
         protected virtual int AdjustmentTimeout => 200;
 
+        /// <summary>
+        /// Last <see cref="ApiRequest"/> made for using with
+        /// </summary>
+        private ApiRequest CachedRequest { get; set; }
+
         #endregion
 
         #region Clients, Hashes and Locks
 
         private bool _clientAdjustmentInProgress;
-        private string _lastClientHash = string.Empty;
+        private string _lastHeaderHash = string.Empty;
+        private string _lastHandlerHash = string.Empty;
+        private string _lastHash = string.Empty;
 
         private readonly object _clientAdjustmentLock = new object();
         private long _currentRequests;
 
         private HttpMessageHandler _handler;
 
-        /// <summary>
-        /// Checksum that determines whether we replace the <see cref="HttpClient"/>
-        /// </summary>
-        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Handler.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash => $"{HeaderHash}.{Handler.ItemHashCode()}";
+        private string HeaderHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Authorization.ItemHashCode()}";
 
         #endregion
 
@@ -114,7 +123,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
         /// </summary>
-        protected virtual HttpClient GetClient(ApiRequest requestData)
+        protected virtual HttpClient GetClient()
         {
             while (_clientAdjustmentInProgress)
             {
@@ -122,7 +131,7 @@ namespace DragonFruit.Common.Data
             }
 
             //if there's no edits return the current client
-            if (_lastClientHash == ClientHash)
+            if (_lastHash == ClientHash)
             {
                 return Client;
             }
@@ -143,38 +152,52 @@ namespace DragonFruit.Common.Data
                     Thread.Sleep(AdjustmentTimeout / 2);
                 }
 
-                //cleanup current client
-                Client?.Dispose();
-                Client = Handler != null ? new HttpClient(Handler, false) : new HttpClient();
-                var hasAuthData = !string.IsNullOrEmpty(Authorization);
+                var handlerHash = Handler.ItemHashCode();
+                var resetClient = handlerHash != _lastHandlerHash;
 
-                if (hasAuthData)
+                // only reset the client if the handler has changed.
+                if (resetClient)
                 {
-                    Client.DefaultRequestHeaders.Add("Authorization", Authorization);
-                }
-                else if (requestData.RequireAuth)
-                {
-                    throw new ClientValidationException("Authorization data expected, but not found");
+                    Client?.Dispose();
+                    Client = Handler != null ? new HttpClient(Handler, false) : new HttpClient();
+                    _lastHandlerHash = handlerHash;
                 }
 
-                if (!string.IsNullOrEmpty(UserAgent))
+                // reset the headers if any have changed (or the client has been reinitialised)
+                var headerHash = HeaderHash;
+
+                if (headerHash != _lastHeaderHash || resetClient)
                 {
-                    Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                    Client.DefaultRequestHeaders.Clear();
+
+                    // Authorization
+                    if (!string.IsNullOrEmpty(Authorization))
+                    {
+                        Client.DefaultRequestHeaders.Add("Authorization", Authorization);
+                    }
+
+                    // User-Agent
+                    if (!string.IsNullOrEmpty(UserAgent))
+                    {
+                        Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                    }
+
+                    // Custom Headers
+                    foreach (var header in CustomHeaders)
+                    {
+                        Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
+
+                    _lastHeaderHash = headerHash;
                 }
 
-                if (!string.IsNullOrEmpty(requestData.AcceptedContent))
+                // allow the user to reconfigure the client after we've done our work
+                if (resetClient)
                 {
-                    Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(requestData.AcceptedContent));
+                    SetupClient(Client);
                 }
 
-                foreach (var header in CustomHeaders)
-                {
-                    Client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
-
-                SetupClient(Client);
-
-                _lastClientHash = ClientHash;
+                _lastHash = ClientHash;
                 return Client;
             }
             finally
@@ -189,15 +212,18 @@ namespace DragonFruit.Common.Data
         #region Empty Overrides (Inherited)
 
         /// <summary>
-        /// Add your own headers/settings to the <see cref="HttpClient"/> being created. Runs after the headers have been added
+        /// Overridable method to customise the <see cref="HttpClient"/>
         /// </summary>
-        /// <param name="client"></param>
+        /// <remarks>
+        /// Is called if the client has been created, after all other configuration (client, handler, headers)
+        /// </remarks>
+        /// <param name="client">The <see cref="HttpClient"/> to modify</param>
         protected virtual void SetupClient(HttpClient client)
         {
         }
 
         /// <summary>
-        /// When overridden, this can be used to alter the <see cref="HttpRequestMessage"/> post-creation
+        /// When overridden, this can be used to alter all <see cref="HttpRequestMessage"/> created.
         /// </summary>
         protected virtual void SetupRequest(HttpRequestMessage request)
         {
@@ -210,16 +236,13 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
-            if (string.IsNullOrWhiteSpace(requestData.Path))
-            {
-                throw new NullRequestException();
-            }
+            ValidateRequest(requestData);
 
             //cache in case we need to PerformLast<T>();
             CachedRequest = requestData.Clone();
 
             //get client and request (disposables)
-            var client = GetClient(requestData);
+            var client = GetClient();
             Interlocked.Increment(ref _currentRequests);
 
             var request = requestData.GetRequest(Serializer);
@@ -257,16 +280,13 @@ namespace DragonFruit.Common.Data
         /// <param name="requestData"></param>
         public virtual HttpResponseMessage Perform(ApiRequest requestData)
         {
-            if (string.IsNullOrWhiteSpace(requestData.Path))
-            {
-                throw new NullRequestException();
-            }
+            ValidateRequest(requestData);
 
             //cache in case we need to PerformLast<T>();
             CachedRequest = requestData.Clone();
 
             //get client and request (disposables)
-            var client = GetClient(requestData);
+            var client = GetClient();
             Interlocked.Increment(ref _currentRequests);
 
             var request = requestData.GetRequest(Serializer);
@@ -330,13 +350,15 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual void Perform(ApiFileRequest requestData)
         {
-            //check for nulls
-            if (string.IsNullOrWhiteSpace(requestData.Path) || string.IsNullOrWhiteSpace(requestData.Destination))
+            //check request data is valid
+            ValidateRequest(requestData);
+
+            if (string.IsNullOrWhiteSpace(requestData.Destination))
             {
                 throw new NullRequestException();
             }
 
-            var client = GetClient(requestData);
+            var client = GetClient();
             Interlocked.Increment(ref _currentRequests);
 
             var request = requestData.GetRequest(Serializer);
@@ -382,6 +404,26 @@ namespace DragonFruit.Common.Data
             }
 
             return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
+        }
+
+        /// <summary>
+        /// An overridable method for validating the request against the current <see cref="ApiClient"/>
+        /// </summary>
+        /// <param name="requestData">The request to validate</param>
+        /// <exception cref="NullRequestException">The request can't be performed due to a poorly-formed url</exception>
+        /// <exception cref="ClientValidationException">The client can't be used because there is no auth url.</exception>
+        protected virtual void ValidateRequest(ApiRequest requestData)
+        {
+            //todo is there any benefit to trying to parse the url?
+            if (string.IsNullOrWhiteSpace(requestData.Path))
+            {
+                throw new NullRequestException();
+            }
+
+            if (requestData.RequireAuth && (!requestData.Headers.IsValueCreated || string.IsNullOrEmpty(Authorization)))
+            {
+                throw new ClientValidationException("Authorization data expected, but not found");
+            }
         }
     }
 }

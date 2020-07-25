@@ -13,6 +13,8 @@ namespace DragonFruit.Common.Data.Serializers
     {
         private readonly IDictionary<Type, XmlSerializer> _serializers = new Dictionary<Type, XmlSerializer>();
 
+        public string ContentType => "application/xml";
+
         public StringContent Serialize<T>(T input) where T : class
         {
             var type = typeof(T);
