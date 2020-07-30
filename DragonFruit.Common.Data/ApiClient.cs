@@ -67,15 +67,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// The old <see cref="HttpMessageHandler"/> will be disposed on setting a new one.
         /// </remarks>
-        protected HttpMessageHandler Handler
-        {
-            get => _handler;
-            set
-            {
-                _handler?.Dispose();
-                _handler = value;
-            }
-        }
+        protected HttpMessageHandler Handler { get; set; }
 
         /// <summary>
         /// The <see cref="ISerializer"/> to use when encoding/decoding request and response streams.
@@ -144,7 +136,8 @@ namespace DragonFruit.Common.Data
                 //lock for modification
                 if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
                 {
-                    throw new TimeoutException($"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                    throw new TimeoutException(
+                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
                 }
 
                 //wait for all ongoing requests to end
@@ -160,8 +153,12 @@ namespace DragonFruit.Common.Data
                 if (resetClient)
                 {
                     Client?.Dispose();
-                    Client = Handler != null ? new HttpClient(Handler, false) : new HttpClient();
+                    _handler?.Dispose();
+
+                    _handler = Handler;
                     _lastHandlerHash = handlerHash;
+
+                    Client = Handler != null ? new HttpClient(_handler, false) : new HttpClient();
                 }
 
                 // reset the headers if any have changed (or the client has been reinitialised)
@@ -257,7 +254,7 @@ namespace DragonFruit.Common.Data
             try
             {
                 //validate and process
-                var output = ValidateAndProcess<T>(response);
+                var output = ValidateAndProcess<T>(response, request);
 
                 //return
                 return output;
@@ -268,17 +265,16 @@ namespace DragonFruit.Common.Data
                 Interlocked.Decrement(ref _currentRequests);
 
                 //dispose
-                response.Result.Dispose();
-                response.Dispose();
+                response?.Result?.Dispose();
+                response?.Dispose();
 
-                request.Dispose();
+                request?.Dispose();
             }
         }
 
         /// <summary>
         /// Perform a <see cref="ApiRequest"/> that returns the response message. The <see cref="HttpResponseMessage"/> returned cannot be used for reading data, as the underlying <see cref="Task"/> will be disposed.
         /// </summary>
-        /// <param name="requestData"></param>
         public virtual HttpResponseMessage Perform(ApiRequest requestData)
         {
             ValidateRequest(requestData);
@@ -309,10 +305,10 @@ namespace DragonFruit.Common.Data
                 Interlocked.Decrement(ref _currentRequests);
 
                 //dispose
-                response.Result.Dispose();
-                response.Dispose();
+                response?.Result?.Dispose();
+                response?.Dispose();
 
-                request.Dispose();
+                request?.Dispose();
             }
         }
 
@@ -387,17 +383,17 @@ namespace DragonFruit.Common.Data
                 Interlocked.Decrement(ref _currentRequests);
 
                 //dispose
-                response.Result.Dispose();
-                response.Dispose();
+                response?.Result?.Dispose();
+                response?.Dispose();
 
-                request.Dispose();
+                request?.Dispose();
             }
         }
 
         /// <summary>
         /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
         /// </summary>
-        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response) where T : class
+        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response, HttpRequestMessage request) where T : class
         {
             if (!response.Result.IsSuccessStatusCode)
             {
