@@ -230,17 +230,6 @@ namespace DragonFruit.Common.Data
         #endregion
 
         /// <summary>
-        /// Perform an <see cref="ApiRequest"/> with a specified return type.
-        /// </summary>
-        public virtual T Perform<T>(ApiRequest requestData) where T : class
-        {
-            ValidateRequest(requestData);
-            var request = requestData.GetRequest(Serializer);
-
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
-        }
-
-        /// <summary>
         /// Perform a <see cref="ApiRequest"/> that returns the response message. The <see cref="HttpResponseMessage"/> returned cannot be used for reading data, as the underlying <see cref="Task"/> will be disposed.
         /// </summary>
         public virtual HttpResponseMessage Perform(ApiRequest requestData)
@@ -253,6 +242,25 @@ namespace DragonFruit.Common.Data
 
         /// <summary>
         /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
+        /// </summary>
+        public virtual HttpResponseMessage Perform(HttpRequestMessage request)
+        {
+            return InternalPerform(request, response => response);
+        }
+
+        /// <summary>
+        /// Perform an <see cref="ApiRequest"/> with a specified return type.
+        /// </summary>
+        public virtual T Perform<T>(ApiRequest requestData) where T : class
+        {
+            ValidateRequest(requestData);
+            var request = requestData.GetRequest(Serializer);
+
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
+        }
+
+        /// <summary>
+        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/> and deserialize the result to the specified type
         /// </summary>
         public virtual T Perform<T>(HttpRequestMessage request) where T : class
         {
@@ -295,7 +303,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         /// <param name="request">The request to perform</param>
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
-        protected virtual T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult)
+        protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult)
         {
             //get client and request (disposables)
             var client = GetClient();
