@@ -8,8 +8,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
-using DragonFruit.Common.Data.Helpers;
+using DragonFruit.Common.Data.Extensions;
 using DragonFruit.Common.Data.Serializers;
+using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data
 {

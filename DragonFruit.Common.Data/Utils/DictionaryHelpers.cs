@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DragonFruit.Common.Data.Helpers
+namespace DragonFruit.Common.Data.Utils
 {
     internal static class DictionaryHelpers
     {
