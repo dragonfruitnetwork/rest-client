@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DragonFruit.Common.Data.Helpers
+namespace DragonFruit.Common.Data.Utils
 {
     /// <summary>
     /// A superset of <see cref="T:System.Collections.Generic.Dictionary`2" /> with a hash code function that calculates the hash based on the keys and values inside.

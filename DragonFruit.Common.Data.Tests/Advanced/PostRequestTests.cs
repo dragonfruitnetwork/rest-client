@@ -15,11 +15,8 @@ namespace DragonFruit.Common.Data.Tests.Advanced
         {
             var request = new DatabaseUpdateRequest();
 
-            var firstResponse = Client.Perform<JObject>(request);
-            Assert.AreEqual(request.Employee.Department, firstResponse["json"].ToObject<Employee>().Department);
-
-            var secondResponse = Client.PerformLast<JObject>();
-            Assert.AreEqual(secondResponse["json"].ToObject<Employee>().Department, firstResponse["json"].ToObject<Employee>().Department);
+            var response = Client.Perform<JObject>(request);
+            Assert.AreEqual(request.Employee.Department, response["json"].ToObject<Employee>().Department);
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using DragonFruit.Common.Data.Helpers;
+using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data.Serializers
 {
