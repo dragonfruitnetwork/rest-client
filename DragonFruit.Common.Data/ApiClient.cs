@@ -235,41 +235,9 @@ namespace DragonFruit.Common.Data
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
             ValidateRequest(requestData);
-
-            //cache in case we need to PerformLast<T>();
-            CachedRequest = requestData.Clone();
-
-            //get client and request (disposables)
-            var client = GetClient();
-            Interlocked.Increment(ref _currentRequests);
-
             var request = requestData.GetRequest(Serializer);
 
-            //post-modification
-            SetupRequest(request);
-
-            //send request
-            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-            try
-            {
-                //validate and process
-                var output = ValidateAndProcess<T>(response, request);
-
-                //return
-                return output;
-            }
-            finally
-            {
-                //un-bump reqs
-                Interlocked.Decrement(ref _currentRequests);
-
-                //dispose
-                response?.Result?.Dispose();
-                response?.Dispose();
-
-                request?.Dispose();
-            }
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
         }
 
         /// <summary>
@@ -279,71 +247,20 @@ namespace DragonFruit.Common.Data
         {
             ValidateRequest(requestData);
 
-            //cache in case we need to PerformLast<T>();
-            CachedRequest = requestData.Clone();
-
-            //get client and request (disposables)
-            var client = GetClient();
-            Interlocked.Increment(ref _currentRequests);
-
-            var request = requestData.GetRequest(Serializer);
-
-            //post-modification
-            SetupRequest(request);
-
-            //send request
-            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-            try
-            {
-                //all possible exceptions from client.SendAsync() will be released here
-                return response.Result;
-            }
-            finally
-            {
-                //un-bump reqs
-                Interlocked.Decrement(ref _currentRequests);
-
-                //dispose
-                response?.Result?.Dispose();
-                response?.Dispose();
-
-                request?.Dispose();
-            }
+            // perform and return postProcess result
+            return InternalPerform(requestData.GetRequest(Serializer), response => response);
         }
 
-        #region Perform Last Request
-
         /// <summary>
-        /// Perform the last <see cref="ApiRequest"/> made (regardless of failure) on this <see cref="ApiClient"/> again
+        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
         /// </summary>
-        public T PerformLast<T>() where T : class
+        public virtual T Perform<T>(HttpRequestMessage request) where T : class
         {
-            if (CachedRequest == null)
-            {
-                throw new NullRequestException();
-            }
-
-            return Perform<T>(CachedRequest);
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
         }
 
         /// <summary>
-        /// Perform the last <see cref="ApiRequest"/> made (regardless of failure) on this <see cref="ApiClient"/> again. Returns a <see cref="HttpResponseMessage"/>, where deserializing the data may not be desired
-        /// </summary>
-        public HttpResponseMessage PerformLast()
-        {
-            if (CachedRequest == null)
-            {
-                throw new NullRequestException();
-            }
-
-            return Perform(CachedRequest);
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Download a file with an <see cref="ApiRequest"/>. Incompatible with <see cref="PerformLast{T}"/> and bypasses <see cref="ValidateAndProcess{T}"/>
+        /// Download a file with an <see cref="ApiRequest"/>. Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </summary>
         public virtual void Perform(ApiFileRequest requestData)
         {
@@ -355,27 +272,45 @@ namespace DragonFruit.Common.Data
                 throw new NullRequestException();
             }
 
+            HttpResponseMessage CopyProcess(HttpResponseMessage response)
+            {
+                //validate
+                response.EnsureSuccessStatusCode();
+
+                //copy result to file
+                using (var stream = File.Open(requestData.Destination, requestData.FileCreationMode))
+                using (var networkStream = response.Content.ReadAsStreamAsync().Result)
+                {
+                    networkStream.CopyTo(stream);
+                }
+
+                return response; //we're not using this so return anything...
+            }
+
+            _ = InternalPerform(requestData.GetRequest(Serializer), CopyProcess);
+        }
+
+        /// <summary>
+        /// Internal procedure for performing a web-request
+        /// </summary>
+        /// <param name="request">The request to perform</param>
+        /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
+        protected virtual T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult)
+        {
+            //get client and request (disposables)
             var client = GetClient();
             Interlocked.Increment(ref _currentRequests);
-
-            var request = requestData.GetRequest(Serializer);
 
             //post-modification
             SetupRequest(request);
 
+            //send request
             var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             try
             {
-                //validate
-                response.Result.EnsureSuccessStatusCode();
-
-                //copy result to file
-                using (var stream = File.Open(requestData.Destination, requestData.FileCreationMode))
-                using (var networkStream = response.Result.Content.ReadAsStreamAsync().Result)
-                {
-                    networkStream.CopyTo(stream);
-                }
+                //all possible exceptions from client.SendAsync() will be released here
+                return processResult.Invoke(response.Result);
             }
             finally
             {
@@ -393,14 +328,14 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Validates the <see cref="HttpResponseMessage"/> and uses the <see cref="Serializer"/> to deserialize data (if successful)
         /// </summary>
-        protected virtual T ValidateAndProcess<T>(Task<HttpResponseMessage> response, HttpRequestMessage request) where T : class
+        protected virtual T ValidateAndProcess<T>(HttpResponseMessage response, HttpRequestMessage request) where T : class
         {
-            if (!response.Result.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Response was unsuccessful ({response.Result.StatusCode})");
+                throw new HttpRequestException($"Response was unsuccessful ({response.StatusCode})");
             }
 
-            return Serializer.Deserialize<T>(response.Result.Content.ReadAsStreamAsync());
+            return Serializer.Deserialize<T>(response.Content.ReadAsStreamAsync());
         }
 
         /// <summary>
