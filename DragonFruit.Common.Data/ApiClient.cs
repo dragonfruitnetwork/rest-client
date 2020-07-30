@@ -360,7 +360,7 @@ namespace DragonFruit.Common.Data
                 throw new NullRequestException();
             }
 
-            if (requestData.RequireAuth && (!requestData.Headers.IsValueCreated || string.IsNullOrEmpty(Authorization)))
+            if (requestData.RequireAuth && (!requestData.Headers.IsValueCreated && string.IsNullOrEmpty(Authorization)))
             {
                 throw new ClientValidationException("Authorization data expected, but not found");
             }
