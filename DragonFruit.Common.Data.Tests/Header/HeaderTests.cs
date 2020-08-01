@@ -18,6 +18,23 @@ namespace DragonFruit.Common.Data.Tests.Header
         private static readonly Random Rng = new Random();
 
         [TestMethod]
+        public void HeaderTest()
+        {
+            var headerValue = Rng.Next().ToString();
+            var request = new EchoRequest();
+
+            Client.CustomHeaders.Add(HeaderName, headerValue);
+            var response = Client.Perform<JObject>(request);
+            Assert.AreEqual(response["headers"]![HeaderName], headerValue);
+
+            headerValue = Rng.Next().ToString();
+            Client.CustomHeaders.Remove(HeaderName);
+            Client.CustomHeaders.Add(HeaderName, headerValue);
+            response = Client.Perform<JObject>(request);
+            Assert.AreEqual(response["headers"]![HeaderName], headerValue);
+        }
+
+        [TestMethod]
         public void PerRequestHeaderTest()
         {
             var headerValue = Rng.Next().ToString();

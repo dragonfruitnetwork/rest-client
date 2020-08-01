@@ -163,8 +163,9 @@ namespace DragonFruit.Common.Data
 
                 // reset the headers if any have changed (or the client has been reinitialised)
                 var headerHash = HeaderHash;
+                var resetHeaders = headerHash != _lastHeaderHash;
 
-                if (headerHash != _lastHeaderHash || resetClient)
+                if (resetHeaders || resetClient)
                 {
                     Client.DefaultRequestHeaders.Clear();
 
@@ -187,12 +188,8 @@ namespace DragonFruit.Common.Data
                     }
 
                     _lastHeaderHash = headerHash;
-                }
 
-                // allow the user to reconfigure the client after we've done our work
-                if (resetClient)
-                {
-                    SetupClient(Client);
+                    SetupClient(Client, resetClient);
                 }
 
                 _lastHash = ClientHash;
@@ -210,13 +207,19 @@ namespace DragonFruit.Common.Data
         #region Empty Overrides (Inherited)
 
         /// <summary>
-        /// Overridable method to customise the <see cref="HttpClient"/>
+        /// Overridable method to customise the <see cref="HttpClient"/>.
+        ///
+        /// <para>
+        /// Custom headers can be included here, but should be done in the <see cref="CustomHeaders"/> dictionary.
+        /// </para>
         /// </summary>
         /// <remarks>
-        /// Is called if the client has been created, after all other configuration (client, handler, headers)
+        /// This is called when the client or it's headers are reset.
+        /// The <see cref="clientReset"/> is set to true to allow you to configure client settings (not headers) after creation.
         /// </remarks>
         /// <param name="client">The <see cref="HttpClient"/> to modify</param>
-        protected virtual void SetupClient(HttpClient client)
+        /// <param name="clientReset">Whether the client were reset/disposed</param>
+        protected virtual void SetupClient(HttpClient client, bool clientReset)
         {
         }
 
