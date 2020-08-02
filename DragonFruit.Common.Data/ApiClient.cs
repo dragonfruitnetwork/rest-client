@@ -240,7 +240,7 @@ namespace DragonFruit.Common.Data
             ValidateRequest(requestData);
 
             // perform and return postProcess result
-            return InternalPerform(requestData.GetRequest(Serializer), response => response);
+            return InternalPerform(requestData.GetRequest(Serializer), response => response, false);
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual HttpResponseMessage Perform(HttpRequestMessage request)
         {
-            return InternalPerform(request, response => response);
+            return InternalPerform(request, response => response, false);
         }
 
         /// <summary>
@@ -259,7 +259,7 @@ namespace DragonFruit.Common.Data
             ValidateRequest(requestData);
             var request = requestData.GetRequest(Serializer);
 
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true);
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual T Perform<T>(HttpRequestMessage request) where T : class
         {
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request));
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true);
         }
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace DragonFruit.Common.Data
                 return response; //we're not using this so return anything...
             }
 
-            _ = InternalPerform(requestData.GetRequest(Serializer), CopyProcess);
+            _ = InternalPerform(requestData.GetRequest(Serializer), CopyProcess, true);
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         /// <param name="request">The request to perform</param>
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
-        protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult)
+        protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult, bool disposeResponse)
         {
             //get client and request (disposables)
             var client = GetClient();
@@ -329,8 +329,11 @@ namespace DragonFruit.Common.Data
                 Interlocked.Decrement(ref _currentRequests);
 
                 //dispose
-                response?.Result?.Dispose();
-                response?.Dispose();
+                if (disposeResponse)
+                {
+                    response?.Result?.Dispose();
+                    response?.Dispose();
+                }
 
                 request?.Dispose();
             }
