@@ -52,14 +52,14 @@ namespace DragonFruit.Common.Data
         public string UserAgent { get; set; }
 
         /// <summary>
+        /// The Authorization header value
+        /// </summary>
+        public string Authorization { get; set; }
+
+        /// <summary>
         /// Additional headers to be sent with the requests
         /// </summary>
         public HashableDictionary<string, string> CustomHeaders { get; set; } = new HashableDictionary<string, string>();
-
-        /// <summary>
-        /// The Authorization header
-        /// </summary>
-        public string Authorization { get; set; }
 
         /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
@@ -75,7 +75,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// Defaults to <see cref="ApiJsonSerializer"/>
         /// </remarks>
-        protected ISerializer Serializer { get; set; }
+        public ISerializer Serializer { get; set; }
 
         /// <summary>
         /// <see cref="HttpClient"/> used by these requests. This is used by the library and as such, should **not** be disposed in any way
@@ -86,11 +86,6 @@ namespace DragonFruit.Common.Data
         /// Time, in milliseconds to wait to modify a <see cref="HttpClient"/> before failing the request
         /// </summary>
         protected virtual int AdjustmentTimeout => 200;
-
-        /// <summary>
-        /// Last <see cref="ApiRequest"/> made for using with
-        /// </summary>
-        private ApiRequest CachedRequest { get; set; }
 
         #endregion
 
@@ -136,8 +131,7 @@ namespace DragonFruit.Common.Data
                 //lock for modification
                 if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
                 {
-                    throw new TimeoutException(
-                        $"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
+                    throw new TimeoutException($"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
                 }
 
                 //wait for all ongoing requests to end
@@ -238,17 +232,7 @@ namespace DragonFruit.Common.Data
         public virtual HttpResponseMessage Perform(ApiRequest requestData)
         {
             ValidateRequest(requestData);
-
-            // perform and return postProcess result
-            return InternalPerform(requestData.GetRequest(Serializer), response => response, false);
-        }
-
-        /// <summary>
-        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
-        /// </summary>
-        public virtual HttpResponseMessage Perform(HttpRequestMessage request)
-        {
-            return InternalPerform(request, response => response, false);
+            return Perform(requestData.Build(this));
         }
 
         /// <summary>
@@ -257,9 +241,15 @@ namespace DragonFruit.Common.Data
         public virtual T Perform<T>(ApiRequest requestData) where T : class
         {
             ValidateRequest(requestData);
-            var request = requestData.GetRequest(Serializer);
+            return Perform<T>(requestData.Build(this));
+        }
 
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true);
+        /// <summary>
+        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
+        /// </summary>
+        public virtual HttpResponseMessage Perform(HttpRequestMessage request)
+        {
+            return InternalPerform(request, response => response, false);
         }
 
         /// <summary>
@@ -298,14 +288,19 @@ namespace DragonFruit.Common.Data
                 return response; //we're not using this so return anything...
             }
 
-            _ = InternalPerform(requestData.GetRequest(Serializer), CopyProcess, true);
+            _ = InternalPerform(requestData.Build(this), CopyProcess, true);
         }
 
         /// <summary>
         /// Internal procedure for performing a web-request
         /// </summary>
+        /// <remarks>
+        /// While the consumer has the option to prevent disposal of the <see cref="HttpResponseMessage"/> produced,
+        /// the <see cref="HttpRequestMessage"/> passed is always disposed at the end of the request.
+        /// </remarks>
         /// <param name="request">The request to perform</param>
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
+        /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
         protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult, bool disposeResponse)
         {
             //get client and request (disposables)
@@ -360,15 +355,14 @@ namespace DragonFruit.Common.Data
         /// <exception cref="ClientValidationException">The client can't be used because there is no auth url.</exception>
         protected virtual void ValidateRequest(ApiRequest requestData)
         {
-            //todo is there any benefit to trying to parse the url?
-            if (string.IsNullOrWhiteSpace(requestData.Path))
+            // note request path is validated on build
+            if (requestData.RequireAuth && string.IsNullOrEmpty(Authorization))
             {
-                throw new NullRequestException();
-            }
-
-            if (requestData.RequireAuth && (!requestData.Headers.IsValueCreated && string.IsNullOrEmpty(Authorization)))
-            {
-                throw new ClientValidationException("Authorization data expected, but not found");
+                // check if we have a custom headerset in the request
+                if (!requestData.Headers.IsValueCreated || !requestData.Headers.Value.ContainsKey("Authorization"))
+                {
+                    throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
+                }
             }
         }
     }

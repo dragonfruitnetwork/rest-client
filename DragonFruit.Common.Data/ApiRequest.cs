@@ -29,9 +29,9 @@ namespace DragonFruit.Common.Data
         protected virtual Methods Method => Methods.Get;
 
         /// <summary>
-        /// The <see cref="DataType"/> to use (if there is a body to be sent)
+        /// The <see cref="BodyType"/> to use (if there is a body to be sent)
         /// </summary>
-        protected virtual DataTypes DataType { get; }
+        protected virtual BodyType BodyType { get; }
 
         /// <summary>
         /// Whether an auth header is required.
@@ -39,7 +39,7 @@ namespace DragonFruit.Common.Data
         /// <exception cref="ClientValidationException">This was set to true but no auth header was specified.
         /// Automatically suppressed if the <see cref="Headers"/> property has been initialised.
         /// </exception>
-        public virtual bool RequireAuth => false;
+        protected internal virtual bool RequireAuth => false;
 
         /// <summary>
         /// Custom Headers to send with this request. Overrides any custom header set in the <see cref="HttpClient"/> with the same name.
@@ -58,10 +58,10 @@ namespace DragonFruit.Common.Data
         /// Overridable property for configuring a custom body for this request
         ///
         /// <para>
-        /// Only used when the <see cref="DataType"/> is equal to <see cref="DataTypes.Custom"/>
+        /// Only used when the <see cref="BodyType"/> is equal to <see cref="BodyType.Custom"/>
         /// </para>
         /// </summary>
-        public virtual HttpContent BodyContent { get; }
+        protected virtual HttpContent BodyContent { get; }
 
         /// <summary>
         /// <see cref="CultureInfo"/> used for ToString() conversions when collecting attributed members
@@ -106,19 +106,26 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        internal object GetSingleParameterObject<T>() where T : Attribute
-        {
-            var property = GetType().GetProperties()
-                                    .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T);
+        internal object GetSingleParameterObject<T>() where T : Attribute =>
+            GetType().GetProperties()
+                     .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T)
+                     .GetValue(this, null);
 
-            return property.GetValue(this, null);
-        }
+        public HttpRequestMessage Build(ApiClient client) => Build(client.Serializer);
 
         /// <summary>
-        /// Creates the default <see cref="HttpResponseMessage"/>, which can then be overriden by <see cref="SetupRequest"/>
+        /// Creates a <see cref="HttpResponseMessage"/> for this <see cref="ApiRequest"/>, which can then be modified manually or overriden by <see cref="ApiClient.SetupRequest"/>
         /// </summary>
-        internal HttpRequestMessage GetRequest(ISerializer serializer)
+        /// <remarks>
+        /// This validates the <see cref="Path"/> and <see cref="RequireAuth"/> properties, throwing a <see cref="ClientValidationException"/> if it's unsatisfied with the constraints
+        /// </remarks>
+        public HttpRequestMessage Build(ISerializer serializer)
         {
+            if (!Path.StartsWith("http"))
+            {
+                throw new HttpRequestException("The request path is invalid (it must start with http or https)");
+            }
+
             var request = new HttpRequestMessage { RequestUri = new Uri(FullUrl) };
 
             //generic setup
@@ -139,7 +146,7 @@ namespace DragonFruit.Common.Data
                     break;
 
                 case Methods.Patch:
-                    request.Method = new HttpMethod("PATCH"); //in .NET standard 2 patch isn't implemented...
+                    request.Method = new HttpMethod("PATCH"); //in .NET Standard 2.0 patch isn't implemented...
                     request.Content = GetContent(serializer);
                     break;
 
@@ -150,6 +157,10 @@ namespace DragonFruit.Common.Data
 
                 case Methods.Head:
                     request.Method = HttpMethod.Head;
+                    break;
+
+                case Methods.Trace:
+                    request.Method = HttpMethod.Trace;
                     break;
 
                 default:
@@ -171,19 +182,19 @@ namespace DragonFruit.Common.Data
 
         private HttpContent GetContent(ISerializer serializer)
         {
-            switch (DataType)
+            switch (BodyType)
             {
-                case DataTypes.Encoded:
+                case BodyType.Encoded:
                     return new FormUrlEncodedContent(GetParameter<FormParameter>());
 
-                case DataTypes.Serialized:
+                case BodyType.Serialized:
                     return serializer.Serialize(this);
 
-                case DataTypes.SerializedProperty:
+                case BodyType.SerializedProperty:
                     var body = serializer.Serialize(GetSingleParameterObject<RequestBody>());
                     return body;
 
-                case DataTypes.Custom:
+                case BodyType.Custom:
                     return BodyContent;
 
                 default:
@@ -191,7 +202,5 @@ namespace DragonFruit.Common.Data
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        internal ApiRequest Clone() => (ApiRequest)MemberwiseClone();
     }
 }

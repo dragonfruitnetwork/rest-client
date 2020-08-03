@@ -12,10 +12,11 @@ namespace DragonFruit.Common.Data
         Post,
         Put,
         Patch,
-        Delete
+        Delete,
+        Trace
     }
 
-    public enum DataTypes
+    public enum BodyType
     {
         /// <summary>
         /// Finds all properties marked with <see cref="FormParameter"/> and creates a url-form encoded content from them 

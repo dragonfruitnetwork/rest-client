@@ -12,7 +12,7 @@ namespace DragonFruit.Common.Data.Tests.Advanced.Objects
 
         protected override Methods Method => Methods.Post;
 
-        protected override DataTypes DataType => DataTypes.SerializedProperty;
+        protected override BodyType BodyType => BodyType.SerializedProperty;
 
         [RequestBody]
         public Employee Employee { get; set; } = new Employee
