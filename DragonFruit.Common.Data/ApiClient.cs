@@ -344,7 +344,8 @@ namespace DragonFruit.Common.Data
                 throw new HttpRequestException($"Response was unsuccessful ({response.StatusCode})");
             }
 
-            return Serializer.Deserialize<T>(response.Content.ReadAsStreamAsync());
+            using var stream = response.Content.ReadAsStreamAsync();
+            return Serializer.Deserialize<T>(stream);
         }
 
         /// <summary>
