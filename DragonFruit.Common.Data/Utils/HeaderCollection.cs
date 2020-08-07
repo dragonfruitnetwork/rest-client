@@ -12,7 +12,6 @@ namespace DragonFruit.Common.Data.Utils
     {
         private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
         private readonly ConcurrentQueue<HeaderChange> _changes = new ConcurrentQueue<HeaderChange>();
-        private readonly object _lock = new object();
 
         /// <summary>
         /// Get the specified value for the key provided. Returns null if the header wasn't found
@@ -52,30 +51,24 @@ namespace DragonFruit.Common.Data.Utils
 
         internal void ProcessChanges()
         {
-            lock (_lock)
+            while (_changes.TryDequeue(out var change))
             {
-                while (_changes.TryDequeue(out var change))
+                if (change.Remove)
                 {
-                    if (change.Remove)
-                    {
-                        _values.Remove(change.Key);
-                    }
-                    else
-                    {
-                        _values[change.Key] = change.Value;
-                    }
+                    _values.Remove(change.Key);
+                }
+                else
+                {
+                    _values[change.Key] = change.Value;
                 }
             }
         }
 
         internal void ApplyTo(HttpClient client)
         {
-            lock (_lock)
+            foreach (var header in _values)
             {
-                foreach (var header in _values)
-                {
-                    client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
     }
