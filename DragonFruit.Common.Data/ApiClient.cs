@@ -49,17 +49,25 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// The User-Agent header to pass in all requests
         /// </summary>
-        public string UserAgent { get; set; }
+        public string UserAgent
+        {
+            get => Headers["User-Agent"];
+            set => Headers["User-Agent"] = value;
+        }
 
         /// <summary>
         /// The Authorization header value
         /// </summary>
-        public string Authorization { get; set; }
+        public string Authorization
+        {
+            get => Headers["Authorization"];
+            set => Headers["Authorization"] = value;
+        }
 
         /// <summary>
-        /// Additional headers to be sent with the requests
+        /// Headers to be sent with the requests
         /// </summary>
-        public HashableDictionary<string, string> CustomHeaders { get; set; } = new HashableDictionary<string, string>();
+        public ApiClientHeaderCollection Headers { get; } = new ApiClientHeaderCollection();
 
         /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
@@ -92,7 +100,6 @@ namespace DragonFruit.Common.Data
         #region Clients, Hashes and Locks
 
         private bool _clientAdjustmentInProgress;
-        private string _lastHeaderHash = string.Empty;
         private string _lastHandlerHash = string.Empty;
         private string _lastHash = string.Empty;
 
@@ -101,8 +108,7 @@ namespace DragonFruit.Common.Data
 
         private HttpMessageHandler _handler;
 
-        protected virtual string ClientHash => $"{HeaderHash}.{Handler.ItemHashCode()}";
-        private string HeaderHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash => $"{Handler.ItemHashCode()}";
 
         #endregion
 
@@ -111,15 +117,18 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
         /// </summary>
-        protected virtual HttpClient GetClient()
+        protected HttpClient GetClient()
         {
+            // if we're waiting, then don't cause a crash from the monitor below or from getting the wrong client - just wait.
             while (_clientAdjustmentInProgress)
             {
                 Thread.Sleep(AdjustmentTimeout / 2);
             }
 
-            //if there's no edits return the current client
-            if (_lastHash == ClientHash)
+            //if there's no edits return the current client (perform the check once instead of a potential twice)
+            var changeHeaders = Headers.ChangesAvailable;
+
+            if (_lastHash == ClientHash && !changeHeaders)
             {
                 return Client;
             }
@@ -156,32 +165,11 @@ namespace DragonFruit.Common.Data
                 }
 
                 // reset the headers if any have changed (or the client has been reinitialised)
-                var headerHash = HeaderHash;
-                var resetHeaders = headerHash != _lastHeaderHash;
-
-                if (resetHeaders || resetClient)
+                if (changeHeaders || resetClient)
                 {
+                    // Clear and apply new headers
                     Client.DefaultRequestHeaders.Clear();
-
-                    // Authorization
-                    if (!string.IsNullOrEmpty(Authorization))
-                    {
-                        Client.DefaultRequestHeaders.Add("Authorization", Authorization);
-                    }
-
-                    // User-Agent
-                    if (!string.IsNullOrEmpty(UserAgent))
-                    {
-                        Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
-                    }
-
-                    // Custom Headers
-                    foreach (var header in CustomHeaders)
-                    {
-                        Client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-
-                    _lastHeaderHash = headerHash;
+                    Headers.ProcessAndApplyTo(Client);
 
                     SetupClient(Client, resetClient);
                 }
@@ -204,7 +192,7 @@ namespace DragonFruit.Common.Data
         /// Overridable method to customise the <see cref="HttpClient"/>.
         ///
         /// <para>
-        /// Custom headers can be included here, but should be done in the <see cref="CustomHeaders"/> dictionary.
+        /// Custom headers can be included here, but should be done in the <see cref="Headers"/> dictionary.
         /// </para>
         /// </summary>
         /// <remarks>

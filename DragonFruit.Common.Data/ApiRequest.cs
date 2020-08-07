@@ -45,7 +45,7 @@ namespace DragonFruit.Common.Data
         /// Custom Headers to send with this request. Overrides any custom header set in the <see cref="HttpClient"/> with the same name.
         /// </summary>
         /// <remarks>
-        /// Headers to be set in all requests should be set at <see cref="ApiClient"/>-level, using the <see cref="ApiClient.CustomHeaders"/> Dictionary.
+        /// Headers to be set in all requests should be set at <see cref="ApiClient"/>-level, using the <see cref="ApiClient.Headers"/> Dictionary.
         /// </remarks>
         public Lazy<IDictionary<string, string>> Headers { get; set; } = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
 
