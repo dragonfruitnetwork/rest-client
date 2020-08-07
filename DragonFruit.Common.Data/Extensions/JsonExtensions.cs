@@ -10,7 +10,7 @@ namespace DragonFruit.Common.Data.Extensions
 {
     public static class JsonExtensions
     {
-        public static string GetString(this JObject source, string key, string @default = "") => 
+        public static string GetString(this JObject source, string key, string @default = "") =>
             (string?)GetBase(source, key) ?? @default;
 
         public static bool GetBool(this JObject source, string key, bool @default = false) =>
