@@ -105,7 +105,7 @@ namespace DragonFruit.Common.Data.Handlers
 
             foreach (var header in oldRequest.Headers)
             {
-                if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase) && !(oldRequest.RequestUri.Host.Equals(newRequest.RequestUri.Host)))
+                if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase) && !oldRequest.RequestUri.Host.Equals(newRequest.RequestUri.Host))
                 {
                     //do not leak Authorization Header to other hosts
                     continue;

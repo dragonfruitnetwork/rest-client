@@ -25,7 +25,8 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
         private static string GetEnvironmentVar(string var)
         {
             var envVar = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.User) ?? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.Machine) ?? Environment.GetEnvironmentVariable(var)
+                ? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.User)
+                  ?? Environment.GetEnvironmentVariable(var, EnvironmentVariableTarget.Machine) ?? Environment.GetEnvironmentVariable(var)
                 : Environment.GetEnvironmentVariable(var);
 
             return envVar;
