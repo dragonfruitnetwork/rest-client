@@ -15,12 +15,8 @@ namespace DragonFruit.Common.Data.Utils
         public override int GetHashCode()
         {
             int hash = Count;
-
-            unchecked //doesn't matter if we get an overflow here
-            {
-                hash += Keys.Sum(item => item.GetHashCode() * 5);
-                hash += Values.Sum(item => item.GetHashCode() * 6);
-            }
+            hash += Keys.Sum(item => item.GetHashCode() * 5);
+            hash += Values.Sum(item => item.GetHashCode() * 6);
 
             return hash;
         }
