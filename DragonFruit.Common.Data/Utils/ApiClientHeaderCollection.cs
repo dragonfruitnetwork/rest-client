@@ -8,47 +8,55 @@ using System.Net.Http;
 
 namespace DragonFruit.Common.Data.Utils
 {
-    public class HeaderCollection
+    public class ApiClientHeaderCollection
     {
         private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
-        private readonly ConcurrentQueue<HeaderChange> _changes = new ConcurrentQueue<HeaderChange>();
+        private readonly ConcurrentQueue<ApiClientHeaderChange> _changes = new ConcurrentQueue<ApiClientHeaderChange>();
 
         /// <summary>
-        /// Get the specified value for the key provided. Returns null if the header wasn't found
+        /// Get the specified value for the key provided. Returns <value>null</value> if the header wasn't found
         /// </summary>
+        /// <remarks>
+        /// This will check the queued changes first, and if there are no matching changes, attempt to find it in the "live" headers.
+        /// </remarks>
         public string this[string key]
         {
             get
             {
-                if (_values.ContainsKey(key))
+                var lastTrackedChange = _changes.LastOrDefault(x => x.Key == key);
+
+                if (lastTrackedChange != null)
                 {
-                    return _values[key];
+                    return lastTrackedChange.Value;
                 }
 
-                return _changes.FirstOrDefault(x => x.Key == key)?.Value;
+                return _values.ContainsKey(key) ? _values[key] : null;
             }
 
             set => Add(key, value);
         }
 
-        public bool ChangesAvailable => _changes.Any();
-
         /// <summary>
         /// Adds a key-value pair to the dictionary
         /// </summary>
-        public void Add(string key, string value)
+        private void Add(string key, string value)
         {
-            _changes.Enqueue(new HeaderChange(key, value, false));
+            _changes.Enqueue(new ApiClientHeaderChange(key, value, false));
         }
 
         /// <summary>
         /// Removes a key-value pair to the dictionary
         /// </summary>
-        public void Remove(string key)
+        private void Remove(string key)
         {
-            _changes.Enqueue(new HeaderChange(key, null, true));
+            _changes.Enqueue(new ApiClientHeaderChange(key, null, true));
         }
 
+        internal bool ChangesAvailable => _changes.Any();
+
+        /// <summary>
+        /// Processes the changes from <see cref="_changes"/> and applies them to <see cref="_values"/>
+        /// </summary>
         internal void ProcessChanges()
         {
             while (_changes.TryDequeue(out var change))
@@ -64,8 +72,13 @@ namespace DragonFruit.Common.Data.Utils
             }
         }
 
+        /// <summary>
+        /// Applies the <see cref="KeyValuePair{TKey,TValue}"/>s to the provided <see cref="HttpClient"/>
+        /// </summary>
         internal void ApplyTo(HttpClient client)
         {
+            client.DefaultRequestHeaders.Clear();
+
             foreach (var header in _values)
             {
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);

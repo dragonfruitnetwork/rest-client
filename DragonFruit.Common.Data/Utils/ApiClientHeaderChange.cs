@@ -3,9 +3,9 @@
 
 namespace DragonFruit.Common.Data.Utils
 {
-    internal class HeaderChange
+    internal class ApiClientHeaderChange
     {
-        public HeaderChange(string key, string value, bool remove)
+        public ApiClientHeaderChange(string key, string value, bool remove)
         {
             Key = key;
             Value = value;

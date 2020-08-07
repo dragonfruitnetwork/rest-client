@@ -14,26 +14,30 @@ namespace DragonFruit.Common.Data.Tests.Header
     public class HeaderTests : ApiTest
     {
         private const string HeaderName = "x-dfn-test";
-        private const string GlobalHeaderName = "x-dfn-global";
         private static readonly Random Rng = new Random();
 
+        /// <summary>
+        /// Test whether client headers are sent and changed successfully
+        /// </summary>
         [TestMethod]
         public void HeaderTest()
         {
             var headerValue = Rng.Next().ToString();
             var request = new EchoRequest();
 
-            Client.CustomHeaders.Add(HeaderName, headerValue);
+            Client.Headers[HeaderName] = headerValue;
             var response = Client.Perform<JObject>(request);
             Assert.AreEqual(headerValue, response["headers"]![HeaderName]);
 
             headerValue = Rng.Next().ToString();
-            Client.CustomHeaders.Remove(HeaderName);
-            Client.CustomHeaders.Add(HeaderName, headerValue);
+            Client.Headers[HeaderName] = headerValue;
             response = Client.Perform<JObject>(request);
             Assert.AreEqual(headerValue, response["headers"]![HeaderName]);
         }
 
+        /// <summary>
+        /// Test whether a header sent in a request is recieved successfully
+        /// </summary>
         [TestMethod]
         public void PerRequestHeaderTest()
         {
@@ -43,38 +47,6 @@ namespace DragonFruit.Common.Data.Tests.Header
             var response = Client.Perform<JObject>(request);
 
             Assert.AreEqual(response["headers"]![HeaderName], headerValue);
-        }
-
-        [TestMethod]
-        public void LevelSpecificHeaderTest()
-        {
-            var request = new EchoRequest();
-
-            var globalHeaderValue = Guid.NewGuid().ToString();
-            var requestHeaderValue = Guid.NewGuid().ToString();
-
-            Client.CustomHeaders.Add(GlobalHeaderName, globalHeaderValue);
-            request.WithHeader(HeaderName, requestHeaderValue);
-
-            var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"]![HeaderName]);
-            Assert.AreEqual(globalHeaderValue, response["headers"]![GlobalHeaderName]);
-        }
-
-        [TestMethod]
-        public void LevelOverrideHeaderTest()
-        {
-            var client = new ApiClient();
-            var request = new EchoRequest();
-
-            var globalHeaderValue = Guid.NewGuid().ToString();
-            var requestHeaderValue = Guid.NewGuid().ToString();
-
-            client.CustomHeaders.Add(GlobalHeaderName, globalHeaderValue);
-            request.Headers.Value.Add(GlobalHeaderName, requestHeaderValue);
-
-            var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"]![GlobalHeaderName]);
         }
     }
 }

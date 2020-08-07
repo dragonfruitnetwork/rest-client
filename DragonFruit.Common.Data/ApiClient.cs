@@ -49,17 +49,25 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// The User-Agent header to pass in all requests
         /// </summary>
-        public string UserAgent { get; set; }
+        public string UserAgent
+        {
+            get => Headers["User-Agent"];
+            set => Headers["User-Agent"] = value;
+        }
 
         /// <summary>
         /// The Authorization header value
         /// </summary>
-        public string Authorization { get; set; }
+        public string Authorization
+        {
+            get => Headers["Authorization"];
+            set => Headers["Authorization"] = value;
+        }
 
         /// <summary>
-        /// Additional headers to be sent with the requests
+        /// Headers to be sent with the requests
         /// </summary>
-        public HeaderCollection CustomHeaders { get; } = new HeaderCollection();
+        public ApiClientHeaderCollection Headers { get; } = new ApiClientHeaderCollection();
 
         /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
@@ -92,7 +100,6 @@ namespace DragonFruit.Common.Data
         #region Clients, Hashes and Locks
 
         private bool _clientAdjustmentInProgress;
-        private string _lastHeaderHash = string.Empty;
         private string _lastHandlerHash = string.Empty;
         private string _lastHash = string.Empty;
 
@@ -101,7 +108,7 @@ namespace DragonFruit.Common.Data
 
         private HttpMessageHandler _handler;
 
-        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{Authorization.ItemHashCode()}.{Handler.ItemHashCode()}";
+        protected virtual string ClientHash => $"{Handler.ItemHashCode()}";
 
         #endregion
 
@@ -110,15 +117,16 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
         /// </summary>
-        protected virtual HttpClient GetClient()
+        protected HttpClient GetClient()
         {
+            // if we're waiting, then don't cause a crash from the monitor below or from getting the wrong client - just wait.
             while (_clientAdjustmentInProgress)
             {
                 Thread.Sleep(AdjustmentTimeout / 2);
             }
 
             //if there's no edits return the current client (perform the check once instead of a potential twice)
-            var changeHeaders = CustomHeaders.ChangesAvailable;
+            var changeHeaders = Headers.ChangesAvailable;
 
             if (_lastHash == ClientHash && !changeHeaders)
             {
@@ -159,23 +167,9 @@ namespace DragonFruit.Common.Data
                 // reset the headers if any have changed (or the client has been reinitialised)
                 if (changeHeaders || resetClient)
                 {
-                    Client.DefaultRequestHeaders.Clear();
-
-                    // Authorization
-                    if (!string.IsNullOrEmpty(Authorization))
-                    {
-                        Client.DefaultRequestHeaders.Add("Authorization", Authorization);
-                    }
-
-                    // User-Agent
-                    if (!string.IsNullOrEmpty(UserAgent))
-                    {
-                        Client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
-                    }
-
-                    // Custom Headers
-                    CustomHeaders.ProcessChanges();
-                    CustomHeaders.ApplyTo(Client);
+                    // Clear and apply new headers (clear is done in ApplyTo)
+                    Headers.ProcessChanges();
+                    Headers.ApplyTo(Client);
 
                     SetupClient(Client, resetClient);
                 }
@@ -198,7 +192,7 @@ namespace DragonFruit.Common.Data
         /// Overridable method to customise the <see cref="HttpClient"/>.
         ///
         /// <para>
-        /// Custom headers can be included here, but should be done in the <see cref="CustomHeaders"/> dictionary.
+        /// Custom headers can be included here, but should be done in the <see cref="Headers"/> dictionary.
         /// </para>
         /// </summary>
         /// <remarks>
