@@ -3,7 +3,7 @@
 
 namespace DragonFruit.Common.Data.Utils
 {
-    public class HeaderChange
+    internal class HeaderChange
     {
         public HeaderChange(string key, string value, bool remove)
         {
