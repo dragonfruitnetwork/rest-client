@@ -33,23 +33,7 @@ namespace DragonFruit.Common.Data.Utils
                 return _values.ContainsKey(key) ? _values[key] : null;
             }
 
-            set => Add(key, value);
-        }
-
-        /// <summary>
-        /// Adds a key-value pair to the dictionary
-        /// </summary>
-        private void Add(string key, string value)
-        {
-            _changes.Enqueue(new ApiClientHeaderChange(key, value, false));
-        }
-
-        /// <summary>
-        /// Removes a key-value pair to the dictionary
-        /// </summary>
-        private void Remove(string key)
-        {
-            _changes.Enqueue(new ApiClientHeaderChange(key, null, true));
+            set => _changes.Enqueue(new ApiClientHeaderChange(key, value, false));
         }
 
         internal bool ChangesAvailable => _changes.Any();
