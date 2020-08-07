@@ -167,9 +167,9 @@ namespace DragonFruit.Common.Data
                 // reset the headers if any have changed (or the client has been reinitialised)
                 if (changeHeaders || resetClient)
                 {
-                    // Clear and apply new headers (clear is done in ApplyTo)
-                    Headers.ProcessChanges();
-                    Headers.ApplyTo(Client);
+                    // Clear and apply new headers
+                    Client.DefaultRequestHeaders.Clear();
+                    Headers.ProcessAndApplyTo(Client);
 
                     SetupClient(Client, resetClient);
                 }

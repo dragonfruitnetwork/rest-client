@@ -14,7 +14,13 @@ namespace DragonFruit.Common.Data.Utils
         private readonly ConcurrentQueue<ApiClientHeaderChange> _changes = new ConcurrentQueue<ApiClientHeaderChange>();
 
         /// <summary>
-        /// Get the specified value for the key provided. Returns <value>null</value> if the header wasn't found
+        /// Gets or sets the specified value for the key provided.
+        /// <para>
+        /// Getting the value for a non-existent key will return <value>null</value>
+        /// </para>
+        /// <para>
+        /// To queue a removal, pass <value>null</value> as the value
+        /// </para>
         /// </summary>
         /// <remarks>
         /// This will check the queued changes first, and if there are no matching changes, attempt to find it in the "live" headers.
@@ -33,19 +39,40 @@ namespace DragonFruit.Common.Data.Utils
                 return _values.ContainsKey(key) ? _values[key] : null;
             }
 
-            set => _changes.Enqueue(new ApiClientHeaderChange(key, value, false));
+            set => _changes.Enqueue(new ApiClientHeaderChange(key, value));
         }
+
+        /// <summary>
+        /// Clears all queued changes and queues all active headers to be removed
+        /// </summary>
+        public void Clear()
+        {
+            while (_changes.TryDequeue(out _))
+            {
+                //do nothing
+            }
+
+            foreach (var item in _values)
+            {
+                this[item.Key] = null;
+            }
+        }
+
+        /// <summary>
+        /// All the keys currently in use. Ingores queued changes
+        /// </summary>
+        public IEnumerable<string> Keys => _values.Keys;
 
         internal bool ChangesAvailable => _changes.Any();
 
         /// <summary>
-        /// Processes the changes from <see cref="_changes"/> and applies them to <see cref="_values"/>
+        /// Applies the <see cref="KeyValuePair{TKey,TValue}"/>s to the provided <see cref="HttpClient"/>
         /// </summary>
-        internal void ProcessChanges()
+        internal void ProcessAndApplyTo(HttpClient client)
         {
             while (_changes.TryDequeue(out var change))
             {
-                if (change.Remove)
+                if (string.IsNullOrEmpty(change.Value))
                 {
                     _values.Remove(change.Key);
                 }
@@ -54,14 +81,6 @@ namespace DragonFruit.Common.Data.Utils
                     _values[change.Key] = change.Value;
                 }
             }
-        }
-
-        /// <summary>
-        /// Applies the <see cref="KeyValuePair{TKey,TValue}"/>s to the provided <see cref="HttpClient"/>
-        /// </summary>
-        internal void ApplyTo(HttpClient client)
-        {
-            client.DefaultRequestHeaders.Clear();
 
             foreach (var header in _values)
             {
