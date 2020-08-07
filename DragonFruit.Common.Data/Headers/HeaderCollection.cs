@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
-namespace DragonFruit.Common.Data.Utils
+namespace DragonFruit.Common.Data.Headers
 {
-    public class ApiClientHeaderCollection
+    public class HeaderCollection
     {
         private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
-        private readonly ConcurrentQueue<ApiClientHeaderChange> _changes = new ConcurrentQueue<ApiClientHeaderChange>();
+        private readonly ConcurrentQueue<HeaderChange> _changes = new ConcurrentQueue<HeaderChange>();
 
         /// <summary>
         /// Gets or sets the specified value for the key provided.
@@ -39,7 +39,7 @@ namespace DragonFruit.Common.Data.Utils
                 return _values.ContainsKey(key) ? _values[key] : null;
             }
 
-            set => _changes.Enqueue(new ApiClientHeaderChange(key, value));
+            set => _changes.Enqueue(new HeaderChange(key, value));
         }
 
         /// <summary>

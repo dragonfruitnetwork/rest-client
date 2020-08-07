@@ -3,6 +3,7 @@
 
 using System;
 using DragonFruit.Common.Data.Extensions;
+using DragonFruit.Common.Data.Tests.Header.Objects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 

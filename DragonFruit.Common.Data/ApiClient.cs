@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Extensions;
+using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
-using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data
 {
@@ -67,7 +67,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Headers to be sent with the requests
         /// </summary>
-        public ApiClientHeaderCollection Headers { get; } = new ApiClientHeaderCollection();
+        public HeaderCollection Headers { get; } = new HeaderCollection();
 
         /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
