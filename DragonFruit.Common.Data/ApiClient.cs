@@ -59,7 +59,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Additional headers to be sent with the requests
         /// </summary>
-        public HashableDictionary<string, string> CustomHeaders { get; set; } = new HashableDictionary<string, string>();
+        public HeaderCollection CustomHeaders { get; } = new HeaderCollection();
 
         /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
@@ -101,8 +101,7 @@ namespace DragonFruit.Common.Data
 
         private HttpMessageHandler _handler;
 
-        protected virtual string ClientHash => $"{HeaderHash}.{Handler.ItemHashCode()}";
-        private string HeaderHash => $"{UserAgent.ItemHashCode()}.{CustomHeaders.ItemHashCode()}.{Authorization.ItemHashCode()}";
+        protected virtual string ClientHash => $"{UserAgent.ItemHashCode()}.{Authorization.ItemHashCode()}.{Handler.ItemHashCode()}";
 
         #endregion
 
@@ -118,8 +117,10 @@ namespace DragonFruit.Common.Data
                 Thread.Sleep(AdjustmentTimeout / 2);
             }
 
-            //if there's no edits return the current client
-            if (_lastHash == ClientHash)
+            //if there's no edits return the current client (perform the check once instead of a potential twice)
+            var changeHeaders = CustomHeaders.ChangesAvailable;
+
+            if (_lastHash == ClientHash && !changeHeaders)
             {
                 return Client;
             }
@@ -156,10 +157,7 @@ namespace DragonFruit.Common.Data
                 }
 
                 // reset the headers if any have changed (or the client has been reinitialised)
-                var headerHash = HeaderHash;
-                var resetHeaders = headerHash != _lastHeaderHash;
-
-                if (resetHeaders || resetClient)
+                if (changeHeaders || resetClient)
                 {
                     Client.DefaultRequestHeaders.Clear();
 
@@ -176,12 +174,8 @@ namespace DragonFruit.Common.Data
                     }
 
                     // Custom Headers
-                    foreach (var header in CustomHeaders)
-                    {
-                        Client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-
-                    _lastHeaderHash = headerHash;
+                    CustomHeaders.ProcessChanges();
+                    CustomHeaders.ApplyTo(Client);
 
                     SetupClient(Client, resetClient);
                 }

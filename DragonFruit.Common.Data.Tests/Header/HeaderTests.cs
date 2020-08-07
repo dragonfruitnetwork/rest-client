@@ -25,13 +25,13 @@ namespace DragonFruit.Common.Data.Tests.Header
 
             Client.CustomHeaders.Add(HeaderName, headerValue);
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(response["headers"]![HeaderName], headerValue);
+            Assert.AreEqual(headerValue, response["headers"]![HeaderName]);
 
             headerValue = Rng.Next().ToString();
             Client.CustomHeaders.Remove(HeaderName);
             Client.CustomHeaders.Add(HeaderName, headerValue);
             response = Client.Perform<JObject>(request);
-            Assert.AreEqual(response["headers"]![HeaderName], headerValue);
+            Assert.AreEqual(headerValue, response["headers"]![HeaderName]);
         }
 
         [TestMethod]
