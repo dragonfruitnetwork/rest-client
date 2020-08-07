@@ -22,7 +22,6 @@ namespace DragonFruit.Common.Data.Serializers
             Serializer = JsonSerializer.Create(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
-                DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
                 Culture = culture
             });
         }
@@ -31,7 +30,7 @@ namespace DragonFruit.Common.Data.Serializers
 
         public string ContentType => "application/json";
 
-        public virtual StringContent Serialize<T>(T input) where T : class
+        public StringContent Serialize<T>(T input) where T : class
         {
             var builder = new StringBuilder();
 
@@ -40,13 +39,14 @@ namespace DragonFruit.Common.Data.Serializers
             {
                 Serializer.Serialize(jsonWriter, input);
 
-                return new StringContent(builder.ToString(), writer.Encoding, "application/json");
+                return new StringContent(builder.ToString(), writer.Encoding, ContentType);
             }
         }
 
-        public virtual T Deserialize<T>(Task<Stream> input) where T : class
+        public T Deserialize<T>(Task<Stream> input) where T : class
         {
-            using (var sr = new StreamReader(input.Result))
+            using (var stream = input.Result)
+            using (var sr = new StreamReader(stream))
             using (JsonReader reader = new JsonTextReader(sr))
             {
                 return Serializer.Deserialize<T>(reader);
