@@ -2,6 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System.IO;
+using DragonFruit.Common.Data.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,7 +19,7 @@ namespace DragonFruit.Common.Data.Services
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
         /// <returns>Type with populated data</returns>
-        public static T ReadFile<T>(string location) => ReadFile<T>(location, JsonSerializer.CreateDefault());
+        public static T ReadFile<T>(string location) => ReadFile<T>(location, ServiceUtils.DefaultSerialiser);
 
         /// <summary>
         /// Read data from file as specified type, or return default value if the file doesn't exist
@@ -28,7 +29,7 @@ namespace DragonFruit.Common.Data.Services
         /// <returns>Type with populated data</returns>
         public static T ReadFileOrDefault<T>(string location)
         {
-            return ReadFileOrDefault<T>(location, JsonSerializer.CreateDefault());
+            return ReadFileOrDefault<T>(location, ServiceUtils.DefaultSerialiser);
         }
 
         /// <summary>
@@ -36,11 +37,11 @@ namespace DragonFruit.Common.Data.Services
         /// </summary>
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
-        /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
+        /// <param name="serialiser">The <see cref="JsonSerializer"/> to use</param>
         /// <returns>Type with populated data</returns>
-        public static T ReadFileOrDefault<T>(string location, JsonSerializer serializer)
+        public static T ReadFileOrDefault<T>(string location, JsonSerializer serialiser)
         {
-            return File.Exists(location) ? ReadFile<T>(location, serializer) : default;
+            return File.Exists(location) ? ReadFile<T>(location, serialiser) : default;
         }
 
         /// <summary>
@@ -48,9 +49,9 @@ namespace DragonFruit.Common.Data.Services
         /// </summary>
         /// <typeparam name="T">Type the data was saved in</typeparam>
         /// <param name="location">Location of the file</param>
-        /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
+        /// <param name="serialiser">The <see cref="JsonSerializer"/> to use</param>
         /// <returns>Type with populated data</returns>
-        public static T ReadFile<T>(string location, JsonSerializer serializer)
+        public static T ReadFile<T>(string location, JsonSerializer serialiser)
         {
             lock (location)
             {
@@ -63,7 +64,7 @@ namespace DragonFruit.Common.Data.Services
                 using (var textReader = new StreamReader(reader))
                 using (var jsonReader = new JsonTextReader(textReader))
                 {
-                    return serializer.Deserialize<T>(jsonReader);
+                    return serialiser.Deserialize<T>(jsonReader);
                 }
             }
         }
@@ -96,16 +97,15 @@ namespace DragonFruit.Common.Data.Services
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>
-        public static void WriteFile<T>(string location, T data) =>
-            WriteFile(location, data, JsonSerializer.CreateDefault());
+        public static void WriteFile<T>(string location, T data) => WriteFile(location, data, ServiceUtils.DefaultSerialiser);
 
         /// <summary>
         /// Writes data to a file. If the file exists then it is overwritten with no notice
         /// </summary>
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>
-        /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
-        public static void WriteFile<T>(string location, T data, JsonSerializer serializer)
+        /// <param name="serialiser">The <see cref="JsonSerializer"/> to use</param>
+        public static void WriteFile<T>(string location, T data, JsonSerializer serialiser)
         {
             lock (location)
             {
@@ -113,7 +113,7 @@ namespace DragonFruit.Common.Data.Services
                 using (var textWriter = new StreamWriter(reader))
                 using (var jsonWriter = new JsonTextWriter(textWriter))
                 {
-                    serializer.Serialize(jsonWriter, data);
+                    serialiser.Serialize(jsonWriter, data);
                 }
             }
         }

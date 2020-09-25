@@ -6,6 +6,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using DragonFruit.Common.Data.Utils;
 using Newtonsoft.Json;
 
 namespace DragonFruit.Common.Data.Serializers
@@ -13,7 +14,7 @@ namespace DragonFruit.Common.Data.Serializers
     public class ApiJsonSerializer : ISerializer
     {
         public ApiJsonSerializer()
-            : this(CultureInfo.InvariantCulture)
+            : this(CultureUtils.DefaultCulture)
         {
         }
 
