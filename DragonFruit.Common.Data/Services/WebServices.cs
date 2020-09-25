@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Net.Http;
+using DragonFruit.Common.Data.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -36,14 +37,15 @@ namespace DragonFruit.Common.Data.Services
         /// <typeparam name="T">Type to deserialize the result to</typeparam>
         /// <param name="uri">The Uri containing the resource</param>
         /// <param name="client"><see cref="HttpClient" /> to use when downloading</param>
-        /// <returns>The specified tye <see cref="T" />, with the data converted</returns>
-        public static T StreamObject<T>(string uri, HttpClient client, JsonSerializer serializer)
+        /// <param name="serialiser">The <see cref="JsonSerializer"/> to use when deserialising</param>
+        /// <returns>The specified type <see cref="T" />, with the data converted</returns>
+        public static T StreamObject<T>(string uri, HttpClient client, JsonSerializer serialiser)
         {
             using (var s = client.GetStreamAsync(uri).Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
             {
-                return serializer.Deserialize<T>(reader);
+                return serialiser.Deserialize<T>(reader);
             }
         }
 
@@ -57,7 +59,7 @@ namespace DragonFruit.Common.Data.Services
         {
             using (var client = new HttpClient())
             {
-                return StreamObject<T>(uri, client, JsonSerializer.CreateDefault());
+                return StreamObject<T>(uri, client, ServiceUtils.DefaultSerialiser);
             }
         }
 
@@ -129,13 +131,13 @@ namespace DragonFruit.Common.Data.Services
         /// <param name="content">HttpContent Data</param>
         /// <param name="client">HttpClient to use</param>
         /// <returns>Type containing response data</returns>
-        public static T PostData<T>(string uri, HttpContent content, HttpClient client, JsonSerializer serializer)
+        public static T PostData<T>(string uri, HttpContent content, HttpClient client, JsonSerializer serialiser)
         {
             using (var s = client.PostAsync(uri, content).Result.Content.ReadAsStreamAsync().Result)
             using (var sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
             {
-                return serializer.Deserialize<T>(reader);
+                return serialiser.Deserialize<T>(reader);
             }
         }
 
@@ -149,7 +151,7 @@ namespace DragonFruit.Common.Data.Services
         {
             using (var client = new HttpClient())
             {
-                return PostData<T>(uri, content, client, JsonSerializer.CreateDefault());
+                return PostData<T>(uri, content, client, ServiceUtils.DefaultSerialiser);
             }
         }
     }

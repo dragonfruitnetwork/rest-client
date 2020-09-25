@@ -31,9 +31,9 @@ namespace DragonFruit.Common.Data
             Serializer = new ApiJsonSerializer(culture);
         }
 
-        public ApiClient(ISerializer serializer)
+        public ApiClient(ISerializer serialiser)
         {
-            Serializer = serializer;
+            Serializer = serialiser;
         }
 
         ~ApiClient()

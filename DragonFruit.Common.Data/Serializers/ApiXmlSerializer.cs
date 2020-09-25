@@ -23,13 +23,13 @@ namespace DragonFruit.Common.Data.Serializers
 
         public T Deserialize<T>(Task<Stream> input) where T : class
         {
-            var serializer = new XmlSerializer(typeof(T));
+            var serialiser = new XmlSerializer(typeof(T));
 
             using (Stream stream = input.Result)
             using (StreamReader sr = new StreamReader(stream))
             using (StringReader stringReader = new StringReader(sr.ReadToEndAsync().Result))
             {
-                return (T)serializer.Deserialize(stringReader);
+                return (T)serialiser.Deserialize(stringReader);
             }
         }
     }

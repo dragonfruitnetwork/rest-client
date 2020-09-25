@@ -88,7 +88,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// This validates the <see cref="Path"/> and <see cref="RequireAuth"/> properties, throwing a <see cref="ClientValidationException"/> if it's unsatisfied with the constraints
         /// </remarks>
-        public HttpRequestMessage Build(ISerializer serializer)
+        public HttpRequestMessage Build(ISerializer serialiser)
         {
             if (!Path.StartsWith("http"))
             {
@@ -106,22 +106,22 @@ namespace DragonFruit.Common.Data
 
                 case Methods.Post:
                     request.Method = HttpMethod.Post;
-                    request.Content = GetContent(serializer);
+                    request.Content = GetContent(serialiser);
                     break;
 
                 case Methods.Put:
                     request.Method = HttpMethod.Put;
-                    request.Content = GetContent(serializer);
+                    request.Content = GetContent(serialiser);
                     break;
 
                 case Methods.Patch:
                     request.Method = new HttpMethod("PATCH"); //in .NET Standard 2.0 patch isn't implemented...
-                    request.Content = GetContent(serializer);
+                    request.Content = GetContent(serialiser);
                     break;
 
                 case Methods.Delete:
                     request.Method = HttpMethod.Delete;
-                    request.Content = GetContent(serializer);
+                    request.Content = GetContent(serialiser);
                     break;
 
                 case Methods.Head:
@@ -146,13 +146,13 @@ namespace DragonFruit.Common.Data
 
             if (!request.Headers.Contains("Accept"))
             {
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.ContentType));
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serialiser.ContentType));
             }
 
             return request;
         }
 
-        private HttpContent GetContent(ISerializer serializer)
+        private HttpContent GetContent(ISerializer serialiser)
         {
             switch (BodyType)
             {
@@ -160,10 +160,10 @@ namespace DragonFruit.Common.Data
                     return new FormUrlEncodedContent(ParameterUtils.GetParameter<FormParameter>(this, RequestCulture));
 
                 case BodyType.Serialized:
-                    return serializer.Serialize(this);
+                    return serialiser.Serialize(this);
 
                 case BodyType.SerializedProperty:
-                    var body = serializer.Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
+                    var body = serialiser.Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
                     return body;
 
                 case BodyType.Custom:
