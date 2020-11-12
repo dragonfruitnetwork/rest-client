@@ -18,13 +18,23 @@ namespace DragonFruit.Common.Data.Serializers
         {
         }
 
-        public ApiJsonSerializer(CultureInfo culture)
+        public ApiJsonSerializer(JsonSerializerSettings settings)
+            : this(JsonSerializer.Create(settings))
         {
-            Serializer = JsonSerializer.Create(new JsonSerializerSettings
+        }
+
+        public ApiJsonSerializer(CultureInfo culture)
+            : this(JsonSerializer.Create(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
                 Culture = culture
-            });
+            }))
+        {
+        }
+
+        public ApiJsonSerializer(JsonSerializer serializer)
+        {
+            Serializer = serializer;
         }
 
         public JsonSerializer Serializer { get; set; }
