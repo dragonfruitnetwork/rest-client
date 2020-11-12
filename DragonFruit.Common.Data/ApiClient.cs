@@ -22,13 +22,13 @@ namespace DragonFruit.Common.Data
         #region Constructors
 
         public ApiClient()
+            : this(new ApiJsonSerializer(CultureInfo.InvariantCulture))
         {
-            Serializer = new ApiJsonSerializer(CultureInfo.InvariantCulture);
         }
 
         public ApiClient(CultureInfo culture)
+            : this(new ApiJsonSerializer(culture))
         {
-            Serializer = new ApiJsonSerializer(culture);
         }
 
         public ApiClient(ISerializer serialiser)
@@ -217,46 +217,46 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Perform a <see cref="ApiRequest"/> that returns the response message. The <see cref="HttpResponseMessage"/> returned cannot be used for reading data, as the underlying <see cref="Task"/> will be disposed.
         /// </summary>
-        public virtual HttpResponseMessage Perform(ApiRequest requestData)
+        public virtual HttpResponseMessage Perform(ApiRequest requestData, CancellationToken token = default)
         {
             ValidateRequest(requestData);
-            return Perform(requestData.Build(this));
+            return Perform(requestData.Build(this), token);
         }
 
         /// <summary>
         /// Perform an <see cref="ApiRequest"/> with a specified return type.
         /// </summary>
-        public virtual T Perform<T>(ApiRequest requestData) where T : class
+        public virtual T Perform<T>(ApiRequest requestData, CancellationToken token = default) where T : class
         {
             ValidateRequest(requestData);
-            return Perform<T>(requestData.Build(this));
+            return Perform<T>(requestData.Build(this), token);
         }
 
         /// <summary>
         /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
         /// </summary>
-        public virtual HttpResponseMessage Perform(HttpRequestMessage request)
+        public virtual HttpResponseMessage Perform(HttpRequestMessage request, CancellationToken token = default)
         {
-            return InternalPerform(request, response => response, false);
+            return InternalPerform(request, response => response, false, token);
         }
 
         /// <summary>
         /// Perform a pre-fabricated <see cref="HttpRequestMessage"/> and deserialize the result to the specified type
         /// </summary>
-        public virtual T Perform<T>(HttpRequestMessage request) where T : class
+        public virtual T Perform<T>(HttpRequestMessage request, CancellationToken token = default) where T : class
         {
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true);
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true, token);
         }
 
         /// <summary>
         /// Download a file with an <see cref="ApiRequest"/>. Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </summary>
-        public virtual void Perform(ApiFileRequest requestData)
+        public virtual void Perform(ApiFileRequest request, CancellationToken token = default)
         {
             //check request data is valid
-            ValidateRequest(requestData);
+            ValidateRequest(request);
 
-            if (string.IsNullOrWhiteSpace(requestData.Destination))
+            if (string.IsNullOrWhiteSpace(request.Destination))
             {
                 throw new NullRequestException();
             }
@@ -267,7 +267,7 @@ namespace DragonFruit.Common.Data
                 response.EnsureSuccessStatusCode();
 
                 //copy result to file
-                using (var stream = File.Open(requestData.Destination, requestData.FileCreationMode))
+                using (var stream = File.Open(request.Destination, request.FileCreationMode))
                 using (var networkStream = response.Content.ReadAsStreamAsync().Result)
                 {
                     networkStream.CopyTo(stream);
@@ -276,7 +276,7 @@ namespace DragonFruit.Common.Data
                 return response; //we're not using this so return anything...
             }
 
-            _ = InternalPerform(requestData.Build(this), CopyProcess, true);
+            _ = InternalPerform(request.Build(this), CopyProcess, true, token);
         }
 
         /// <summary>
@@ -289,20 +289,23 @@ namespace DragonFruit.Common.Data
         /// <param name="request">The request to perform</param>
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
         /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
-        protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult, bool disposeResponse)
+        protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult, bool disposeResponse, CancellationToken token = default)
         {
             //get client and request (disposables)
             var client = GetClient();
             Interlocked.Increment(ref _currentRequests);
 
-            //post-modification
+            // post-modification
             SetupRequest(request);
-
-            //send request
-            var response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            Task<HttpResponseMessage> response = null;
 
             try
             {
+                token.ThrowIfCancellationRequested();
+
+                // send request
+                response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+
                 //all possible exceptions from client.SendAsync() will be released here
                 return processResult.Invoke(response.Result);
             }
@@ -314,7 +317,6 @@ namespace DragonFruit.Common.Data
                 //dispose
                 if (disposeResponse)
                 {
-                    response?.Result?.Dispose();
                     response?.Dispose();
                 }
 
@@ -339,16 +341,16 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// An overridable method for validating the request against the current <see cref="ApiClient"/>
         /// </summary>
-        /// <param name="requestData">The request to validate</param>
+        /// <param name="request">The request to validate</param>
         /// <exception cref="NullRequestException">The request can't be performed due to a poorly-formed url</exception>
         /// <exception cref="ClientValidationException">The client can't be used because there is no auth url.</exception>
-        protected virtual void ValidateRequest(ApiRequest requestData)
+        protected virtual void ValidateRequest(ApiRequest request)
         {
             // note request path is validated on build
-            if (requestData.RequireAuth && string.IsNullOrEmpty(Authorization))
+            if (request.RequireAuth && string.IsNullOrEmpty(Authorization))
             {
                 // check if we have a custom headerset in the request
-                if (!requestData.Headers.IsValueCreated || !requestData.Headers.Value.ContainsKey("Authorization"))
+                if (!request.Headers.IsValueCreated || !request.Headers.Value.ContainsKey("Authorization"))
                 {
                     throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
                 }
