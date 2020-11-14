@@ -12,7 +12,7 @@ $PRODUCTNAME = "DragonFruit.Common"
 
 Write-Output "Building $($PRODUCTNAME) Version $VERSION"
 dotnet restore
-dotnet build $PROJECTFILE -c Release /p:Version=$VERSION /p:PackageVersion=$VERSION
+dotnet build $PROJECTFILE --no-restore -c Release /p:Version=$VERSION /p:PackageVersion=$VERSION
 
 # pack into nuget files with the suffix if we have one
 
