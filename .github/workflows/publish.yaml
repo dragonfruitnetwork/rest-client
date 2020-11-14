@@ -18,7 +18,7 @@ jobs:
       - name: Install .NET
         run: |
           .\res\build\dotnet-install.ps1 -Channel 3.1
-          .\res\build\dotnet-install.ps1 -Channel 5.0
+          .\res\build\dotnet-install.ps1 -Channel net5/5.0.1xx
 
       - name: NuGet (Release)
         run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
