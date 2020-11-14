@@ -8,7 +8,7 @@
     <PropertyGroup>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
-        <PackageIconUrl>https://avatars3.githubusercontent.com/u/31821773</PackageIconUrl>
+        <PackageIcon>icon.png</PackageIcon>
         <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
@@ -26,6 +26,11 @@
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
     </ItemGroup>
 
-    <!--  todo migrate to file-based package icons-->
+    <ItemGroup>
+        <None Include="..\res\icon.png">
+            <Pack>true</Pack>
+            <PackagePath>.</PackagePath>
+        </None>
+    </ItemGroup>
 
 </Project>
