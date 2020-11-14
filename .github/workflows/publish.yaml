@@ -4,27 +4,30 @@ on:
   release:
     types: [ published ]
 
+env:
+  dotnet_installer: '.\res\build\dotnet-install.ps1'
+  nuget_deploy: '.\res\build\nuget.ps1'
+    
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Install Dependencies (Chocolatey)
+      - name: Modify PowerShell Policy
+        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+          
+      - name: Install .NET
         run: |
-          choco install visualstudio2019
-          choco install dotnetcore-sdk
-          choco install visualstudio2019-workload-netcorebuildtools
+          $dotnet_installer -Channel 5.0
+          $dotnet_installer -Channel 3.1
           
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup PowerShell Policy
-        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
-
-      - name: NuGet Build and Publish (Release)
-        run: ./Nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
+      - name: NuGet (Release)
+        run: $nuget_deploy -ApiKey ${{ secrets.NUGET_KEY }}
         if: "!github.event.release.prerelease"
         
-      - name: Nuget Build and Publish (Beta)
-        run: ./Nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
+      - name: Nuget (Beta)
+        run: $nuget_deploy -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
         if: "github.event.release.prerelease"

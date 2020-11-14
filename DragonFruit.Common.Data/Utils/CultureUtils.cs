@@ -7,6 +7,12 @@ namespace DragonFruit.Common.Data.Utils
 {
     public static class CultureUtils
     {
-        public static CultureInfo DefaultCulture { get; set; } = CultureInfo.InvariantCulture;
+        private static CultureInfo _defaultCulture;
+
+        public static CultureInfo DefaultCulture
+        {
+            get => _defaultCulture ?? CultureInfo.InvariantCulture;
+            set => _defaultCulture = value;
+        }
     }
 }

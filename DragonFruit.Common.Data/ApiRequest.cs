@@ -88,7 +88,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// This validates the <see cref="Path"/> and <see cref="RequireAuth"/> properties, throwing a <see cref="ClientValidationException"/> if it's unsatisfied with the constraints
         /// </remarks>
-        public HttpRequestMessage Build(ISerializer serialiser)
+        public HttpRequestMessage Build(ISerializer serializer)
         {
             if (!Path.StartsWith("http"))
             {
@@ -106,22 +106,27 @@ namespace DragonFruit.Common.Data
 
                 case Methods.Post:
                     request.Method = HttpMethod.Post;
-                    request.Content = GetContent(serialiser);
+                    request.Content = GetContent(serializer);
                     break;
 
                 case Methods.Put:
                     request.Method = HttpMethod.Put;
-                    request.Content = GetContent(serialiser);
+                    request.Content = GetContent(serializer);
                     break;
 
                 case Methods.Patch:
-                    request.Method = new HttpMethod("PATCH"); //in .NET Standard 2.0 patch isn't implemented...
-                    request.Content = GetContent(serialiser);
+#if NET5_0
+                    request.Method = HttpMethod.Patch;
+#else
+                    // .NET Standard 2.0 doesn't have a PATCH method...
+                    request.Method = new HttpMethod("PATCH");
+#endif
+                    request.Content = GetContent(serializer);
                     break;
 
                 case Methods.Delete:
                     request.Method = HttpMethod.Delete;
-                    request.Content = GetContent(serialiser);
+                    request.Content = GetContent(serializer);
                     break;
 
                 case Methods.Head:
@@ -146,13 +151,13 @@ namespace DragonFruit.Common.Data
 
             if (!request.Headers.Contains("Accept"))
             {
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serialiser.ContentType));
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.ContentType));
             }
 
             return request;
         }
 
-        private HttpContent GetContent(ISerializer serialiser)
+        private HttpContent GetContent(ISerializer serializer)
         {
             switch (BodyType)
             {
@@ -160,10 +165,10 @@ namespace DragonFruit.Common.Data
                     return new FormUrlEncodedContent(ParameterUtils.GetParameter<FormParameter>(this, RequestCulture));
 
                 case BodyType.Serialized:
-                    return serialiser.Serialize(this);
+                    return serializer.Serialize(this);
 
                 case BodyType.SerializedProperty:
-                    var body = serialiser.Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
+                    var body = serializer.Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
                     return body;
 
                 case BodyType.Custom:

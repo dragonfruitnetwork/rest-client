@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using DragonFruit.Common.Data.Utils;
 using Newtonsoft.Json;
 
@@ -44,24 +43,19 @@ namespace DragonFruit.Common.Data.Serializers
         public StringContent Serialize<T>(T input) where T : class
         {
             var builder = new StringBuilder();
+            using var writer = new StringWriter(builder);
+            using var jsonWriter = new JsonTextWriter(writer);
 
-            using (var writer = new StringWriter(builder))
-            using (var jsonWriter = new JsonTextWriter(writer))
-            {
-                Serializer.Serialize(jsonWriter, input);
-
-                return new StringContent(builder.ToString(), writer.Encoding, ContentType);
-            }
+            Serializer.Serialize(jsonWriter, input);
+            return new StringContent(builder.ToString(), writer.Encoding, ContentType);
         }
 
-        public T Deserialize<T>(Task<Stream> input) where T : class
+        public T Deserialize<T>(Stream input) where T : class
         {
-            using (var stream = input.Result)
-            using (var sr = new StreamReader(stream))
-            using (JsonReader reader = new JsonTextReader(sr))
-            {
-                return Serializer.Deserialize<T>(reader);
-            }
+            using var sr = new StreamReader(input);
+            using JsonReader reader = new JsonTextReader(sr);
+
+            return Serializer.Deserialize<T>(reader);
         }
     }
 }

@@ -6,26 +6,44 @@ on:
   push:
     branches: master
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: false
+  
+  orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
+  orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
+  
+  project: './DragonFruit.Common.Data/DragonFruit.Common.Data.csproj'
+  testproject: './DragonFruit.Common.Data.Tests/DragonFruit.Common.Data.Tests.csproj'
+  
 jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - dotnet: '3.1.x'
+            dotnet-tfm: 'netstandard2.0'
+            dotnet-test-tfm: 'netcoreapp3.1'
+            
+          - dotnet: '5.0.x'
+            dotnet-tfm: 'net5.0'
+            dotnet-test-tfm: 'net5.0'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
-      - name: Install .NET Core
+
+      - name: Install .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: ${{ matrix.dotnet }}
 
       - name: Build
         run: |
-          dotnet restore
-          dotnet build -c Debug
+          dotnet build $project -c Debug -f ${{ matrix.dotnet-tfm }}
+          dotnet build $testproject -c Debug -f ${{ matrix.dotnet-test-tfm }}
 
       - name: Unit Tests
-        run: dotnet test
-        env:
-          orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
-          orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
+        run: dotnet test -f ${{ matrix.dotnet-test-tfm }}

@@ -30,8 +30,8 @@ namespace DragonFruit.Common.Data.Tests.Header
             request.WithHeader(HeaderName, requestHeaderValue);
 
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"]![HeaderName]);
-            Assert.AreEqual(globalHeaderValue, response["headers"]![GlobalHeaderName]);
+            Assert.AreEqual(requestHeaderValue, response["headers"][HeaderName]);
+            Assert.AreEqual(globalHeaderValue, response["headers"][GlobalHeaderName]);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace DragonFruit.Common.Data.Tests.Header
             request.Headers.Value.Add(GlobalHeaderName, requestHeaderValue);
 
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"]![GlobalHeaderName]);
+            Assert.AreEqual(requestHeaderValue, response["headers"][GlobalHeaderName]);
         }
     }
 }
