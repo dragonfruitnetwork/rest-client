@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
     <PropertyGroup>
         <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
         <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>

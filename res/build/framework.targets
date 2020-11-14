@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     </PropertyGroup>
