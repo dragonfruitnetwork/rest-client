@@ -1,28 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <Authors>DragonFruit Network</Authors>
-    <Product>DragonFruit Common (Data)</Product>
-    <AssemblyTitle>DragonFruit Common</AssemblyTitle>
-    <Description>I/O Framework for Web, API and Files</Description>
-    <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
-    <PackageIconUrl>https://avatars3.githubusercontent.com/u/31821773</PackageIconUrl>
-    <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
-    <LangVersion>8</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Authors>DragonFruit Network</Authors>
+        <Product>DragonFruit Common (Data)</Product>
+        <AssemblyTitle>DragonFruit Common</AssemblyTitle>
+        <Description>I/O Framework for Web, APIs and Files</Description>
+        <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
+        <PackageIconUrl>https://avatars3.githubusercontent.com/u/31821773</PackageIconUrl>
+        <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(CIServer)' == 'True'">
+        <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
+        <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(CIServer)' != 'True'">
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
+    </ItemGroup>
+
+    <!--  todo migrate to file-based package icons-->
   
-  <PropertyGroup Condition="'$(CIServer)' == 'True'">
-    <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
-    <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-  </ItemGroup>
-
 </Project>

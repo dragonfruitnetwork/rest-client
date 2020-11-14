@@ -288,7 +288,9 @@ namespace DragonFruit.Common.Data
 
                 // flush and return
                 stream.Flush();
-                return response; // we're not using this so return anything...
+
+                // we're not using this so return anything...
+                return response;
             }
 
             _ = InternalPerform(request.Build(this), CopyProcess, true, token);

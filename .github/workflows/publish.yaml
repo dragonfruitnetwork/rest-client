@@ -9,22 +9,25 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Modify PowerShell Policy
+        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+
       - name: Install Dependencies (Chocolatey)
         run: |
           choco install visualstudio2019
           choco install dotnetcore-sdk
           choco install visualstudio2019-workload-netcorebuildtools
           
+      - name: Install .NET 5.0.100
+        run: .\res\build\dotnet-install.ps1 -Channel "release/5.0.100"
+          
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup PowerShell Policy
-        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
-
-      - name: NuGet Build and Publish (Release)
-        run: ./Nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
+      - name: NuGet (Release)
+        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
         if: "!github.event.release.prerelease"
         
-      - name: Nuget Build and Publish (Beta)
-        run: ./Nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
+      - name: Nuget (Beta)
+        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
         if: "github.event.release.prerelease"
