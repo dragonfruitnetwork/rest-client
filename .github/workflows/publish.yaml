@@ -15,6 +15,11 @@ jobs:
       - name: Modify PowerShell Policy
         run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
           
+      - name: Install .NET Framework (Dependencies)
+        run: |
+          choco install netfx-4.8
+          choco install netfx-4.8-devpack
+    
       - name: Install .NET
         run: |
           .\res\build\dotnet-install.ps1 -Channel 3.1
