@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(CIServer)' != 'True'">netstandard2.0;net5.0</TargetFrameworks>
     <Authors>DragonFruit Network</Authors>
     <Product>DragonFruit Common (Data)</Product>
     <AssemblyTitle>DragonFruit Common</AssemblyTitle>
@@ -14,6 +14,11 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
     <LangVersion>8</LangVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(CIServer)' == 'True'">
+    <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
+    <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
