@@ -6,20 +6,20 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <PackageIcon>icon.png</PackageIcon>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
-        <PackageIcon>icon.png</PackageIcon>
-        <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
         <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup>
-        <Authors>DragonFruit Network</Authors>
-        <Product>DragonFruit Common (Data)</Product>
         <AssemblyTitle>DragonFruit Common</AssemblyTitle>
-        <Description>I/O Framework for Web, APIs and Files</Description>
+        <Authors>DragonFruit Network</Authors>
         <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
+        <Description>I/O Framework for Web, APIs and Files</Description>
+        <Product>DragonFruit Common (Data)</Product>
     </PropertyGroup>
 
     <ItemGroup>
