@@ -1,22 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Authors>DragonFruit Network</Authors>
-        <Product>DragonFruit Common (Data)</Product>
-        <AssemblyTitle>DragonFruit Common</AssemblyTitle>
-        <Description>I/O Framework for Web, APIs and Files</Description>
-        <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</PackageProjectUrl>
         <PackageIconUrl>https://avatars3.githubusercontent.com/u/31821773</PackageIconUrl>
         <RepositoryUrl>https://github.com/dragonfruitnetwork/DragonFruit.Common</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>file, api, web, io, framework, dragonfruit, common</PackageTags>
-        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
-    <Import Condition="'$(CIServer)' != 'True'" Project="../res/build/framework.targets"/>
-    <Import Condition="'$(CIServer)' == 'True'" Project="../res/build/framework-actions.targets"/>
+    <PropertyGroup>
+        <Authors>DragonFruit Network</Authors>
+        <Product>DragonFruit Common (Data)</Product>
+        <AssemblyTitle>DragonFruit Common</AssemblyTitle>
+        <Description>I/O Framework for Web, APIs and Files</Description>
+        <Copyright>Copyright 2020 (C) DragonFruit Network</Copyright>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>

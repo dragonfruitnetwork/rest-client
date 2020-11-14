@@ -17,9 +17,13 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      matrix:
-        dotnet: [ '3.1.x', '5.0.100' ]
-    
+      include:
+        matrix:
+          - dotnet: '3.0.x'
+            dotnet-tfm: 'netcoreapp3.1'
+          - dotnet: '5.0.x'
+            dotnet-tfm: 'net5.0'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,7 +34,7 @@ jobs:
           dotnet-version: ${{ matrix.dotnet }}
 
       - name: Build
-        run: dotnet build -c Debug /p:CIServer=True /p:CIFramework=${{ matrix.dotnet }}
+        run: dotnet build -c Debug -f ${{ matrix.dotnet-tfm }}
 
       - name: Unit Tests
-        run: dotnet test
+        run: dotnet test -f ${{ matrix.dotnet-tfm }}

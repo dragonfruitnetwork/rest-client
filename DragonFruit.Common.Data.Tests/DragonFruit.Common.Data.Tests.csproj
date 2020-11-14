@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
-
-    <Import Condition="'$(CIServer)' != 'True'" Project="../res/build/framework.targets"/>
-    <Import Condition="'$(CIServer)' == 'True'" Project="../res/build/framework-actions.targets"/>
 
     <ItemGroup>
         <ProjectReference Include="..\DragonFruit.Common.Data\DragonFruit.Common.Data.csproj"/>
