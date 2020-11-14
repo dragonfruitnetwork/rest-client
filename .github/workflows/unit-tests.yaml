@@ -6,39 +6,48 @@ on:
   push:
     branches: master
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: false
+  orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
+  orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet: [ '3.1.x', '5.0.x' ]
-        
-    env:
-      DOTNET_NOLOGO: true
-      DOTNET_CLI_TELEMETRY_OPTOUT: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install .NET ${{ matrix.dotnet  }}
+      - name: Install .NET Core 3.1
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: ${{ matrix.dotnet  }}
-
-      - name: Restore Packages
-        run: dotnet restore
+          dotnet-version: '3.1.x'
 
       - name: Build (.NET Standard)
-        if: ${{ matrix.dotnet != "5.0.x" }}
-        run: dotnet build -c Debug -f netcoreapp3.1
-
-      - name: Build (.NET Standard)
-        if: ${{ matrix.dotnet == "5.0.x" }}
-        run: dotnet build -c Debug -f net5.0
+        run: |
+          dotnet restore
+          dotnet build -c Debug -f netcoreapp3.1
 
       - name: Unit Tests
-        run: dotnet test
-        env:
-          orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
-          orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
+        run: dotnet test -f netcoreapp3.1
+          
+          
+  test-net50:
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install .NET 5.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Build (.NET 5)
+        run: |
+          dotnet restore
+          dotnet build -c Debug -f net5.0
+
+      - name: Unit Tests
+        run: dotnet test -f net5.0
