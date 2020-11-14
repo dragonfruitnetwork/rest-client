@@ -107,17 +107,29 @@ namespace DragonFruit.Common.Data.Handlers
             {
                 if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase) && !oldRequest.RequestUri.Host.Equals(newRequest.RequestUri.Host))
                 {
-                    //do not leak Authorization Header to other hosts
+                    // do not leak Authorization Header to other hosts
                     continue;
                 }
 
                 newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
+#if NET5_0
+            foreach (var (key, value) in oldRequest.Options)
+            {
+                if (value == null || !(value is string s))
+                {
+                    continue;
+                }
+
+                newRequest.Options.Set(new HttpRequestOptionsKey<string>(key), s);
+            }
+#else
             foreach (var property in oldRequest.Properties)
             {
                 newRequest.Properties.Add(property);
             }
+#endif
 
             if (response.StatusCode == HttpStatusCode.Redirect
                 || response.StatusCode == HttpStatusCode.Found
