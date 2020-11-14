@@ -15,19 +15,13 @@
         <LangVersion>8</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(CIServer)' == 'True'">
-        <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
-        <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(CIServer)' != 'True'">
-        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    </PropertyGroup>
+    <Import Condition="'$(CIServer)' != 'True'" Project="../res/build/framework.targets"/>
+    <Import Condition="'$(CIServer)' == 'True'" Project="../res/build/framework-actions.targets"/>
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
     </ItemGroup>
 
     <!--  todo migrate to file-based package icons-->
-  
+
 </Project>

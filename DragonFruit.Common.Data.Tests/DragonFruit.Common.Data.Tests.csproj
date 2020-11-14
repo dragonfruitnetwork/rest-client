@@ -4,14 +4,12 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(CIServer)' != 'True'">
-        <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
-    </PropertyGroup>
+    <Import Condition="'$(CIServer)' != 'True'" Project="../res/build/framework.targets"/>
+    <Import Condition="'$(CIServer)' == 'True'" Project="../res/build/framework-actions.targets"/>
 
-    <PropertyGroup Condition="'$(CIServer)' == 'True'">
-        <TargetFramework Condition="'$(CIFramework)' == '5.0.x'">net5.0</TargetFramework>
-        <TargetFramework Condition="'$(CIFramework)' == '3.1.x'">netcoreapp3.1</TargetFramework>
-    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\DragonFruit.Common.Data\DragonFruit.Common.Data.csproj"/>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1"/>
@@ -21,10 +19,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\DragonFruit.Common.Data\DragonFruit.Common.Data.csproj"/>
     </ItemGroup>
 
 </Project>
