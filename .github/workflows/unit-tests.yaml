@@ -9,20 +9,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet: [ '3.1.x', '5.0.x' ]
+        
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
-      - name: Install .NET Core
+
+      - name: Install .NET ${{ matrix.dotnet  }}
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: ${{ matrix.dotnet  }}
 
-      - name: Build
-        run: |
-          dotnet restore
-          dotnet build -c Debug
+      - name: Restore Packages
+        run: dotnet restore
+
+      - name: Build (.NET Standard)
+        if: ${{ matrix.dotnet != "5.0.x" }}
+        run: dotnet build -c Debug -f netcoreapp3.1
+
+      - name: Build (.NET Standard)
+        if: ${{ matrix.dotnet == "5.0.x" }}
+        run: dotnet build -c Debug -f net5.0
 
       - name: Unit Tests
         run: dotnet test

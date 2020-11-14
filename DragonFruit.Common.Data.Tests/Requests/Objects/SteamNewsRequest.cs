@@ -3,9 +3,9 @@
 
 using DragonFruit.Common.Data.Parameters;
 
-namespace DragonFruit.Common.Data.Tests.Basic.Objects
+namespace DragonFruit.Common.Data.Tests.Requests.Objects
 {
-    public class SteamNewsRequest : ApiRequest
+    internal class SteamNewsRequest : ApiRequest
     {
         public override string Path => "https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002";
 
