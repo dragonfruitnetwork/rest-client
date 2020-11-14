@@ -7,12 +7,12 @@ namespace DragonFruit.Common.Data.Utils
 {
     public static class ServiceUtils
     {
-        private static JsonSerializer _serialiser;
+        private static JsonSerializer _serializer;
 
-        public static JsonSerializer DefaultSerialiser
+        public static JsonSerializer DefaultSerializer
         {
-            get => _serialiser ??= JsonSerializer.CreateDefault();
-            set => _serialiser = value;
+            get => _serializer ??= JsonSerializer.CreateDefault();
+            set => _serializer = value;
         }
     }
 }

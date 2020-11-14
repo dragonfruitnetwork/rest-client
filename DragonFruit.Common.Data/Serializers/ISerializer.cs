@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace DragonFruit.Common.Data.Serializers
 {
@@ -13,6 +12,6 @@ namespace DragonFruit.Common.Data.Serializers
 
         StringContent Serialize<T>(T input) where T : class;
 
-        T Deserialize<T>(Task<Stream> input) where T : class;
+        T Deserialize<T>(Stream input) where T : class;
     }
 }

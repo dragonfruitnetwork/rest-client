@@ -21,19 +21,28 @@ namespace DragonFruit.Common.Data
     {
         #region Constructors
 
+        /// <summary>
+        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using the <see cref="CultureInfo.InvariantCulture"/>
+        /// </summary>
         public ApiClient()
             : this(new ApiJsonSerializer(CultureInfo.InvariantCulture))
         {
         }
 
+        /// <summary>
+        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using a custom <see cref="CultureInfo"/>
+        /// </summary>
         public ApiClient(CultureInfo culture)
             : this(new ApiJsonSerializer(culture))
         {
         }
 
-        public ApiClient(ISerializer serialiser)
+        /// <summary>
+        /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ISerializer"/>
+        /// </summary>
+        public ApiClient(ISerializer serializer)
         {
-            Serializer = serialiser;
+            Serializer = serializer;
         }
 
         ~ApiClient()
@@ -249,7 +258,8 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Download a file with an <see cref="ApiRequest"/>. Bypasses <see cref="ValidateAndProcess{T}"/>
+        /// Download a file with an <see cref="ApiRequest"/>.
+        /// Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </summary>
         public virtual void Perform(ApiFileRequest request, CancellationToken token = default)
         {
@@ -266,14 +276,19 @@ namespace DragonFruit.Common.Data
                 //validate
                 response.EnsureSuccessStatusCode();
 
-                //copy result to file
-                using (var stream = File.Open(request.Destination, request.FileCreationMode))
-                using (var networkStream = response.Content.ReadAsStreamAsync().Result)
-                {
-                    networkStream.CopyTo(stream);
-                }
+                // create a new filestream and copy all data into
+                using var stream = File.Open(request.Destination, request.FileCreationMode);
 
-                return response; //we're not using this so return anything...
+#if NET5_0
+                using var networkStream = response.Content.ReadAsStreamAsync(token).Result;
+#else
+                using var networkStream = response.Content.ReadAsStreamAsync().Result;
+#endif
+                networkStream.CopyTo(stream);
+
+                // flush and return
+                stream.Flush();
+                return response; // we're not using this so return anything...
             }
 
             _ = InternalPerform(request.Build(this), CopyProcess, true, token);
@@ -297,17 +312,21 @@ namespace DragonFruit.Common.Data
 
             // post-modification
             SetupRequest(request);
-            Task<HttpResponseMessage> response = null;
+            HttpResponseMessage response = null;
 
             try
             {
                 token.ThrowIfCancellationRequested();
 
                 // send request
-                response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+#if NET5_0
+                response = client.Send(request, HttpCompletionOption.ResponseHeadersRead, token);
+#else
+                response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).Result;
+#endif
 
                 //all possible exceptions from client.SendAsync() will be released here
-                return processResult.Invoke(response.Result);
+                return processResult.Invoke(response);
             }
             finally
             {
@@ -334,7 +353,7 @@ namespace DragonFruit.Common.Data
                 throw new HttpRequestException($"Response was unsuccessful ({response.StatusCode})");
             }
 
-            using var stream = response.Content.ReadAsStreamAsync();
+            using var stream = response.Content.ReadAsStreamAsync().Result;
             return Serializer.Deserialize<T>(stream);
         }
 

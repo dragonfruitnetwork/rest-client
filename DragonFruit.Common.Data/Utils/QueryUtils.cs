@@ -11,9 +11,8 @@ namespace DragonFruit.Common.Data.Utils
         /// <summary>
         /// Produces a query string from an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s
         /// </summary>
-        public static string QueryStringFrom(IEnumerable<KeyValuePair<string, string>> queries) =>
-            !queries.Any()
-                ? string.Empty
-                : $"?{string.Join("&", queries.Select(kvp => $"{kvp.Key}={kvp.Value}"))}";
+        public static string QueryStringFrom(IEnumerable<KeyValuePair<string, string>> queries) => !queries.Any()
+            ? string.Empty
+            : $"?{string.Join("&", queries.Select(kvp => $"{kvp.Key}={kvp.Value}"))}";
     }
 }

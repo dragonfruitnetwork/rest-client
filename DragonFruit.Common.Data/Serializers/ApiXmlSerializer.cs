@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace DragonFruit.Common.Data.Serializers
@@ -14,23 +13,19 @@ namespace DragonFruit.Common.Data.Serializers
 
         public StringContent Serialize<T>(T input) where T : class
         {
-            using (StringWriter textWriter = new StringWriter())
-            {
-                new XmlSerializer(typeof(T)).Serialize(textWriter, input);
-                return new StringContent(textWriter.ToString(), textWriter.Encoding, ContentType);
-            }
+            using StringWriter textWriter = new StringWriter();
+
+            new XmlSerializer(typeof(T)).Serialize(textWriter, input);
+            return new StringContent(textWriter.ToString(), textWriter.Encoding, ContentType);
         }
 
-        public T Deserialize<T>(Task<Stream> input) where T : class
+        public T Deserialize<T>(Stream input) where T : class
         {
-            var serialiser = new XmlSerializer(typeof(T));
+            var serializer = new XmlSerializer(typeof(T));
+            using StreamReader sr = new StreamReader(input);
+            using StringReader stringReader = new StringReader(sr.ReadToEndAsync().Result);
 
-            using (Stream stream = input.Result)
-            using (StreamReader sr = new StreamReader(stream))
-            using (StringReader stringReader = new StringReader(sr.ReadToEndAsync().Result))
-            {
-                return (T)serialiser.Deserialize(stringReader);
-            }
+            return (T)serializer.Deserialize(stringReader);
         }
     }
 }
