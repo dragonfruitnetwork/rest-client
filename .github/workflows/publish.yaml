@@ -3,10 +3,6 @@
 on:
   release:
     types: [ published ]
-
-env:
-  dotnet_installer: '.\res\build\dotnet-install.ps1'
-  nuget_deploy: '.\res\build\nuget.ps1'
     
 jobs:
   build:
@@ -18,16 +14,16 @@ jobs:
           
       - name: Install .NET
         run: |
-          $dotnet_installer -Channel 5.0
-          $dotnet_installer -Channel 3.1
+          .\res\build\dotnet-install.ps1 -Channel 5.0
+          .\res\build\dotnet-install.ps1 -Channel 3.1
           
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: NuGet (Release)
-        run: $nuget_deploy -ApiKey ${{ secrets.NUGET_KEY }}
+        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
         if: "!github.event.release.prerelease"
         
       - name: Nuget (Beta)
-        run: $nuget_deploy -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
+        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
         if: "github.event.release.prerelease"
