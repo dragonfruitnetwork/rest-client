@@ -32,7 +32,7 @@ jobs:
       - name: Build (.NET Standard)
         run: |
           dotnet restore
-          dotnet build -c Debug -p:CIServer=\"True\" -p:CIFramework:\"${{ matrix.dotnet }}\"
+          dotnet build -c Debug -p:CIServer=True;CIFramework=${{ matrix.dotnet }}
 
       - name: Unit Tests
         run: dotnet test
