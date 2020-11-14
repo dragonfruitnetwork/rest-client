@@ -28,7 +28,7 @@ jobs:
         run: |
           dotnet restore
           dotnet build "DragonFruit.Common.Data/DragonFruit.Common.Data.csproj" -c Debug -f netstandard2.0
-          dotnet build "DragonFruit.Common.Data/DragonFruit.Common.Data.Tests.csproj" -c Debug -f netcoreapp3.1
+          dotnet build "DragonFruit.Common.Data.Tests/DragonFruit.Common.Data.Tests.csproj" -c Debug -f netcoreapp3.1
 
       - name: Unit Tests
         run: dotnet test -f netcoreapp3.1
