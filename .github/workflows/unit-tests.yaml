@@ -30,9 +30,7 @@ jobs:
           dotnet-version: ${{ matrix.dotnet }}
 
       - name: Build (.NET Standard)
-        run: |
-          dotnet restore
-          dotnet build -c Debug -p:CIServer=True;CIFramework=${{ matrix.dotnet }}
+        run: dotnet build -c Debug -p:CIServer=True;CIFramework=${{ matrix.dotnet }}
 
       - name: Unit Tests
         run: dotnet test
