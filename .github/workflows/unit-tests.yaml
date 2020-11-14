@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      include:
-        matrix:
+      matrix:
+        include:
           - dotnet: '3.0.x'
             dotnet-tfm: 'netcoreapp3.1'
           - dotnet: '5.0.x'
