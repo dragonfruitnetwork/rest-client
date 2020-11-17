@@ -1,36 +1,29 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using System;
-using System.Linq;
 using DragonFruit.Common.Data.Extensions;
 using DragonFruit.Common.Data.Tests.Requests.Objects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests.Requests
 {
-    [TestClass]
+    [TestFixture]
     public class RequestTests : ApiTest
     {
-        [TestMethod]
-        public void MethodWithBodyRequestTest()
+        [TestCase(Methods.Put)]
+        [TestCase(Methods.Post)]
+        [TestCase(Methods.Patch)]
+        [TestCase(Methods.Delete)]
+        public void MethodWithBodyRequestTest(Methods method)
         {
-            foreach (var requestMethod in Enum.GetValues(typeof(Methods)).Cast<Methods>())
-            {
-                if (requestMethod == Methods.Get || requestMethod == Methods.Head || requestMethod == Methods.Trace)
-                {
-                    continue;
-                }
+            var request = new DatabaseUpdateRequest(method);
+            var response = Client.Perform<JObject>(request);
 
-                var request = new DatabaseUpdateRequest(requestMethod);
-                var response = Client.Perform<JObject>(request);
-
-                Assert.AreEqual(request.Employee.Department, response["json"].ToObject<Employee>().Department);
-            }
+            Assert.AreEqual(request.Employee.Department, response["json"].ToObject<Employee>().Department);
         }
 
-        [TestMethod]
+        [TestCase]
         public void GetRequestTest()
         {
             var request = new SteamNewsRequest();
@@ -42,7 +35,7 @@ namespace DragonFruit.Common.Data.Tests.Requests
             Assert.IsTrue(Client.Perform(request).IsSuccessStatusCode);
         }
 
-        [TestMethod]
+        [TestCase]
         public void BasicApiRequestTest()
         {
             var request = new BasicApiRequest("https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002")

@@ -4,12 +4,12 @@
 using System;
 using DragonFruit.Common.Data.Extensions;
 using DragonFruit.Common.Data.Tests.Header.Objects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests.Header
 {
-    [TestClass]
+    [TestFixture]
     public class HeaderLevelTests : ApiTest
     {
         private const string HeaderName = "x-dfn-test";
@@ -18,7 +18,7 @@ namespace DragonFruit.Common.Data.Tests.Header
         /// <summary>
         /// Test whether request-headers and default headers are sent together successfully
         /// </summary>
-        [TestMethod]
+        [TestCase]
         public void LevelSpecificHeaderTest()
         {
             var request = new EchoRequest();
@@ -30,15 +30,15 @@ namespace DragonFruit.Common.Data.Tests.Header
             request.WithHeader(HeaderName, requestHeaderValue);
 
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"][HeaderName]);
-            Assert.AreEqual(globalHeaderValue, response["headers"][GlobalHeaderName]);
+            Assert.AreEqual(requestHeaderValue, (string)response["headers"][HeaderName]);
+            Assert.AreEqual(globalHeaderValue, (string)response["headers"][GlobalHeaderName]);
         }
 
         /// <summary>
         /// Test whether two headers with the same key (one in request and one in global) override each other
         /// with the request header taking priority
         /// </summary>
-        [TestMethod]
+        [TestCase]
         public void LevelOverrideHeaderTest()
         {
             var client = new ApiClient();
@@ -51,7 +51,7 @@ namespace DragonFruit.Common.Data.Tests.Header
             request.Headers.Value.Add(GlobalHeaderName, requestHeaderValue);
 
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(requestHeaderValue, response["headers"][GlobalHeaderName]);
+            Assert.AreEqual(requestHeaderValue, (string)response["headers"][GlobalHeaderName]);
         }
     }
 }

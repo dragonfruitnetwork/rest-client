@@ -3,14 +3,14 @@
 
 using System;
 using DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler
 {
-    [TestClass]
+    [TestFixture]
     public class HeaderPreservingHeaderTests
     {
-        [TestMethod]
+        [TestCase]
         public void TestHeaderPreservation()
         {
             var redirectClient = new HeaderPreservingHandlerClient();
