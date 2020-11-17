@@ -3,14 +3,14 @@
 
 using System.IO;
 using DragonFruit.Common.Data.Tests.Files.Objects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests.Files
 {
-    [TestClass]
+    [TestFixture]
     public class FileDownloadTests : ApiTest
     {
-        [TestMethod]
+        [TestCase]
         public void FileDownloadTest()
         {
             var request = new FileDownloadRequest();

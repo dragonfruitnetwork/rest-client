@@ -4,14 +4,14 @@
 using System;
 using DragonFruit.Common.Data.Extensions;
 using DragonFruit.Common.Data.Tests.Header.Objects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using NUnit.Framework;
 
 #pragma warning disable 1998
 
 namespace DragonFruit.Common.Data.Tests.Header
 {
-    [TestClass]
+    [TestFixture]
     public class HeaderTests : ApiTest
     {
         private const string HeaderName = "x-dfn-test";
@@ -20,7 +20,7 @@ namespace DragonFruit.Common.Data.Tests.Header
         /// <summary>
         /// Test whether client headers are sent and changed successfully
         /// </summary>
-        [TestMethod]
+        [TestCase]
         public void HeaderTest()
         {
             var headerValue = Rng.Next().ToString();
@@ -28,18 +28,18 @@ namespace DragonFruit.Common.Data.Tests.Header
 
             Client.Headers[HeaderName] = headerValue;
             var response = Client.Perform<JObject>(request);
-            Assert.AreEqual(headerValue, response["headers"][HeaderName]);
+            Assert.AreEqual(headerValue, (string)response["headers"][HeaderName]);
 
             headerValue = Rng.Next().ToString();
             Client.Headers[HeaderName] = headerValue;
             response = Client.Perform<JObject>(request);
-            Assert.AreEqual(headerValue, response["headers"][HeaderName]);
+            Assert.AreEqual(headerValue, (string)response["headers"][HeaderName]);
         }
 
         /// <summary>
         /// Test whether a header sent in a request is recieved successfully
         /// </summary>
-        [TestMethod]
+        [TestCase]
         public void PerRequestHeaderTest()
         {
             var headerValue = Rng.Next().ToString();
@@ -47,7 +47,7 @@ namespace DragonFruit.Common.Data.Tests.Header
             var request = new EchoRequest().WithHeader(HeaderName, headerValue);
             var response = Client.Perform<JObject>(request);
 
-            Assert.AreEqual(response["headers"][HeaderName], headerValue);
+            Assert.AreEqual((string)response["headers"][HeaderName], headerValue);
         }
     }
 }
