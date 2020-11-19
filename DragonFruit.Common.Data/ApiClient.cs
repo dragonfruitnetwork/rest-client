@@ -350,10 +350,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         protected virtual T ValidateAndProcess<T>(HttpResponseMessage response, HttpRequestMessage request) where T : class
         {
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Response was unsuccessful ({response.StatusCode})");
-            }
+            response.EnsureSuccessStatusCode();
 
             using var stream = response.Content.ReadAsStreamAsync().Result;
             return Serializer.Deserialize<T>(stream);
