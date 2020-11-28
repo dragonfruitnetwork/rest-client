@@ -20,6 +20,6 @@ namespace DragonFruit.Common.Data.Parameters
         }
 
         public string Name { get; }
-        public CollectionConversionMode CollectionHandling { get; set; }
+        public CollectionConversionMode CollectionHandling { get; }
     }
 }

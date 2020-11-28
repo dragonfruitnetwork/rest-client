@@ -6,5 +6,7 @@ namespace DragonFruit.Common.Data.Parameters
     public interface IProperty
     {
         string Name { get; }
+
+        CollectionConversionMode CollectionHandling { get; }
     }
 }

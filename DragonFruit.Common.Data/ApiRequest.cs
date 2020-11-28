@@ -74,7 +74,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Query string generated from all filled <see cref="QueryParameter"/>-attributed properties
         /// </summary>
-        internal string QueryString => QueryUtils.QueryStringFrom(QueryUtils.QueryDataFrom(this, RequestCulture));
+        internal string QueryString => QueryUtils.QueryStringFrom(ParameterUtils.GetParameter<QueryParameter>(this, RequestCulture));
 
         /// <summary>
         /// Create a <see cref="HttpResponseMessage"/> for this <see cref="ApiRequest"/>, which can then be modified manually or overriden by <see cref="ApiClient.SetupRequest"/>

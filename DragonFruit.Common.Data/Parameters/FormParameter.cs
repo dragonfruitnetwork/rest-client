@@ -9,10 +9,17 @@ namespace DragonFruit.Common.Data.Parameters
     public class FormParameter : Attribute, IProperty
     {
         public FormParameter(string name)
+            : this(name, CollectionConversionMode.Unordered)
+        {
+        }
+
+        public FormParameter(string name, CollectionConversionMode collectionHandling)
         {
             Name = name;
+            CollectionHandling = collectionHandling;
         }
 
         public string Name { get; }
+        public CollectionConversionMode CollectionHandling { get; }
     }
 }
