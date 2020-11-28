@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using DragonFruit.Common.Data.Utils;
 
-namespace DragonFruit.Common.Data
+namespace DragonFruit.Common.Data.Utils
 {
     public class BasicApiRequest : ApiRequest
     {

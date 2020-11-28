@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,6 +31,10 @@
             <Pack>true</Pack>
             <PackagePath>.</PackagePath>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Requests" />
     </ItemGroup>
 
 </Project>
