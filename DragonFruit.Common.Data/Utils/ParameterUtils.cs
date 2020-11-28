@@ -31,7 +31,7 @@ namespace DragonFruit.Common.Data.Utils
                     continue;
                 }
 
-                var convertedValue = property.GetValue(host).AsString();
+                var convertedValue = property.GetValue(host).AsString(culture);
                 if (convertedValue != null)
                     yield return new KeyValuePair<string, string>(parameter.Name, convertedValue);
             }
