@@ -14,5 +14,13 @@ namespace DragonFruit.Common.Data.Utils
             get => _defaultCulture ?? CultureInfo.InvariantCulture;
             set => _defaultCulture = value;
         }
+
+        internal static string AsString(this object value, CultureInfo culture = null) => value switch
+        {
+            bool boolVar => boolVar.ToString().ToLower(culture ?? DefaultCulture),
+            null => null,
+
+            _ => value.ToString()
+        };
     }
 }

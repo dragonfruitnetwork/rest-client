@@ -15,7 +15,7 @@ namespace DragonFruit.Common.Data.Utils
         /// <summary>
         /// Default <see cref="BindingFlags"/> to search for matching properties
         /// </summary>
-        private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+        internal const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
         /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s from properties with a specified <see cref="IProperty"/>-inheriting attribute.
@@ -31,15 +31,7 @@ namespace DragonFruit.Common.Data.Utils
                     continue;
                 }
 
-                var value = property.GetValue(host, null);
-                string convertedValue = value switch
-                {
-                    bool boolVar => boolVar.ToString().ToLower(culture),
-                    null => null,
-
-                    _ => value.ToString()
-                };
-
+                var convertedValue = property.GetValue(host).AsString();
                 if (convertedValue != null)
                     yield return new KeyValuePair<string, string>(parameter.Name, convertedValue);
             }
@@ -53,7 +45,7 @@ namespace DragonFruit.Common.Data.Utils
             return host.GetType()
                        .GetProperties(DefaultFlags)
                        .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T)
-                       .GetValue(host, null);
+                       .GetValue(host);
         }
     }
 }

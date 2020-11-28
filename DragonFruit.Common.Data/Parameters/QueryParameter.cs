@@ -9,10 +9,17 @@ namespace DragonFruit.Common.Data.Parameters
     public class QueryParameter : Attribute, IProperty
     {
         public QueryParameter(string name)
+            : this(name, CollectionConversionMode.Unordered)
+        {
+        }
+
+        public QueryParameter(string name, CollectionConversionMode collectionConversionMode)
         {
             Name = name;
+            CollectionHandling = collectionConversionMode;
         }
 
         public string Name { get; }
+        public CollectionConversionMode CollectionHandling { get; set; }
     }
 }
