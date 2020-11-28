@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -53,11 +54,11 @@ namespace DragonFruit.Common.Data.Extensions
         {
             try
             {
-                return (IEnumerable<T>)GetBase(source, key);
+                return (IEnumerable<T>?)GetBase(source, key);
             }
             catch
             {
-                return new List<T>();
+                return Array.Empty<T>();
             }
         }
 
@@ -66,14 +67,9 @@ namespace DragonFruit.Common.Data.Extensions
         /// </summary>
         private static JToken? GetBase(this JObject source, string key)
         {
-            try
-            {
-                return source[key];
-            }
-            catch
-            {
-                return null;
-            }
+            source.TryGetValue(key, out var value);
+
+            return value; // returns null when result from line above == false
         }
     }
 }
