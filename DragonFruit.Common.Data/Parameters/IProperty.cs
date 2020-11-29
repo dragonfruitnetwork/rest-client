@@ -9,7 +9,7 @@ namespace DragonFruit.Common.Data.Parameters
     {
         string? Name { get; set; }
 
-        CollectionConversionMode CollectionHandling { get; set; }
+        CollectionConversionMode? CollectionHandling { get; set; }
 
         string? CollectionSeparator { get; set; }
     }

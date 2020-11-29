@@ -15,18 +15,18 @@ namespace DragonFruit.Common.Data.Parameters
         }
 
         public QueryParameter(string name)
-            : this(name, CollectionConversionMode.Unordered)
         {
+            Name = name;
         }
 
         public QueryParameter(string name, CollectionConversionMode collectionConversionMode)
+            : this(name)
         {
-            Name = name;
             CollectionHandling = collectionConversionMode;
         }
 
         public string? Name { get; set; }
-        public CollectionConversionMode CollectionHandling { get; set; }
+        public CollectionConversionMode? CollectionHandling { get; set; }
         public string? CollectionSeparator { get; set; }
     }
 }

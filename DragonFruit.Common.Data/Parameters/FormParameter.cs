@@ -15,18 +15,18 @@ namespace DragonFruit.Common.Data.Parameters
         }
 
         public FormParameter(string name)
-            : this(name, CollectionConversionMode.Unordered)
         {
+            Name = name;
         }
 
         public FormParameter(string name, CollectionConversionMode collectionHandling)
+            : this(name)
         {
-            Name = name;
             CollectionHandling = collectionHandling;
         }
 
         public string? Name { get; set; }
-        public CollectionConversionMode CollectionHandling { get; set; }
+        public CollectionConversionMode? CollectionHandling { get; set; }
 
         public string? CollectionSeparator { get; set; }
     }

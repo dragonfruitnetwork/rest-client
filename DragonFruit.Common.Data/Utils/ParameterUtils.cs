@@ -27,7 +27,7 @@ namespace DragonFruit.Common.Data.Utils
         {
             foreach (var property in host.GetType().GetProperties(DefaultFlags))
             {
-                if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
+                if (!property.CanRead || !(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
                 {
                     continue;
                 }
@@ -41,8 +41,8 @@ namespace DragonFruit.Common.Data.Utils
                     continue;
                 }
 
-                // check if the type we've got is an IEnumerable of anything (in this case object)
-                if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+                // check if the type we've got is an IEnumerable of anything AND we have a valid collection handler mode
+                if (attribute.CollectionHandling.HasValue && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
                 {
                     Func<IEnumerable<object>, string, CultureInfo, IEnumerable<KeyValuePair<string, string>>> entityConverter = attribute.CollectionHandling switch
                     {
