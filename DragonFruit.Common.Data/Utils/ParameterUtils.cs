@@ -13,6 +13,8 @@ namespace DragonFruit.Common.Data.Utils
 {
     public static class ParameterUtils
     {
+        private const string DefaultConcatenationCharacter = ",";
+
         /// <summary>
         /// Default <see cref="BindingFlags"/> to search for matching properties
         /// </summary>
@@ -23,67 +25,44 @@ namespace DragonFruit.Common.Data.Utils
         /// </summary>
         internal static IEnumerable<KeyValuePair<string, string>> GetParameter<T>(object host, CultureInfo culture) where T : IProperty
         {
-            foreach (var property in host.GetType().GetProperties(ParameterUtils.DefaultFlags))
+            foreach (var property in host.GetType().GetProperties(DefaultFlags))
             {
-                if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T parameter))
+                if (!(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
                 {
+                    continue;
+                }
+
+                var keyName = attribute.Name ?? property.Name;
+                var propertyValue = property.GetValue(host);
+
+                if (propertyValue == null)
+                {
+                    // ignore null values
                     continue;
                 }
 
                 // check if the type we've got is an IEnumerable of anything (in this case object)
                 if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
                 {
-                    var values = (IEnumerable)property.GetValue(host);
-
-                    switch (parameter.CollectionHandling)
+                    Func<IEnumerable<object>, string, CultureInfo, IEnumerable<KeyValuePair<string, string>>> entityConverter = attribute.CollectionHandling switch
                     {
-                        case CollectionConversionMode.Recursive:
-                        {
-                            foreach (var item in values)
-                            {
-                                // return multiple of the same key
-                                yield return new KeyValuePair<string, string>(parameter.Name, item.AsString(culture));
-                            }
+                        CollectionConversionMode.Recursive => ApplyRecursiveConversion,
+                        CollectionConversionMode.Unordered => ApplyUnorderedConversion,
+                        CollectionConversionMode.Ordered => ApplyOrderedConversion,
+                        CollectionConversionMode.Concatenated => (a, b, c) => ApplyConcatenation(a, b, c, attribute.CollectionSeparator ?? DefaultConcatenationCharacter),
 
-                            break;
-                        }
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
 
-                        case CollectionConversionMode.Unordered:
-                        {
-                            foreach (var item in values)
-                            {
-                                // return multiple suffixed keys
-                                yield return new KeyValuePair<string, string>($"{parameter.Name}[]", item.AsString(culture));
-                            }
-
-                            break;
-                        }
-
-                        // if it's order-explicit we need to use an enumerator as there's no length count
-                        case CollectionConversionMode.Ordered:
-                        {
-                            var counter = 0;
-                            var enumerator = values.GetEnumerator();
-
-                            while (enumerator.MoveNext())
-                            {
-                                // return suffixed version with counter
-                                yield return new KeyValuePair<string, string>($"{parameter.Name}[{counter}]", enumerator.Current.AsString(culture));
-                                counter++;
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                    foreach (var entry in entityConverter.Invoke((IEnumerable<object>)propertyValue, keyName, culture))
+                    {
+                        // we purposely keep nulls in here, as it might affect the ordering.
+                        yield return entry;
                     }
                 }
                 else
                 {
-                    // anything else can just be taken as a single object for now
-                    var convertedValue = property.GetValue(host).AsString(culture);
-                    yield return new KeyValuePair<string, string>(parameter.Name, convertedValue);
+                    yield return propertyValue.ToKeyValuePair(keyName, culture);
                 }
             }
         }
@@ -98,5 +77,44 @@ namespace DragonFruit.Common.Data.Utils
                        .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T)
                        .GetValue(host);
         }
+
+        #region IEnumerable Converters
+
+        private static IEnumerable<KeyValuePair<string, string>> ApplyRecursiveConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
+        {
+            return values.Select(x => x.ToKeyValuePair(keyName, culture));
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> ApplyUnorderedConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
+        {
+            return values.Select(x => x.ToKeyValuePair($"{keyName}[]", culture));
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> ApplyOrderedConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
+        {
+            var counter = 0;
+            var enumerator = values.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter}]", culture);
+
+                counter++;
+            }
+
+            enumerator.Dispose();
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable<object> values, string keyName, CultureInfo culture, string concatCharacter)
+        {
+            yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Select(x => x.AsString(culture))));
+        }
+
+        private static KeyValuePair<string, string> ToKeyValuePair(this object value, string key, CultureInfo culture)
+        {
+            return new KeyValuePair<string, string>(key, value.AsString(culture));
+        }
+
+        #endregion
     }
 }

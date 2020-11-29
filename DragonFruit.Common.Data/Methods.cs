@@ -54,6 +54,11 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// The query name has indexer symbols appended explicit order inserted (a[0]=1&a[1]=2&a[2]=3)
         /// </summary>
-        Ordered
+        Ordered,
+
+        /// <summary>
+        /// The query is concatenated with a string and merged with one key (a=1,2,3)
+        /// </summary>
+        Concatenated
     }
 }

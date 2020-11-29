@@ -22,6 +22,8 @@ namespace DragonFruit.Common.Data.Tests
                 Assert.IsTrue(query.Contains($"{TestRequest.QueryName}[]={testString}"));
                 Assert.IsTrue(query.Contains($"{TestRequest.QueryName}[{i}]={testString}"));
             }
+
+            Assert.IsTrue(query.Contains($"{TestRequest.QueryName}={string.Join(":", TestRequest.TestDataset)}"));
         }
     }
 
@@ -40,5 +42,8 @@ namespace DragonFruit.Common.Data.Tests
 
         [QueryParameter(QueryName, CollectionConversionMode.Unordered)]
         public string[] UnorderedData { get; set; } = TestDataset;
+
+        [QueryParameter(QueryName, CollectionConversionMode.Concatenated, CollectionSeparator = ":")]
+        public string[] ConcatenatedData { get; set; } = TestDataset;
     }
 }

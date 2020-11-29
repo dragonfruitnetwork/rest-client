@@ -3,11 +3,17 @@
 
 using System;
 
+#nullable enable
+
 namespace DragonFruit.Common.Data.Parameters
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
     public class QueryParameter : Attribute, IProperty
     {
+        public QueryParameter()
+        {
+        }
+
         public QueryParameter(string name)
             : this(name, CollectionConversionMode.Unordered)
         {
@@ -19,7 +25,8 @@ namespace DragonFruit.Common.Data.Parameters
             CollectionHandling = collectionConversionMode;
         }
 
-        public string Name { get; }
-        public CollectionConversionMode CollectionHandling { get; }
+        public string? Name { get; set; }
+        public CollectionConversionMode CollectionHandling { get; set; }
+        public string? CollectionSeparator { get; set; }
     }
 }
