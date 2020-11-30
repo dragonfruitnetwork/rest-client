@@ -18,7 +18,7 @@ namespace DragonFruit.Common.Data.Utils
         /// <summary>
         /// Default <see cref="BindingFlags"/> to search for matching properties
         /// </summary>
-        internal const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+        private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
         /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s from properties with a specified <see cref="IProperty"/>-inheriting attribute.
@@ -72,10 +72,22 @@ namespace DragonFruit.Common.Data.Utils
         /// </summary>
         internal static object GetSingleParameterObject<T>(object host) where T : Attribute
         {
-            return host.GetType()
-                       .GetProperties(DefaultFlags)
-                       .Single(x => Attribute.GetCustomAttribute(x, typeof(T)) is T)
-                       .GetValue(host);
+            var targetType = typeof(T);
+            var attributedProperty = host.GetType()
+                                         .GetProperties(DefaultFlags)
+                                         .SingleOrDefault(x => Attribute.GetCustomAttribute(x, targetType) is T);
+
+            if (attributedProperty == default)
+            {
+                throw new KeyNotFoundException($"No valid {targetType.Name} was attributed. There must be a single attributed property");
+            }
+
+            if (!attributedProperty.CanRead)
+            {
+                throw new MemberAccessException($"Unable to read contents of property {attributedProperty.Name}");
+            }
+
+            return attributedProperty.GetValue(host);
         }
 
         #region IEnumerable Converters
