@@ -3,16 +3,31 @@
 
 using System;
 
+#nullable enable
+
 namespace DragonFruit.Common.Data.Parameters
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
     public class FormParameter : Attribute, IProperty
     {
+        public FormParameter()
+        {
+        }
+
         public FormParameter(string name)
         {
             Name = name;
         }
 
-        public string Name { get; }
+        public FormParameter(string name, CollectionConversionMode collectionHandling)
+            : this(name)
+        {
+            CollectionHandling = collectionHandling;
+        }
+
+        public string? Name { get; set; }
+        public CollectionConversionMode? CollectionHandling { get; set; }
+
+        public string? CollectionSeparator { get; set; }
     }
 }

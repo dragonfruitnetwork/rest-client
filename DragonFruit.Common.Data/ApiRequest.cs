@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Serializers;
 using DragonFruit.Common.Data.Utils;
