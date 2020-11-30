@@ -22,7 +22,7 @@ namespace DragonFruit.Common.Data.Extensions
         /// </summary>
         /// <param name="request">The <see cref="ApiRequest"/> to set the header on</param>
         /// <param name="value">The auth header</param>
-        public static T WithAuthenticationHeader<T>(this T request, string value) where T : ApiRequest
+        public static T WithAuthHeader<T>(this T request, string value) where T : ApiRequest
         {
             request.Headers.Value.Add("Authorization", value);
             return request;

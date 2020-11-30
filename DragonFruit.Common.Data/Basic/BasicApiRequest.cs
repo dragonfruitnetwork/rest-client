@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using DragonFruit.Common.Data.Utils;
 
-namespace DragonFruit.Common.Data
+namespace DragonFruit.Common.Data.Basic
 {
-    public class BasicApiRequest : ApiRequest
+    public class BasicApiRequest : ApiRequest, IBasicApiRequest
     {
         public override string Path { get; }
 
@@ -27,6 +27,6 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Collection of <see cref="KeyValuePair{TKey,TValue}"/>s to use as a query string
         /// </summary>
-        public Lazy<List<KeyValuePair<string, string>>> Queries { get; private set; } = new Lazy<List<KeyValuePair<string, string>>>(() => new List<KeyValuePair<string, string>>());
+        public Lazy<List<KeyValuePair<string, string>>> Queries { get; } = new Lazy<List<KeyValuePair<string, string>>>(() => new List<KeyValuePair<string, string>>());
     }
 }

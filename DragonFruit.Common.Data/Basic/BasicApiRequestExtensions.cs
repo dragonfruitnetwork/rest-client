@@ -3,14 +3,14 @@
 
 using System.Collections.Generic;
 
-namespace DragonFruit.Common.Data.Extensions
+namespace DragonFruit.Common.Data.Basic
 {
-    public static class BasicRequestExtensions
+    public static class BasicApiRequestExtensions
     {
         /// <summary>
         /// Appends a query parameter to the current <see cref="BasicApiRequest"/>
         /// </summary>
-        public static BasicApiRequest WithQuery(this BasicApiRequest request, string key, object value)
+        public static T WithQuery<T>(this T request, string key, object value) where T : IBasicApiRequest
         {
             return request.WithQuery(key, value.ToString());
         }
@@ -18,7 +18,7 @@ namespace DragonFruit.Common.Data.Extensions
         /// <summary>
         /// Appends a query parameter to the current <see cref="BasicApiRequest"/>
         /// </summary>
-        public static BasicApiRequest WithQuery(this BasicApiRequest request, string key, string value)
+        public static T WithQuery<T>(this T request, string key, string value) where T : IBasicApiRequest
         {
             request.Queries.Value.Add(new KeyValuePair<string, string>(key, value));
             return request;

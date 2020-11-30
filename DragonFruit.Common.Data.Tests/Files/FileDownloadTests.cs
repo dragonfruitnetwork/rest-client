@@ -2,7 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System.IO;
-using DragonFruit.Common.Data.Tests.Files.Objects;
+using DragonFruit.Common.Data.Basic;
 using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests.Files
@@ -13,7 +13,7 @@ namespace DragonFruit.Common.Data.Tests.Files
         [TestCase]
         public void FileDownloadTest()
         {
-            var request = new FileDownloadRequest();
+            var request = new BasicApiFileRequest("https://github.com/ppy/osu/archive/2020.1121.0.zip", Path.GetTempPath());
 
             Assert.IsFalse(File.Exists(request.Destination));
 
@@ -23,15 +23,11 @@ namespace DragonFruit.Common.Data.Tests.Files
 
                 Assert.IsTrue(File.Exists(request.Destination));
                 Assert.IsTrue(new FileInfo(request.Destination).Length > 5000);
-
-                File.Delete(request.Destination);
             }
-            catch
+            finally
             {
                 if (File.Exists(request.Destination))
                     File.Delete(request.Destination);
-
-                throw;
             }
         }
     }
