@@ -1,9 +1,8 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using DragonFruit.Common.Data.Extensions;
+using DragonFruit.Common.Data.Basic;
 using DragonFruit.Common.Data.Tests.Requests.Objects;
-using DragonFruit.Common.Data.Utils;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 

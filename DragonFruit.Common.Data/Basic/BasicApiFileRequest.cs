@@ -2,12 +2,18 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Collections.Generic;
+using DragonFruit.Common.Data.Utils;
 using SystemPath = System.IO.Path;
 
-namespace DragonFruit.Common.Data.Utils
+namespace DragonFruit.Common.Data.Basic
 {
-    public class BasicApiFileRequest : ApiFileRequest
+    public class BasicApiFileRequest : ApiFileRequest, IBasicApiRequest
     {
+        internal override string UrlCompiler => Queries.IsValueCreated
+            ? Path + QueryUtils.QueryStringFrom(Queries.Value)
+            : Path;
+
         public BasicApiFileRequest(string path)
             : this(path, SystemPath.GetFileName(path))
         {
@@ -36,5 +42,7 @@ namespace DragonFruit.Common.Data.Utils
 
         public override string Path { get; }
         public override string Destination { get; }
+
+        public Lazy<List<KeyValuePair<string, string>>> Queries { get; } = new Lazy<List<KeyValuePair<string, string>>>(() => new List<KeyValuePair<string, string>>());
     }
 }
