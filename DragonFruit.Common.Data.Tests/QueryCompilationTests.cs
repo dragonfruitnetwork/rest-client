@@ -30,7 +30,7 @@ namespace DragonFruit.Common.Data.Tests
     internal class TestRequest : ApiRequest
     {
         internal const string QueryName = "data";
-        internal static string[] TestDataset = { "a", "b", "c" };
+        internal static readonly string[] TestDataset = { "a", "b", "c" };
 
         public override string Path => "http://example.com";
 
