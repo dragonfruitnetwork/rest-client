@@ -16,13 +16,18 @@ namespace DragonFruit.Common.Data.Services
     public static class WebServices
     {
         private static HttpClient _client;
+        private static Func<HttpClient> _clientFactory;
 
         public static HttpClient Client => _client ??= ClientFactory.Invoke();
 
         /// <summary>
         /// <see cref="Func{TResult}"/> that creates the <see cref="HttpClient"/> to use
         /// </summary>
-        public static Func<HttpClient> ClientFactory { get; set; } = () => new HttpClient();
+        public static Func<HttpClient> ClientFactory
+        {
+            get => _clientFactory ?? (() => new HttpClient());
+            set => _clientFactory = value;
+        }
 
         /// <summary>
         /// Disposes the current client and sets the <see cref="Client"/> property to null.
