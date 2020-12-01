@@ -16,6 +16,8 @@ namespace DragonFruit.Common.Data
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class ApiRequest
     {
+        private List<KeyValuePair<string, string>> _headers;
+
         /// <summary>
         /// The path (including host, protocol and non-standard port) to the web resource
         /// </summary>
@@ -45,7 +47,12 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// Headers to be set in all requests should be set at <see cref="ApiClient"/>-level, using the <see cref="ApiClient.Headers"/> Dictionary.
         /// </remarks>
-        public Lazy<IDictionary<string, string>> Headers { get; set; } = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
+        public List<KeyValuePair<string, string>> Headers => _headers ??= new List<KeyValuePair<string, string>>();
+
+        /// <summary>
+        /// Internal check for whether the custom header collection (<see cref="Headers"/>) has been initialised
+        /// </summary>
+        internal bool CustomHeaderCollectionCreated => _headers != null;
 
         /// <summary>
         /// The fully compiled url
@@ -140,9 +147,9 @@ namespace DragonFruit.Common.Data
                     throw new NotImplementedException();
             }
 
-            if (Headers.IsValueCreated)
+            if (CustomHeaderCollectionCreated)
             {
-                foreach (var header in Headers.Value)
+                foreach (var header in Headers)
                 {
                     request.Headers.Add(header.Key, header.Value);
                 }

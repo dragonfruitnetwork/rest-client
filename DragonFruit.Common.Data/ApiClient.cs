@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -368,7 +369,7 @@ namespace DragonFruit.Common.Data
             if (request.RequireAuth && string.IsNullOrEmpty(Authorization))
             {
                 // check if we have a custom headerset in the request
-                if (!request.Headers.IsValueCreated || !request.Headers.Value.ContainsKey("Authorization"))
+                if (!request.CustomHeaderCollectionCreated || !request.Headers.Any(x => x.Key.Equals("Authorization")))
                 {
                     throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
                 }

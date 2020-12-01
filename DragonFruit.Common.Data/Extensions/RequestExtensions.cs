@@ -1,6 +1,8 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Collections.Generic;
+
 namespace DragonFruit.Common.Data.Extensions
 {
     public static class RequestExtensions
@@ -13,7 +15,7 @@ namespace DragonFruit.Common.Data.Extensions
         /// <param name="value">The header value</param>
         public static T WithHeader<T>(this T request, string key, string value) where T : ApiRequest
         {
-            request.Headers.Value.Add(key, value);
+            request.Headers.Add(new KeyValuePair<string, string>(key, value));
             return request;
         }
 
@@ -24,7 +26,7 @@ namespace DragonFruit.Common.Data.Extensions
         /// <param name="value">The auth header</param>
         public static T WithAuthHeader<T>(this T request, string value) where T : ApiRequest
         {
-            request.Headers.Value.Add("Authorization", value);
+            request.Headers.Add(new KeyValuePair<string, string>("Authorization", value));
             return request;
         }
     }
