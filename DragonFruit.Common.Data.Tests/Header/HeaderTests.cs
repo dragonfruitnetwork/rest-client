@@ -47,7 +47,7 @@ namespace DragonFruit.Common.Data.Tests.Header
             var request = new EchoRequest().WithHeader(HeaderName, headerValue);
             var response = Client.Perform<JObject>(request);
 
-            Assert.AreEqual((string)response["headers"][HeaderName], headerValue);
+            Assert.AreEqual((string)response["headers"]![HeaderName], headerValue);
         }
     }
 }
