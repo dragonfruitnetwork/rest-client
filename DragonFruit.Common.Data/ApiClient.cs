@@ -109,11 +109,10 @@ namespace DragonFruit.Common.Data
 
         #region Clients, Hashes and Locks
 
-        private bool _clientAdjustmentInProgress;
+        private int _clientAdjustmentSignal;
         private string _lastHandlerHash = string.Empty;
         private string _lastHash = string.Empty;
 
-        private readonly object _clientAdjustmentLock = new object();
         private long _currentRequests;
 
         private HttpMessageHandler _handler;
@@ -129,13 +128,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         protected HttpClient GetClient()
         {
-            // if we're waiting, then don't cause a crash from the monitor below or from getting the wrong client - just wait.
-            while (_clientAdjustmentInProgress)
-            {
-                Thread.Sleep(AdjustmentTimeout / 2);
-            }
-
-            //if there's no edits return the current client (perform the check once instead of a potential twice)
+            // if there's no edits return the current client (perform the check once instead of a potential twice)
             var changeHeaders = Headers.ChangesAvailable;
 
             if (_lastHash == ClientHash && !changeHeaders)
@@ -143,20 +136,18 @@ namespace DragonFruit.Common.Data
                 return Client;
             }
 
+            // if we're waiting, then don't cause a crash from the monitor below or from getting the wrong client - just wait.
+            while (Interlocked.CompareExchange(ref _clientAdjustmentSignal, 1, 0) == 1)
+            {
+                Timeout();
+            }
+
             try
             {
-                _clientAdjustmentInProgress = true;
-
-                //lock for modification
-                if (!Monitor.TryEnter(_clientAdjustmentLock, AdjustmentTimeout))
-                {
-                    throw new TimeoutException($"The {nameof(ApiClient)} is being overloaded with reconstruction requests. Consider creating a separate {nameof(ApiClient)} and delegating clients to specific types of requests");
-                }
-
-                //wait for all ongoing requests to end
+                // wait for all ongoing requests to end
                 while (_currentRequests > 0)
                 {
-                    Thread.Sleep(AdjustmentTimeout / 2);
+                    Timeout();
                 }
 
                 var handlerHash = Handler.ItemHashCode();
@@ -189,8 +180,7 @@ namespace DragonFruit.Common.Data
             }
             finally
             {
-                _clientAdjustmentInProgress = false;
-                Monitor.Exit(_clientAdjustmentLock);
+                Interlocked.Decrement(ref _clientAdjustmentSignal);
             }
         }
 
@@ -375,5 +365,7 @@ namespace DragonFruit.Common.Data
                 }
             }
         }
+
+        private void Timeout() => Thread.Sleep(AdjustmentTimeout / 2);
     }
 }
