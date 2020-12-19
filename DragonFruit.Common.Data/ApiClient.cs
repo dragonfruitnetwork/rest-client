@@ -180,7 +180,7 @@ namespace DragonFruit.Common.Data
             }
             finally
             {
-                Interlocked.Decrement(ref _clientAdjustmentSignal);
+                Interlocked.Exchange(ref _clientAdjustmentSignal, 0);
             }
         }
 
