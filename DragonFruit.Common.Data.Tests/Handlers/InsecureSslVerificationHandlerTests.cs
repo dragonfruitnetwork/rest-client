@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Authentication;
 using DragonFruit.Common.Data.Basic;
 using DragonFruit.Common.Data.Handlers;
@@ -26,10 +27,16 @@ namespace DragonFruit.Common.Data.Tests.Handlers
                 client.Perform(request);
                 Assert.Fail("Request must fail when SSL validation is enabled");
             }
+            // .NET Standard 2 returns aggregate exception
             catch (AggregateException e)
             {
                 var innerExceptions = e.InnerExceptions.Select(x => x.InnerException);
                 Assert.IsTrue(innerExceptions.Any(x => x is AuthenticationException));
+            }
+            // .NET 5 returns a non-aggregated copy of above
+            catch (HttpRequestException e)
+            {
+                Assert.IsTrue(e.InnerException is AuthenticationException);
             }
 
             // set handler and go again
