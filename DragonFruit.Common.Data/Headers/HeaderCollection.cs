@@ -3,15 +3,19 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 
 namespace DragonFruit.Common.Data.Headers
 {
     public class HeaderCollection
     {
-        private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
-        private readonly ConcurrentQueue<HeaderChange> _changes = new ConcurrentQueue<HeaderChange>();
+        private readonly ConcurrentDictionary<string, string> _values = new ConcurrentDictionary<string, string>();
+        private ApiClient _client;
+
+        public HeaderCollection(ApiClient client)
+        {
+            _client = client;
+        }
 
         /// <summary>
         /// Gets or sets the specified value for the key provided.
@@ -29,59 +33,27 @@ namespace DragonFruit.Common.Data.Headers
         {
             get
             {
-                var lastTrackedChange = _changes.LastOrDefault(x => x.Key == key);
-
-                if (lastTrackedChange != null)
-                {
-                    return lastTrackedChange.Value;
-                }
-
-                return _values.ContainsKey(key) ? _values[key] : null;
+                _values.TryGetValue(key, out var value);
+                return value;
             }
 
-            set => _changes.Enqueue(new HeaderChange(key, value));
+            set
+            {
+                _values[key] = value;
+                _client.RequestClientReset(false);
+            }
         }
 
         /// <summary>
         /// Clears all queued changes and queues all active headers to be removed
         /// </summary>
-        public void Clear()
-        {
-            while (_changes.TryDequeue(out _))
-            {
-                //do nothing
-            }
-
-            foreach (var item in _values)
-            {
-                this[item.Key] = null;
-            }
-        }
-
-        /// <summary>
-        /// All the keys currently in use. Ingores queued changes
-        /// </summary>
-        public IEnumerable<string> Keys => _values.Keys;
-
-        internal bool ChangesAvailable => _changes.Any();
+        public void Clear() => _values.Clear();
 
         /// <summary>
         /// Applies the <see cref="KeyValuePair{TKey,TValue}"/>s to the provided <see cref="HttpClient"/>
         /// </summary>
-        internal void ProcessAndApplyTo(HttpClient client)
+        internal void ApplyTo(HttpClient client)
         {
-            while (_changes.TryDequeue(out var change))
-            {
-                if (string.IsNullOrEmpty(change.Value))
-                {
-                    _values.Remove(change.Key);
-                }
-                else
-                {
-                    _values[change.Key] = change.Value;
-                }
-            }
-
             foreach (var header in _values)
             {
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
