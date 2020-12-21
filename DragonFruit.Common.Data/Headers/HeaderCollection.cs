@@ -10,7 +10,7 @@ namespace DragonFruit.Common.Data.Headers
     public class HeaderCollection
     {
         private readonly ConcurrentDictionary<string, string> _values = new ConcurrentDictionary<string, string>();
-        private ApiClient _client;
+        private readonly ApiClient _client;
 
         public HeaderCollection(ApiClient client)
         {

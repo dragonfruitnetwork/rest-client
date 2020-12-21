@@ -12,7 +12,6 @@ namespace DragonFruit.Common.Data.Handlers
     /// <summary>
     /// <see cref="HttpClient"/> will auto-strip the auth header, even on redirects to the same site.
     /// This handler "bypasses" this protection if the host is the same. It also supports an inner handler, should you wish to configure one.
-    ///
     /// <para>
     /// You should only use this if you know what you're doing
     /// </para>
