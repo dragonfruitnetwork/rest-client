@@ -9,14 +9,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
-using DragonFruit.Common.Data.Extensions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
 
 namespace DragonFruit.Common.Data
 {
     /// <summary>
-    /// <see cref="HttpClient"/>-related data
+    /// Managed wrapper for a <see cref="HttpClient"/> allowing easy header access, handler, serializing/deserializing and memory management
     /// </summary>
     public class ApiClient
     {
@@ -44,12 +43,14 @@ namespace DragonFruit.Common.Data
         public ApiClient(ISerializer serializer)
         {
             Serializer = serializer;
+            Headers = new HeaderCollection(this);
+
+            RequestClientReset(true);
         }
 
         ~ApiClient()
         {
             Client?.Dispose();
-            Handler?.Dispose();
         }
 
         #endregion
@@ -77,15 +78,23 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Headers to be sent with the requests
         /// </summary>
-        public HeaderCollection Headers { get; } = new HeaderCollection();
+        public HeaderCollection Headers { get; }
 
         /// <summary>
-        /// Optional <see cref="HttpMessageHandler"/> to be consumed by the <see cref="HttpClient"/>
+        /// Optional <see cref="HttpMessageHandler"/> factory to be consumed by the <see cref="HttpClient"/>
         /// </summary>
         /// <remarks>
-        /// The old <see cref="HttpMessageHandler"/> will be disposed on setting a new one.
+        /// This must create a new handler each time as they are disposed alongside the client
         /// </remarks>
-        protected HttpMessageHandler Handler { get; set; }
+        public Func<HttpMessageHandler> Handler
+        {
+            get => _handler;
+            set
+            {
+                _handler = value;
+                RequestClientReset(false);
+            }
+        }
 
         /// <summary>
         /// The <see cref="ISerializer"/> to use when encoding/decoding request and response streams.
@@ -107,36 +116,30 @@ namespace DragonFruit.Common.Data
 
         #endregion
 
-        #region Clients, Hashes and Locks
+        #region Private Vars
 
+        private Func<HttpMessageHandler> _handler;
         private int _clientAdjustmentSignal;
-        private string _lastHandlerHash = string.Empty;
-        private string _lastHash = string.Empty;
-
-        private long _currentRequests;
-
-        private HttpMessageHandler _handler;
-
-        protected virtual string ClientHash => $"{Handler.ItemHashCode()}";
+        private long _clientAdjustmentRequestSignal, _currentRequests;
 
         #endregion
 
-        #region Default Creations
+        #region Factories
 
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
         /// </summary>
         protected HttpClient GetClient()
         {
-            // if there's no edits return the current client (perform the check once instead of a potential twice)
-            var changeHeaders = Headers.ChangesAvailable;
+            // return current client if there are no changes
+            var resetLevel = Interlocked.Read(ref _clientAdjustmentRequestSignal);
 
-            if (_lastHash == ClientHash && !changeHeaders)
+            if (resetLevel == 0)
             {
                 return Client;
             }
 
-            // if we're waiting, then don't cause a crash from the monitor below or from getting the wrong client - just wait.
+            // if we're waiting, then don't cause a crash from getting the wrong client - just wait.
             while (Interlocked.CompareExchange(ref _clientAdjustmentSignal, 1, 0) == 1)
             {
                 Timeout();
@@ -150,32 +153,25 @@ namespace DragonFruit.Common.Data
                     Timeout();
                 }
 
-                var handlerHash = Handler.ItemHashCode();
-                var resetClient = handlerHash != _lastHandlerHash;
+                // only reset the client if the handler has changed (signal = 2)
+                var resetClient = resetLevel == 2;
 
-                // only reset the client if the handler has changed.
                 if (resetClient)
                 {
+                    var handler = CreateHandler();
+
                     Client?.Dispose();
-                    _handler?.Dispose();
-
-                    _handler = Handler;
-                    _lastHandlerHash = handlerHash;
-
-                    Client = Handler != null ? new HttpClient(_handler, false) : new HttpClient();
+                    Client = handler != null ? new HttpClient(handler, true) : new HttpClient();
                 }
 
-                // reset the headers if any have changed (or the client has been reinitialised)
-                if (changeHeaders || resetClient)
-                {
-                    // Clear and apply new headers
-                    Client.DefaultRequestHeaders.Clear();
-                    Headers.ProcessAndApplyTo(Client);
+                // apply new headers
+                Headers.ApplyTo(Client);
 
-                    SetupClient(Client, resetClient);
-                }
+                // allow the conumer to change the client
+                SetupClient(Client, resetClient);
 
-                _lastHash = ClientHash;
+                // reset the state
+                Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
                 return Client;
             }
             finally
@@ -189,8 +185,12 @@ namespace DragonFruit.Common.Data
         #region Empty Overrides (Inherited)
 
         /// <summary>
+        /// Overridable method for creating a <see cref="HttpMessageHandler"/> to use with the <see cref="HttpClient"/>
+        /// </summary>
+        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke();
+
+        /// <summary>
         /// Overridable method to customise the <see cref="HttpClient"/>.
-        ///
         /// <para>
         /// Custom headers can be included here, but should be done in the <see cref="Headers"/> dictionary.
         /// </para>
@@ -365,6 +365,8 @@ namespace DragonFruit.Common.Data
                 }
             }
         }
+
+        public void RequestClientReset(bool fullReset) => Interlocked.Exchange(ref _clientAdjustmentRequestSignal, fullReset ? 2 : 1);
 
         private void Timeout() => Thread.Sleep(AdjustmentTimeout / 2);
     }
