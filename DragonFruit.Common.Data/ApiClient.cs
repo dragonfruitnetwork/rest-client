@@ -153,9 +153,9 @@ namespace DragonFruit.Common.Data
                     Timeout();
                 }
 
+                // only reset the client if the handler has changed (signal = 2)
                 var resetClient = resetLevel == 2;
 
-                // only reset the client if the handler has changed (signal = 2)
                 if (resetClient)
                 {
                     var handler = CreateHandler();
@@ -164,12 +164,13 @@ namespace DragonFruit.Common.Data
                     Client = handler != null ? new HttpClient(handler, true) : new HttpClient();
                 }
 
-                // Clear and apply new headers
-                Client.DefaultRequestHeaders.Clear();
+                // apply new headers
                 Headers.ApplyTo(Client);
 
+                // allow the conumer to change the client
                 SetupClient(Client, resetClient);
 
+                // reset the state
                 Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
                 return Client;
             }

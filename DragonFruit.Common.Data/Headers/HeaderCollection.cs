@@ -54,6 +54,8 @@ namespace DragonFruit.Common.Data.Headers
         /// </summary>
         internal void ApplyTo(HttpClient client)
         {
+            client.DefaultRequestHeaders.Clear();
+
             foreach (var header in _values)
             {
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
