@@ -92,7 +92,7 @@ namespace DragonFruit.Common.Data
             set
             {
                 _handler = value;
-                RequestClientReset(false);
+                RequestClientReset(true);
             }
         }
 
@@ -366,7 +366,17 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        public void RequestClientReset(bool fullReset) => Interlocked.Exchange(ref _clientAdjustmentRequestSignal, fullReset ? 2 : 1);
+        public void RequestClientReset(bool fullReset)
+        {
+            if (fullReset)
+            {
+                Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 2);
+            }
+            else
+            {
+                Interlocked.CompareExchange(ref _clientAdjustmentRequestSignal, 1, 0);
+            }
+        }
 
         private void Timeout() => Thread.Sleep(AdjustmentTimeout / 2);
     }
