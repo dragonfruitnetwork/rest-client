@@ -9,11 +9,12 @@ namespace DragonFruit.Common.Data.Headers
 {
     public class HeaderCollection
     {
-        private readonly ConcurrentDictionary<string, string> _values = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _values;
         private readonly ApiClient _client;
 
         public HeaderCollection(ApiClient client)
         {
+            _values = new ConcurrentDictionary<string, string>();
             _client = client;
         }
 
