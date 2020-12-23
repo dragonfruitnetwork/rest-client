@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -45,11 +46,15 @@ namespace DragonFruit.Common.Data
             Serializer = serializer;
             Headers = new HeaderCollection(this);
 
+            _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
             RequestClientReset(true);
         }
 
         ~ApiClient()
         {
+            _lock?.Dispose();
+
             Client?.Dispose();
         }
 
@@ -105,22 +110,18 @@ namespace DragonFruit.Common.Data
         public ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// <see cref="HttpClient"/> used by these requests. This is used by the library and as such, should **not** be disposed in any way
+        /// <see cref="HttpClient"/> used by these requests.
+        /// This is used by the library and as such, should **not** be disposed in any way
         /// </summary>
         protected HttpClient Client { get; private set; }
-
-        /// <summary>
-        /// Time, in milliseconds to wait to modify a <see cref="HttpClient"/> before failing the request
-        /// </summary>
-        protected virtual int AdjustmentTimeout => 200;
 
         #endregion
 
         #region Private Vars
 
+        private readonly ReaderWriterLockSlim _lock;
+        private long _clientAdjustmentRequestSignal;
         private Func<HttpMessageHandler> _handler;
-        private int _clientAdjustmentSignal;
-        private long _clientAdjustmentRequestSignal, _currentRequests;
 
         #endregion
 
@@ -134,50 +135,41 @@ namespace DragonFruit.Common.Data
             // return current client if there are no changes
             var resetLevel = Interlocked.Read(ref _clientAdjustmentRequestSignal);
 
-            if (resetLevel == 0)
+            if (resetLevel > 0)
             {
-                return Client;
-            }
+                // block all reads and let all current requests finish
+                _lock.EnterWriteLock();
 
-            // if we're waiting, then don't cause a crash from getting the wrong client - just wait.
-            while (Interlocked.CompareExchange(ref _clientAdjustmentSignal, 1, 0) == 1)
-            {
-                Timeout();
-            }
-
-            try
-            {
-                // wait for all ongoing requests to end
-                while (_currentRequests > 0)
+                try
                 {
-                    Timeout();
+                    // only reset the client if the handler has changed (signal = 2)
+                    var resetClient = resetLevel == 2;
+
+                    if (resetClient)
+                    {
+                        var handler = CreateHandler();
+
+                        Client?.Dispose();
+                        Client = handler != null ? new HttpClient(handler, true) : new HttpClient();
+                    }
+
+                    // apply new headers
+                    Headers.ApplyTo(Client);
+
+                    // allow the consumer to change the client
+                    SetupClient(Client, resetClient);
+
+                    // reset the state
+                    Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
                 }
-
-                // only reset the client if the handler has changed (signal = 2)
-                var resetClient = resetLevel == 2;
-
-                if (resetClient)
+                finally
                 {
-                    var handler = CreateHandler();
-
-                    Client?.Dispose();
-                    Client = handler != null ? new HttpClient(handler, true) : new HttpClient();
+                    _lock.ExitWriteLock();
                 }
-
-                // apply new headers
-                Headers.ApplyTo(Client);
-
-                // allow the conumer to change the client
-                SetupClient(Client, resetClient);
-
-                // reset the state
-                Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
-                return Client;
             }
-            finally
-            {
-                Interlocked.Exchange(ref _clientAdjustmentSignal, 0);
-            }
+
+            _lock.EnterReadLock();
+            return Client;
         }
 
         #endregion
@@ -299,9 +291,7 @@ namespace DragonFruit.Common.Data
         /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
         protected T InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, T> processResult, bool disposeResponse, CancellationToken token = default)
         {
-            //get client and request (disposables)
             var client = GetClient();
-            Interlocked.Increment(ref _currentRequests);
 
             // post-modification
             SetupRequest(request);
@@ -318,15 +308,14 @@ namespace DragonFruit.Common.Data
                 response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).Result;
 #endif
 
-                //all possible exceptions from client.SendAsync() will be released here
+                // all possible exceptions from client.SendAsync() will be released here
                 return processResult.Invoke(response);
             }
             finally
             {
-                //un-bump reqs
-                Interlocked.Decrement(ref _currentRequests);
+                RequestFinished();
 
-                //dispose
+                // dispose
                 if (disposeResponse)
                 {
                     response?.Dispose();
@@ -366,6 +355,10 @@ namespace DragonFruit.Common.Data
             }
         }
 
+        /// <summary>
+        /// Requests the client is reset on the next request
+        /// </summary>
+        /// <param name="fullReset">Whether to reset the <see cref="HttpClient"/> as well as the headers</param>
         public void RequestClientReset(bool fullReset)
         {
             if (fullReset)
@@ -378,6 +371,7 @@ namespace DragonFruit.Common.Data
             }
         }
 
-        private void Timeout() => Thread.Sleep(AdjustmentTimeout / 2);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void RequestFinished() => _lock.ExitReadLock();
     }
 }
