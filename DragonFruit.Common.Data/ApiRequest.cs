@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using DragonFruit.Common.Data.Parameters;
@@ -34,11 +35,8 @@ namespace DragonFruit.Common.Data
         protected virtual BodyType BodyType { get; }
 
         /// <summary>
-        /// Whether an auth header is required.
+        /// Whether an auth header is required. Throws on check failure (before sending request)
         /// </summary>
-        /// <exception cref="ClientValidationException">This was set to true but no auth header was specified.
-        /// Automatically suppressed if the <see cref="Headers"/> property has been initialised.
-        /// </exception>
         protected internal virtual bool RequireAuth => false;
 
         /// <summary>
@@ -81,7 +79,25 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Query string generated from all filled <see cref="QueryParameter"/>-attributed properties
         /// </summary>
-        internal string QueryString => QueryUtils.QueryStringFrom(ParameterUtils.GetParameter<QueryParameter>(this, RequestCulture));
+        internal string QueryString
+        {
+            get
+            {
+                var queries = ParameterUtils.GetParameter<QueryParameter>(this, RequestCulture);
+
+                if (AdditionalQueries != null)
+                {
+                    queries = queries.Concat(AdditionalQueries);
+                }
+
+                return QueryUtils.QueryStringFrom(queries);
+            }
+        }
+
+        /// <summary>
+        /// Additional abstract collection of queries provided as an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>
+        /// </summary>
+        protected virtual IEnumerable<KeyValuePair<string, string>> AdditionalQueries { get; }
 
         /// <summary>
         /// Create a <see cref="HttpResponseMessage"/> for this <see cref="ApiRequest"/>, which can then be modified manually or overriden by <see cref="ApiClient.SetupRequest"/>
