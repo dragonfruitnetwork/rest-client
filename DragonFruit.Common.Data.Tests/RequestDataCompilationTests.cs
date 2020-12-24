@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Collections.Generic;
 using System.Linq;
 using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Utils;
@@ -11,7 +12,7 @@ namespace DragonFruit.Common.Data.Tests
     [TestFixture]
     public class RequestDataCompilationTests
     {
-        [TestCase]
+        [Test]
         public void TestQueries()
         {
             var query = new TestRequest().FullUrl.Split('?').Last().Split('&');
@@ -27,7 +28,7 @@ namespace DragonFruit.Common.Data.Tests
             Assert.IsTrue(query.Contains($"{TestRequest.QueryName}={string.Join(":", TestRequest.TestDataset)}"));
         }
 
-        [TestCase]
+        [Test]
         public void TestEnumHandling()
         {
             var request = new TestRequest();
@@ -37,6 +38,15 @@ namespace DragonFruit.Common.Data.Tests
             Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Blue).ToLower(CultureUtils.DefaultCulture)}"));
             Assert.IsTrue(query.Contains($"enum={(int)EnumValues.Green}"));
         }
+
+        [Test]
+        public void TestAdditionalQueryHandling()
+        {
+            var request = new TestRequest();
+            var query = request.FullUrl.Split('?').Last().Split('&');
+
+            Assert.IsTrue(query.Contains("a=x"));
+        }
     }
 
     internal class TestRequest : ApiRequest
@@ -45,6 +55,11 @@ namespace DragonFruit.Common.Data.Tests
         internal static readonly string[] TestDataset = { "a", "b", "c" };
 
         public override string Path => "http://example.com";
+
+        protected override IEnumerable<KeyValuePair<string, string>> AdditionalQueries => new[]
+        {
+            new KeyValuePair<string, string>("a", "x")
+        };
 
         [QueryParameter(QueryName, CollectionConversionMode.Recursive)]
         public string[] RecursiveData { get; set; } = TestDataset;
