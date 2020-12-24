@@ -3,6 +3,7 @@
 
 using System.Linq;
 using DragonFruit.Common.Data.Parameters;
+using DragonFruit.Common.Data.Utils;
 using NUnit.Framework;
 
 namespace DragonFruit.Common.Data.Tests
@@ -29,10 +30,11 @@ namespace DragonFruit.Common.Data.Tests
         [TestCase]
         public void TestEnumHandling()
         {
-            var query = new TestRequest().FullUrl.Split('?').Last().Split('&');
+            var request = new TestRequest();
+            var query = request.FullUrl.Split('?').Last().Split('&');
 
             Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Red)}"));
-            Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Blue).ToLower()}"));
+            Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Blue).ToLower(CultureUtils.DefaultCulture)}"));
             Assert.IsTrue(query.Contains($"enum={(int)EnumValues.Green}"));
         }
     }

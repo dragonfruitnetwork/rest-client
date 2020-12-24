@@ -65,7 +65,7 @@ namespace DragonFruit.Common.Data.Utils
                     yield return attribute.EnumHandling.Value switch
                     {
                         EnumHandlingMode.Numeric => ((int)propertyValue).ToKeyValuePair(keyName, culture),
-                        EnumHandlingMode.StringLower => propertyValue.ToString().ToLower().ToKeyValuePair(keyName, culture),
+                        EnumHandlingMode.StringLower => propertyValue.ToString().ToLower(culture).ToKeyValuePair(keyName, culture),
 
                         // default includes string handling
                         _ => propertyValue.ToKeyValuePair(keyName, culture)
