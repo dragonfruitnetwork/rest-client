@@ -60,6 +60,17 @@ namespace DragonFruit.Common.Data.Utils
                         yield return entry;
                     }
                 }
+                else if (property.PropertyType.IsEnum && attribute.EnumHandling.HasValue)
+                {
+                    yield return attribute.EnumHandling.Value switch
+                    {
+                        EnumHandlingMode.Numeric => ((int)propertyValue).ToKeyValuePair(keyName, culture),
+                        EnumHandlingMode.StringLower => propertyValue.ToString().ToLower(culture).ToKeyValuePair(keyName, culture),
+
+                        // default includes string handling
+                        _ => propertyValue.ToKeyValuePair(keyName, culture)
+                    };
+                }
                 else
                 {
                     yield return propertyValue.ToKeyValuePair(keyName, culture);
