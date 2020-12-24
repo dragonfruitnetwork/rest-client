@@ -61,4 +61,22 @@ namespace DragonFruit.Common.Data
         /// </summary>
         Concatenated
     }
+
+    public enum EnumHandlingMode
+    {
+        /// <summary>
+        /// Convert to the integer representation
+        /// </summary>
+        Numeric,
+
+        /// <summary>
+        /// Convert to string form
+        /// </summary>
+        String,
+
+        /// <summary>
+        /// Convert to lowercase string form
+        /// </summary>
+        StringLower
+    }
 }

@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace DragonFruit.Common.Data.Tests
 {
     [TestFixture]
-    public class QueryCompilationTests
+    public class RequestDataCompilationTests
     {
         [TestCase]
         public void TestQueries()
@@ -24,6 +24,16 @@ namespace DragonFruit.Common.Data.Tests
             }
 
             Assert.IsTrue(query.Contains($"{TestRequest.QueryName}={string.Join(":", TestRequest.TestDataset)}"));
+        }
+
+        [TestCase]
+        public void TestEnumHandling()
+        {
+            var query = new TestRequest().FullUrl.Split('?').Last().Split('&');
+
+            Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Red)}"));
+            Assert.IsTrue(query.Contains($"enum={nameof(EnumValues.Blue).ToLower()}"));
+            Assert.IsTrue(query.Contains($"enum={(int)EnumValues.Green}"));
         }
     }
 
@@ -45,5 +55,21 @@ namespace DragonFruit.Common.Data.Tests
 
         [QueryParameter(QueryName, CollectionConversionMode.Concatenated, CollectionSeparator = ":")]
         public string[] ConcatenatedData { get; set; } = TestDataset;
+
+        [QueryParameter("enum", EnumHandlingMode.String)]
+        public EnumValues StringEnum => EnumValues.Red;
+
+        [QueryParameter("enum", EnumHandlingMode.StringLower)]
+        public EnumValues SmallStringEnum => EnumValues.Blue;
+
+        [QueryParameter("enum", EnumHandlingMode.Numeric)]
+        public EnumValues NumericEnum => EnumValues.Green;
+    }
+
+    public enum EnumValues
+    {
+        Red,
+        Blue,
+        Green = 512
     }
 }

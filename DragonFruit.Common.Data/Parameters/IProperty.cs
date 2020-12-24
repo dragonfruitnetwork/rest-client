@@ -11,6 +11,8 @@ namespace DragonFruit.Common.Data.Parameters
 
         CollectionConversionMode? CollectionHandling { get; set; }
 
+        EnumHandlingMode? EnumHandling { get; set; }
+
         string? CollectionSeparator { get; set; }
     }
 }

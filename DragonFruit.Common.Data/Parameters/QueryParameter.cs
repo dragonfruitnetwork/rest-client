@@ -19,6 +19,12 @@ namespace DragonFruit.Common.Data.Parameters
             Name = name;
         }
 
+        public QueryParameter(string name, EnumHandlingMode enumHandling)
+            : this(name)
+        {
+            EnumHandling = enumHandling;
+        }
+
         public QueryParameter(string name, CollectionConversionMode collectionConversionMode)
             : this(name)
         {
@@ -27,6 +33,8 @@ namespace DragonFruit.Common.Data.Parameters
 
         public string? Name { get; set; }
         public CollectionConversionMode? CollectionHandling { get; set; }
+        public EnumHandlingMode? EnumHandling { get; set; }
+
         public string? CollectionSeparator { get; set; }
     }
 }
