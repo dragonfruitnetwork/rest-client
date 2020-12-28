@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,6 +36,20 @@ namespace DragonFruit.Common.Data.Handlers
             }
         }
 
+#if NET5_0
+        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = base.Send(request, cancellationToken);
+
+            if (IsRedirect(response.StatusCode))
+            {
+                response = base.Send(CopyRequest(response), cancellationToken);
+            }
+
+            return response;
+        }
+#endif
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<HttpResponseMessage>();
@@ -56,28 +71,9 @@ namespace DragonFruit.Common.Data.Handlers
                         };
                     }
 
-                    if (response.StatusCode == HttpStatusCode.MovedPermanently
-                        || response.StatusCode == HttpStatusCode.Moved
-                        || response.StatusCode == HttpStatusCode.Redirect
-                        || response.StatusCode == HttpStatusCode.Found
-                        || response.StatusCode == HttpStatusCode.SeeOther
-                        || response.StatusCode == HttpStatusCode.RedirectKeepVerb
-                        || response.StatusCode == HttpStatusCode.TemporaryRedirect
-                        || (int)response.StatusCode == 308)
+                    if (IsRedirect(response.StatusCode))
                     {
-                        var newRequest = CopyRequest(response);
-
-                        if (response.StatusCode == HttpStatusCode.Redirect
-                            || response.StatusCode == HttpStatusCode.Found
-                            || response.StatusCode == HttpStatusCode.SeeOther)
-                        {
-                            newRequest.Content = null;
-                            newRequest.Method = HttpMethod.Get;
-                        }
-
-                        newRequest.RequestUri = response.Headers.Location;
-
-                        base.SendAsync(newRequest, cancellationToken)
+                        base.SendAsync(CopyRequest(response), cancellationToken)
                             .ContinueWith(t2 => tcs.SetResult(t2.Result), cancellationToken);
                     }
                     else
@@ -91,7 +87,7 @@ namespace DragonFruit.Common.Data.Handlers
 
         private static HttpRequestMessage CopyRequest(HttpResponseMessage response)
         {
-            var oldRequest = response.RequestMessage;
+            var oldRequest = response.RequestMessage ?? throw new NullReferenceException("Request Message not found");
 
             var newRequest = new HttpRequestMessage(oldRequest.Method, oldRequest.RequestUri);
 
@@ -116,7 +112,7 @@ namespace DragonFruit.Common.Data.Handlers
 #if NET5_0
             foreach (var (key, value) in oldRequest.Options)
             {
-                if (value == null || !(value is string s))
+                if (!(value is string s))
                 {
                     continue;
                 }
@@ -130,9 +126,7 @@ namespace DragonFruit.Common.Data.Handlers
             }
 #endif
 
-            if (response.StatusCode == HttpStatusCode.Redirect
-                || response.StatusCode == HttpStatusCode.Found
-                || response.StatusCode == HttpStatusCode.SeeOther)
+            if (AlterMethod(response.StatusCode))
             {
                 newRequest.Content = null;
                 newRequest.Method = HttpMethod.Get;
@@ -144,5 +138,29 @@ namespace DragonFruit.Common.Data.Handlers
 
             return newRequest;
         }
+
+        #region Switches
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsRedirect(HttpStatusCode code) => code switch
+        {
+            HttpStatusCode.Moved => true,
+            HttpStatusCode.Redirect => true,
+            HttpStatusCode.SeeOther => true,
+            HttpStatusCode.RedirectKeepVerb => true,
+
+            _ => false
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool AlterMethod(HttpStatusCode code) => code switch
+        {
+            HttpStatusCode.Redirect => true,
+            HttpStatusCode.SeeOther => true,
+
+            _ => false
+        };
+
+        #endregion
     }
 }
