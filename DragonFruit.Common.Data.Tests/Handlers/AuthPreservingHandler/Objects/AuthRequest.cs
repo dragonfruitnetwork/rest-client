@@ -22,6 +22,9 @@ namespace DragonFruit.Common.Data.Tests.Handlers.AuthPreservingHandler.Objects
         [FormParameter("client_secret")]
         public string ClientSecret => GetEnvironmentVar("orbit_client_secret");
 
+        [FormParameter("scope")]
+        public string Scopes => "public";
+
         private static string GetEnvironmentVar(string var)
         {
             var envVar = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
