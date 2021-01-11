@@ -244,7 +244,7 @@ namespace DragonFruit.Common.Data
         /// Download a file with an <see cref="ApiRequest"/>.
         /// Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </summary>
-        public virtual void Perform(ApiFileRequest request, CancellationToken token = default)
+        public virtual void Perform(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
             //check request data is valid
             ValidateRequest(request);
@@ -256,18 +256,25 @@ namespace DragonFruit.Common.Data
 
             HttpResponseMessage CopyProcess(HttpResponseMessage response)
             {
-                //validate
+                // validate
                 response.EnsureSuccessStatusCode();
 
                 // create a new filestream and copy all data into
                 using var stream = File.Open(request.Destination, request.FileCreationMode);
-
 #if NET5_0
                 using var networkStream = response.Content.ReadAsStreamAsync(token).Result;
 #else
                 using var networkStream = response.Content.ReadAsStreamAsync().Result;
 #endif
-                networkStream.CopyTo(stream);
+                // create a buffer for progress reporting
+                var buffer = new byte[request.BufferSize];
+                int count;
+
+                while ((count = networkStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    stream.Write(buffer, 0, count);
+                    progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                }
 
                 // flush and return
                 stream.Flush();
