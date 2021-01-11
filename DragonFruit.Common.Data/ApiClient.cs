@@ -269,11 +269,17 @@ namespace DragonFruit.Common.Data
                 // create a buffer for progress reporting
                 var buffer = new byte[request.BufferSize];
                 int count;
+                uint iterations = 0;
 
                 while ((count = networkStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
+                    iterations++;
                     stream.Write(buffer, 0, count);
-                    progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+
+                    if (iterations % 25 == 0)
+                    {
+                        progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                    }
                 }
 
                 // flush and return
