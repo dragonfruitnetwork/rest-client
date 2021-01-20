@@ -276,7 +276,8 @@ namespace DragonFruit.Common.Data
                     iterations++;
                     stream.Write(buffer, 0, count);
 
-                    if (iterations % 25 == 0)
+                    // check every 50th time to stop bottlenecks
+                    if (iterations % 50 == 0)
                     {
                         progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
                     }
