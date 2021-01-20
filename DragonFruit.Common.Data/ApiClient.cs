@@ -285,8 +285,6 @@ namespace DragonFruit.Common.Data
 
                 // flush and return
                 stream.Flush();
-
-                // we're not using this so return anything...
                 return response;
             }
 
