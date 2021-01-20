@@ -307,7 +307,7 @@ namespace DragonFruit.Common.Data
 
             // post-modification
             SetupRequest(request);
-            HttpResponseMessage response = null;
+            HttpResponseMessage response;
 
             try
             {
@@ -319,15 +319,21 @@ namespace DragonFruit.Common.Data
 #else
                 response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).Result;
 #endif
+            }
+            finally
+            {
+                // exit the read lock as soon as the request has been sent and processed
+                // this is because the callback could involve re-processing the request.
+                RequestFinished();
+            }
 
-                // all possible exceptions from client.SendAsync() will be released here
+            try
+            {
                 return processResult.Invoke(response);
             }
             finally
             {
-                RequestFinished();
-
-                // dispose
+                // dispose after processing the result
                 if (disposeResponse)
                 {
                     response?.Dispose();
