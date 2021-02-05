@@ -266,21 +266,20 @@ namespace DragonFruit.Common.Data
 #else
                 using var networkStream = response.Content.ReadAsStreamAsync().Result;
 #endif
+
                 // create a buffer for progress reporting
                 var buffer = new byte[request.BufferSize];
                 int count;
-                uint iterations = 0;
+                int iterations = 0;
 
                 while ((count = networkStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    iterations++;
+                    Interlocked.Increment(ref iterations);
                     stream.Write(buffer, 0, count);
 
-                    // check every 50th time to stop bottlenecks
-                    if (iterations % 50 == 0)
-                    {
+                    // check every 10th time to stop bottlenecks (use CompareExchange to stop the int from overflowing from insanely large file downloads)
+                    if (Interlocked.CompareExchange(ref iterations, 0, 10) == 10)
                         progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
-                    }
                 }
 
                 // flush and return
