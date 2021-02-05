@@ -266,6 +266,7 @@ namespace DragonFruit.Common.Data
 #else
                 using var networkStream = response.Content.ReadAsStreamAsync().Result;
 #endif
+
                 // create a buffer for progress reporting
                 var buffer = new byte[request.BufferSize];
                 int count;
