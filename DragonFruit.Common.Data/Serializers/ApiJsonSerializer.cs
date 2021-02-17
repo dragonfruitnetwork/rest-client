@@ -12,33 +12,58 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public class ApiJsonSerializer : ISerializer
     {
+        public string ContentType => "application/json";
+
+        /// <summary>
+        /// Creates a <see cref="ApiJsonSerializer"/> using the Default Culture
+        /// </summary>
         public ApiJsonSerializer()
             : this(CultureUtils.DefaultCulture)
         {
         }
 
-        public ApiJsonSerializer(JsonSerializerSettings settings)
-            : this(JsonSerializer.Create(settings))
-        {
-        }
-
-        public ApiJsonSerializer(CultureInfo culture)
-            : this(JsonSerializer.Create(new JsonSerializerSettings
+        /// <summary>
+        /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="CultureInfo"/>
+        /// </summary>
+        public ApiJsonSerializer(CultureInfo culture, Encoding encoding = null, bool autoDetectEncoding = true)
+            : this(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
                 Culture = culture
-            }))
+            }, encoding, autoDetectEncoding)
         {
         }
 
-        public ApiJsonSerializer(JsonSerializer serializer)
+        /// <summary>
+        /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="JsonSerializerSettings"/>
+        /// </summary>
+        public ApiJsonSerializer(JsonSerializerSettings settings, Encoding encoding = null, bool autoDetectEncoding = true)
+            : this(JsonSerializer.Create(settings), encoding, autoDetectEncoding)
+        {
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="JsonSerializer"/>
+        /// </summary>
+        public ApiJsonSerializer(JsonSerializer serializer, Encoding encoding = null, bool autoDetectEncoding = true)
+            : this(encoding, autoDetectEncoding)
         {
             Serializer = serializer;
         }
 
-        public JsonSerializer Serializer { get; set; }
+        /// <summary>
+        /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="Encoding"/>
+        /// </summary>
+        private ApiJsonSerializer(Encoding encoding, bool autoDetectEncoding)
+        {
+            Encoding = encoding;
+            AutoDetectEncoding = autoDetectEncoding;
+        }
 
-        public string ContentType => "application/json";
+        public Encoding Encoding { get; }
+        public bool AutoDetectEncoding { get; }
+
+        public JsonSerializer Serializer { get; }
 
         public StringContent Serialize<T>(T input) where T : class
         {
@@ -52,8 +77,14 @@ namespace DragonFruit.Common.Data.Serializers
 
         public T Deserialize<T>(Stream input) where T : class
         {
-            using var sr = new StreamReader(input);
-            using JsonReader reader = new JsonTextReader(sr);
+            using var sr = AutoDetectEncoding switch
+            {
+                true => new StreamReader(input, true),
+
+                false when Encoding is null => new StreamReader(input),
+                false => new StreamReader(input, Encoding)
+            };
+            using var reader = new JsonTextReader(sr);
 
             return Serializer.Deserialize<T>(reader);
         }

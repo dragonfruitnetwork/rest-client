@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace DragonFruit.Common.Data.Serializers
@@ -10,6 +11,15 @@ namespace DragonFruit.Common.Data.Serializers
     public class ApiXmlSerializer : ISerializer
     {
         public string ContentType => "application/xml";
+
+        public ApiXmlSerializer(Encoding encoding = null, bool autoDetectEncoding = true)
+        {
+            Encoding = encoding;
+            AutoDetectEncoding = autoDetectEncoding;
+        }
+
+        public Encoding Encoding { get; }
+        public bool AutoDetectEncoding { get; }
 
         public StringContent Serialize<T>(T input) where T : class
         {
@@ -22,10 +32,15 @@ namespace DragonFruit.Common.Data.Serializers
         public T Deserialize<T>(Stream input) where T : class
         {
             var serializer = new XmlSerializer(typeof(T));
-            using StreamReader sr = new StreamReader(input);
-            using StringReader stringReader = new StringReader(sr.ReadToEndAsync().Result);
+            using TextReader reader = AutoDetectEncoding switch
+            {
+                true => new StreamReader(input, true),
 
-            return (T)serializer.Deserialize(stringReader);
+                false when Encoding is null => new StreamReader(input),
+                false => new StreamReader(input, Encoding)
+            };
+
+            return (T)serializer.Deserialize(reader);
         }
     }
 }
