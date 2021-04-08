@@ -117,9 +117,12 @@ namespace DragonFruit.Common.Data
                 throw new HttpRequestException("The request path is invalid (it must start with http or https)");
             }
 
-            var request = new HttpRequestMessage { RequestUri = new Uri(FullUrl) };
+            var request = new HttpRequestMessage
+            {
+                RequestUri = new Uri(FullUrl)
+            };
 
-            //generic setup
+            // generic setup
             switch (Method)
             {
                 case Methods.Get:

@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Net.Http;
+using System.Text;
 
 namespace DragonFruit.Common.Data.Serializers
 {
@@ -10,7 +11,9 @@ namespace DragonFruit.Common.Data.Serializers
     {
         public string ContentType { get; }
 
-        StringContent Serialize<T>(T input) where T : class;
+        public Encoding Encoding { get; set; }
+
+        HttpContent Serialize<T>(T input) where T : class;
 
         T Deserialize<T>(Stream input) where T : class;
     }
