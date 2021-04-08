@@ -119,7 +119,7 @@ namespace DragonFruit.Common.Data
 
             var request = new HttpRequestMessage { RequestUri = new Uri(FullUrl) };
 
-            //generic setup
+            // generic setup
             switch (Method)
             {
                 case Methods.Get:
