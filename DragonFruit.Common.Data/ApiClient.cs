@@ -246,7 +246,7 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public virtual void Perform(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
-            //check request data is valid
+            // check request data is valid
             ValidateRequest(request);
 
             if (string.IsNullOrWhiteSpace(request.Destination))
@@ -282,8 +282,10 @@ namespace DragonFruit.Common.Data
                         progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
                 }
 
-                // flush and return
+                // flush, send a final update and return
                 stream.Flush();
+                progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+
                 return response;
             }
 
