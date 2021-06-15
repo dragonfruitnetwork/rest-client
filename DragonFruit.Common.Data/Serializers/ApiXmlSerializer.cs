@@ -38,7 +38,7 @@ namespace DragonFruit.Common.Data.Serializers
 
         public T Deserialize<T>(Stream input) where T : class
         {
-            using var reader = new StreamReader(input);
+            var serializer = new XmlSerializer(typeof(T));
             using TextReader reader = AutoDetectEncoding switch
             {
                 true => new StreamReader(input, true),
@@ -47,7 +47,6 @@ namespace DragonFruit.Common.Data.Serializers
                 false => new StreamReader(input, Encoding)
             };
 
-            var serializer = new XmlSerializer(typeof(T));
             return (T)serializer.Deserialize(reader);
         }
     }
