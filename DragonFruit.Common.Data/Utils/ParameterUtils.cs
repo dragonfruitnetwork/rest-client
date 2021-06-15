@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using DragonFruit.Common.Data.Parameters;
 
 namespace DragonFruit.Common.Data.Utils
@@ -120,9 +121,7 @@ namespace DragonFruit.Common.Data.Utils
 
             while (enumerator.MoveNext())
             {
-                yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter}]", culture);
-
-                counter++;
+                yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter++}]", culture);
             }
 
             enumerator.Dispose();
@@ -133,6 +132,7 @@ namespace DragonFruit.Common.Data.Utils
             yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Select(x => x.AsString(culture))));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static KeyValuePair<string, string> ToKeyValuePair(this object value, string key, CultureInfo culture)
         {
             return new KeyValuePair<string, string>(key, value.AsString(culture));

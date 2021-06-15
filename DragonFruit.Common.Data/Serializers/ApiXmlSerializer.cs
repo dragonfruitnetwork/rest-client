@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Xml.Serialization;
+using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data.Serializers
 {
@@ -21,17 +22,23 @@ namespace DragonFruit.Common.Data.Serializers
         public Encoding Encoding { get; }
         public bool AutoDetectEncoding { get; }
 
-        public StringContent Serialize<T>(T input) where T : class
+        public HttpContent Serialize<T>(T input) where T : class
         {
-            using StringWriter textWriter = new StringWriter();
+            Encoding encoding;
+            var stream = new MemoryStream();
 
-            new XmlSerializer(typeof(T)).Serialize(textWriter, input);
-            return new StringContent(textWriter.ToString(), textWriter.Encoding, ContentType);
+            using (var writer = new StreamWriter(stream, Encoding, -1, true))
+            {
+                encoding = writer.Encoding;
+                new XmlSerializer(typeof(T)).Serialize(writer, input);
+            }
+
+            return SerializerUtils.ProcessStream(this, stream, encoding);
         }
 
         public T Deserialize<T>(Stream input) where T : class
         {
-            var serializer = new XmlSerializer(typeof(T));
+            using var reader = new StreamReader(input);
             using TextReader reader = AutoDetectEncoding switch
             {
                 true => new StreamReader(input, true),
@@ -40,6 +47,7 @@ namespace DragonFruit.Common.Data.Serializers
                 false => new StreamReader(input, Encoding)
             };
 
+            var serializer = new XmlSerializer(typeof(T));
             return (T)serializer.Deserialize(reader);
         }
     }

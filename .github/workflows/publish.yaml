@@ -8,24 +8,24 @@ jobs:
   build:
     runs-on: windows-latest
 
+    env:
+      name: "DragonFruit.Common.Data"
+      project: "DragonFruit.Common.Data\\DragonFruit.Common.Data.csproj"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
-      - name: Modify PowerShell Policy
-        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
-          
-      - name: Install .NET Dependencies
-        run: |
-          choco install visualstudio2019
-          choco install dotnetcore-sdk
-          choco install visualstudio2019-workload-netcorebuildtools
-          .\res\build\dotnet-install.ps1 -Channel 5.0.100
 
-      - name: NuGet (Release)
-        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }}
-        if: "!github.event.release.prerelease"
+      - name: Setup PowerShell Policy
+        run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
         
-      - name: Nuget (Beta)
-        run: .\res\build\nuget.ps1 -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
+      - name: Download Publish Script
+        run: powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dragonfruitnetwork/publish-script/main/nuget.ps1" -OutFile ".\nuget.ps1"
+
+      - name: NuGet Build and Publish (Release)
+        run: .\nuget.ps1 -TargetName $env:name -TargetProject $env:project -ApiKey ${{ secrets.NUGET_KEY }}
+        if: "!github.event.release.prerelease"
+
+      - name: Nuget Build and Publish (Beta)
+        run: .\nuget.ps1 -TargetName $env:name -TargetProject $env:project -ApiKey ${{ secrets.NUGET_KEY }} -Suffix "-beta"
         if: "github.event.release.prerelease"
