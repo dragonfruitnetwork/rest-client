@@ -19,8 +19,8 @@ namespace DragonFruit.Common.Data.Serializers
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding { get; }
-        public bool AutoDetectEncoding { get; }
+        public Encoding Encoding { get; set; }
+        public bool AutoDetectEncoding { get; set; }
 
         public HttpContent Serialize<T>(T input) where T : class
         {
