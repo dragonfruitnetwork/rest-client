@@ -13,7 +13,14 @@ namespace DragonFruit.Common.Data.Serializers
     {
         public string ContentType => "application/xml";
 
+        public ApiXmlSerializer(Encoding encoding = null, bool autoDetectEncoding = true)
+        {
+            Encoding = encoding;
+            AutoDetectEncoding = autoDetectEncoding;
+        }
+
         public Encoding Encoding { get; set; }
+        public bool AutoDetectEncoding { get; set; }
 
         public HttpContent Serialize<T>(T input) where T : class
         {
@@ -31,8 +38,14 @@ namespace DragonFruit.Common.Data.Serializers
 
         public T Deserialize<T>(Stream input) where T : class
         {
-            using var reader = new StreamReader(input);
             var serializer = new XmlSerializer(typeof(T));
+            using TextReader reader = AutoDetectEncoding switch
+            {
+                true => new StreamReader(input, true),
+
+                false when Encoding is null => new StreamReader(input),
+                false => new StreamReader(input, Encoding)
+            };
 
             return (T)serializer.Deserialize(reader);
         }
