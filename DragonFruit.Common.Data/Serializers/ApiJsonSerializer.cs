@@ -78,7 +78,7 @@ namespace DragonFruit.Common.Data.Serializers
             var stream = new MemoryStream();
 
             // these must dispose before processing the stream, as we need any/all buffers flushed
-            using (var streamWriter = new StreamWriter(stream, Encoding, -1, true))
+            using (var streamWriter = new StreamWriter(stream, Encoding, 4096, true))
             using (var jsonWriter = new JsonTextWriter(streamWriter))
             {
                 encoding = streamWriter.Encoding;

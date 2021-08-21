@@ -34,7 +34,7 @@ namespace DragonFruit.Common.Data.Serializers
             Encoding encoding;
             var stream = new MemoryStream();
 
-            using (var writer = new StreamWriter(stream, Encoding, -1, true))
+            using (var writer = new StreamWriter(stream, Encoding, 4096, true))
             {
                 encoding = writer.Encoding;
                 new XmlSerializer(typeof(T)).Serialize(writer, input);
