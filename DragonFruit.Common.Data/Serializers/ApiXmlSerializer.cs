@@ -11,6 +11,8 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public class ApiXmlSerializer : ISerializer
     {
+        private Encoding _encoding;
+
         public string ContentType => "application/xml";
 
         public ApiXmlSerializer(Encoding encoding = null, bool autoDetectEncoding = true)
@@ -19,7 +21,12 @@ namespace DragonFruit.Common.Data.Serializers
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding { get; set; }
+        public Encoding Encoding
+        {
+            get => _encoding ?? Encoding.Default;
+            set => _encoding = value;
+        }
+
         public bool AutoDetectEncoding { get; set; }
 
         public HttpContent Serialize<T>(T input) where T : class
