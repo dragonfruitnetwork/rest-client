@@ -64,7 +64,7 @@ namespace DragonFruit.Common.Data.Serializers
 
         public Encoding Encoding
         {
-            get => _encoding ?? Encoding.UTF8;
+            get => _encoding ?? new UTF8Encoding(false);
             set => _encoding = value;
         }
 
@@ -83,7 +83,7 @@ namespace DragonFruit.Common.Data.Serializers
                 Serializer.Serialize(jsonWriter, input);
             }
 
-            return SerializerUtils.ProcessStream(this, stream, Encoding);
+            return SerializerUtils.ProcessStream(this, stream);
         }
 
         public T Deserialize<T>(Stream input) where T : class
