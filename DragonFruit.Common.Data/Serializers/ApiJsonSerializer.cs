@@ -74,18 +74,16 @@ namespace DragonFruit.Common.Data.Serializers
 
         public HttpContent Serialize<T>(T input) where T : class
         {
-            Encoding encoding;
             var stream = new MemoryStream();
 
             // these must dispose before processing the stream, as we need any/all buffers flushed
             using (var streamWriter = new StreamWriter(stream, Encoding, 4096, true))
             using (var jsonWriter = new JsonTextWriter(streamWriter))
             {
-                encoding = streamWriter.Encoding;
                 Serializer.Serialize(jsonWriter, input);
             }
 
-            return SerializerUtils.ProcessStream(this, stream, encoding);
+            return SerializerUtils.ProcessStream(this, stream, Encoding);
         }
 
         public T Deserialize<T>(Stream input) where T : class

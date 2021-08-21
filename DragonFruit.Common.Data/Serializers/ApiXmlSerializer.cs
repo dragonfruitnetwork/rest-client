@@ -31,16 +31,14 @@ namespace DragonFruit.Common.Data.Serializers
 
         public HttpContent Serialize<T>(T input) where T : class
         {
-            Encoding encoding;
             var stream = new MemoryStream();
 
             using (var writer = new StreamWriter(stream, Encoding, 4096, true))
             {
-                encoding = writer.Encoding;
                 new XmlSerializer(typeof(T)).Serialize(writer, input);
             }
 
-            return SerializerUtils.ProcessStream(this, stream, encoding);
+            return SerializerUtils.ProcessStream(this, stream, Encoding);
         }
 
         public T Deserialize<T>(Stream input) where T : class

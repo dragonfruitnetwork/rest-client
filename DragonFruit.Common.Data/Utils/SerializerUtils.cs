@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using DragonFruit.Common.Data.Serializers;
 
@@ -17,10 +16,7 @@ namespace DragonFruit.Common.Data.Utils
             var content = new StreamContent(stream);
 
             content.Headers.ContentLength = stream.Length;
-            content.Headers.ContentType = new MediaTypeHeaderValue(serializer.ContentType)
-            {
-                CharSet = encoding.WebName
-            };
+            content.Headers.Add("Content-Type", $"{serializer.ContentType}; charset={encoding.WebName}");
 
             return content;
         }
