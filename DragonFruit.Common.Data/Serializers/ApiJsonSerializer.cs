@@ -12,6 +12,8 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public class ApiJsonSerializer : ISerializer
     {
+        private Encoding _encoding;
+
         public string ContentType => "application/json";
 
         /// <summary>
@@ -60,7 +62,12 @@ namespace DragonFruit.Common.Data.Serializers
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding { get; set; }
+        public Encoding Encoding
+        {
+            get => _encoding ?? Encoding.Default;
+            set => _encoding = value;
+        }
+
         public bool AutoDetectEncoding { get; set; }
 
         public JsonSerializer Serializer { get; set; }
