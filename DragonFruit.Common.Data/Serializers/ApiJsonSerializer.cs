@@ -64,7 +64,7 @@ namespace DragonFruit.Common.Data.Serializers
 
         public Encoding Encoding
         {
-            get => _encoding ?? Encoding.Default;
+            get => _encoding ?? Encoding.UTF8;
             set => _encoding = value;
         }
 
