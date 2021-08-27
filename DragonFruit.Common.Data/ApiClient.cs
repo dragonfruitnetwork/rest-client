@@ -2,6 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Buffers;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -267,8 +268,8 @@ namespace DragonFruit.Common.Data
                 using var networkStream = response.Content.ReadAsStreamAsync().Result;
 #endif
 
-                // create a buffer for progress reporting
-                var buffer = new byte[request.BufferSize];
+                // rent a buffer for progress reporting
+                var buffer = ArrayPool<byte>.Shared.Rent(request.BufferSize);
                 int count;
                 int iterations = 0;
 
@@ -282,10 +283,11 @@ namespace DragonFruit.Common.Data
                         progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
                 }
 
-                // flush, send a final update and return
+                // flush, return buffer and send a final update
                 stream.Flush();
-                progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                ArrayPool<byte>.Shared.Return(buffer);
 
+                progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
                 return response;
             }
 

@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Buffers;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -80,6 +81,7 @@ namespace DragonFruit.Common.Data.Serializers
             using (var streamWriter = new StreamWriter(stream, Encoding, 4096, true))
             using (var jsonWriter = new JsonTextWriter(streamWriter))
             {
+                jsonWriter.ArrayPool = JsonArrayPool.Instance;
                 Serializer.Serialize(jsonWriter, input);
             }
 
@@ -95,9 +97,27 @@ namespace DragonFruit.Common.Data.Serializers
                 false when Encoding is null => new StreamReader(input),
                 false => new StreamReader(input, Encoding)
             };
-            using var reader = new JsonTextReader(sr);
+
+            using var reader = new JsonTextReader(sr)
+            {
+                ArrayPool = JsonArrayPool.Instance
+            };
 
             return Serializer.Deserialize<T>(reader);
         }
+    }
+
+    /// <summary>
+    /// A wrapper for the <see cref="T:System.Buffers.ArrayPool`1" /> that implements <see cref="T:Newtonsoft.Json.IArrayPool`1" />
+    /// </summary>
+    /// <remarks>
+    /// Taken from https://github.com/JamesNK/Newtonsoft.Json/blob/52e257ee57899296d81a868b32300f0b3cfeacbe/Src/Newtonsoft.Json.Tests/DemoTests.cs#L709
+    /// </remarks>
+    internal class JsonArrayPool : IArrayPool<char>
+    {
+        public static readonly JsonArrayPool Instance = new JsonArrayPool();
+
+        public char[] Rent(int minimumLength) => ArrayPool<char>.Shared.Rent(minimumLength);
+        public void Return(char[] array) => ArrayPool<char>.Shared.Return(array);
     }
 }
