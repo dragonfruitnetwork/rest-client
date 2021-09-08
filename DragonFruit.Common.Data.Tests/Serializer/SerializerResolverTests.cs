@@ -61,6 +61,7 @@ namespace DragonFruit.Common.Data.Tests.Serializer
     public class DummySerializer : ApiSerializer
     {
         public override string ContentType => "nothing";
+        public override bool IsGeneric => true;
 
         public override HttpContent Serialize<T>(T input) where T : class => throw new System.NotImplementedException();
         public override T Deserialize<T>(Stream input) where T : class => throw new System.NotImplementedException();

@@ -6,7 +6,6 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Xml.Serialization;
-using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data.Serializers
 {
@@ -34,7 +33,7 @@ namespace DragonFruit.Common.Data.Serializers
                 new XmlSerializer(typeof(T)).Serialize(writer, input);
             }
 
-            return SerializerUtils.ProcessStream(this, stream);
+            return GetHttpContent(stream);
         }
 
         public override T Deserialize<T>(Stream input) where T : class

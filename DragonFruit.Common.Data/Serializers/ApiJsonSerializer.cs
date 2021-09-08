@@ -85,7 +85,7 @@ namespace DragonFruit.Common.Data.Serializers
                 Serializer.Serialize(jsonWriter, input);
             }
 
-            return SerializerUtils.ProcessStream(this, stream);
+            return GetHttpContent(stream);
         }
 
         public override T Deserialize<T>(Stream input) where T : class
