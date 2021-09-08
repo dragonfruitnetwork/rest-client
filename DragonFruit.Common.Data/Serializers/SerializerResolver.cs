@@ -102,10 +102,14 @@ namespace DragonFruit.Common.Data.Serializers
             {
                 options?.Invoke((TSerializer)Default);
             }
-            else
+            else if (DeserializerMap.ContainsValue(typeof(TSerializer)) || SerializerMap.ContainsValue(typeof(TSerializer)))
             {
                 var serializer = SerializerCache.GetOrAdd(typeof(TSerializer), _ => Activator.CreateInstance<TSerializer>());
                 options?.Invoke((TSerializer)serializer);
+            }
+            else
+            {
+                throw new ArgumentException("The specified serializer was not registered anywhere. It needs to be registered or set as the default before configuration can occur", nameof(TSerializer));
             }
         }
     }
