@@ -11,8 +11,17 @@ namespace DragonFruit.Common.Data.Serializers
 {
     public class SerializerResolver
     {
-        private static readonly Dictionary<Type, Type> SerializerMap = new();
-        private static readonly Dictionary<Type, Type> DeserializerMap = new();
+        private static readonly Dictionary<Type, Type> SerializerMap = new Dictionary<Type, Type>();
+        private static readonly Dictionary<Type, Type> DeserializerMap = new Dictionary<Type, Type>();
+
+        /// <summary>
+        /// Initialises a new instance of <see cref="SerializerResolver"/>, providing a default <see cref="ApiSerializer"/>
+        /// </summary>
+        /// <param name="default"></param>
+        internal SerializerResolver(ISerializer @default)
+        {
+            Default = @default;
+        }
 
         /// <summary>
         /// Registers a serializer for the specified type. This applies to all <see cref="ApiClient"/>s
@@ -55,7 +64,7 @@ namespace DragonFruit.Common.Data.Serializers
         }
 
         public ISerializer Default { get; set; }
-        private ConcurrentDictionary<Type, ApiSerializer> SerializerCache { get; } = new();
+        private ConcurrentDictionary<Type, ApiSerializer> SerializerCache { get; } = new ConcurrentDictionary<Type, ApiSerializer>();
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided

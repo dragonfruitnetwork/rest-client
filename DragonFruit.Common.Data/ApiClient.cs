@@ -14,6 +14,8 @@ using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
 
+#pragma warning disable 618
+
 namespace DragonFruit.Common.Data
 {
     /// <summary>
@@ -44,8 +46,8 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public ApiClient(ISerializer serializer)
         {
-            Serializer.Default = serializer;
             Headers = new HeaderCollection(this);
+            Serializer = new SerializerResolver(serializer);
 
             _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
@@ -107,7 +109,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// Defaults to <see cref="ApiJsonSerializer"/>
         /// </remarks>
-        public SerializerResolver Serializer { get; } = new();
+        public SerializerResolver Serializer { get; }
 
         /// <summary>
         /// <see cref="HttpClient"/> used by these requests.
