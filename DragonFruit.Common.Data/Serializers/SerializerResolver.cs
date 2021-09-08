@@ -14,6 +14,9 @@ namespace DragonFruit.Common.Data.Serializers
         private static readonly Dictionary<Type, Type> SerializerMap = new Dictionary<Type, Type>();
         private static readonly Dictionary<Type, Type> DeserializerMap = new Dictionary<Type, Type>();
 
+        private ISerializer _default;
+        private readonly ConcurrentDictionary<Type, ApiSerializer> _serializerCache = new ConcurrentDictionary<Type, ApiSerializer>();
+
         /// <summary>
         /// Initialises a new instance of <see cref="SerializerResolver"/>, providing a default <see cref="ApiSerializer"/>
         /// </summary>
@@ -63,8 +66,22 @@ namespace DragonFruit.Common.Data.Serializers
             }
         }
 
-        public ISerializer Default { get; set; }
-        private ConcurrentDictionary<Type, ApiSerializer> SerializerCache { get; } = new ConcurrentDictionary<Type, ApiSerializer>();
+        /// <summary>
+        /// The default <see cref="ISerializer"/> to use
+        /// </summary>
+        public ISerializer Default
+        {
+            get => _default;
+            set
+            {
+                if (value is ApiSerializer { IsGeneric: false })
+                {
+                    throw new ArgumentException("The provided serializer is non-generic.");
+                }
+
+                _default = value;
+            }
+        }
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
@@ -93,7 +110,7 @@ namespace DragonFruit.Common.Data.Serializers
             // if the map has the type registered, check the type in cache
             if (mapping.TryGetValue(objectType, out var serializerType))
             {
-                return SerializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
+                return _serializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
             }
 
             // use generic
@@ -113,7 +130,7 @@ namespace DragonFruit.Common.Data.Serializers
             }
             else if (DeserializerMap.ContainsValue(typeof(TSerializer)) || SerializerMap.ContainsValue(typeof(TSerializer)))
             {
-                var serializer = SerializerCache.GetOrAdd(typeof(TSerializer), _ => Activator.CreateInstance<TSerializer>());
+                var serializer = _serializerCache.GetOrAdd(typeof(TSerializer), _ => Activator.CreateInstance<TSerializer>());
                 options?.Invoke((TSerializer)serializer);
             }
             else

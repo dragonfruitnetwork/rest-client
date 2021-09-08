@@ -23,6 +23,14 @@ namespace DragonFruit.Common.Data.Serializers
         public abstract string ContentType { get; }
 
         /// <summary>
+        /// Whether this <see cref="ApiSerializer"/> is generic (meaning any class can be serialized to/from).
+        /// </summary>
+        /// <remarks>
+        /// Setting this to <c>false</c> will throw an exception if the serializer is set as a default in a client.
+        /// </remarks>
+        public virtual bool IsGeneric => true;
+
+        /// <summary>
         /// Gets or sets the encoding the <see cref="ApiSerializer"/> uses
         /// </summary>
         public Encoding Encoding
