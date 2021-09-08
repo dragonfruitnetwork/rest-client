@@ -210,19 +210,10 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Perform a request to the specified <see cref="url"/> that returns a strongly-typed class.
         /// </summary>
-        public virtual T Perform<T>(string url, CancellationToken token = default) where T : class
+        public T Perform<T>(string url, CancellationToken token = default) where T : class
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             return Perform<T>(request, token);
-        }
-
-        /// <summary>
-        /// Perform a <see cref="ApiRequest"/> that returns the response message.
-        /// </summary>
-        public HttpResponseMessage Perform(ApiRequest requestData, CancellationToken token = default)
-        {
-            ValidateRequest(requestData);
-            return Perform(requestData.Build(this), token);
         }
 
         /// <summary>
@@ -235,19 +226,37 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
+        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/> and deserialize the result to the specified type
         /// </summary>
-        public virtual HttpResponseMessage Perform(HttpRequestMessage request, CancellationToken token = default)
+        public T Perform<T>(HttpRequestMessage request, CancellationToken token = default) where T : class
         {
-            return InternalPerform(request, response => response, false, token);
+            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true, token);
         }
 
         /// <summary>
-        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/> and deserialize the result to the specified type
+        /// Perform a request to the specified <see cref="url"/> that returns a <see cref="HttpResponseMessage"/>.
         /// </summary>
-        public virtual T Perform<T>(HttpRequestMessage request, CancellationToken token = default) where T : class
+        public HttpResponseMessage Perform(string url, CancellationToken token = default)
         {
-            return InternalPerform(request, response => ValidateAndProcess<T>(response, request), true, token);
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            return Perform(request, token);
+        }
+
+        /// <summary>
+        /// Perform a <see cref="ApiRequest"/> that returns the response message.
+        /// </summary>
+        public HttpResponseMessage Perform(ApiRequest requestData, CancellationToken token = default)
+        {
+            ValidateRequest(requestData);
+            return Perform(requestData.Build(this), token);
+        }
+
+        /// <summary>
+        /// Perform a pre-fabricated <see cref="HttpRequestMessage"/>
+        /// </summary>
+        public HttpResponseMessage Perform(HttpRequestMessage request, CancellationToken token = default)
+        {
+            return InternalPerform(request, response => response, false, token);
         }
 
         /// <summary>
@@ -256,7 +265,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </remarks>
-        public virtual void Perform(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
+        public void Perform(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
             // check request data is valid
             ValidateRequest(request);
