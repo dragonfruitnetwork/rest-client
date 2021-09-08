@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -15,6 +16,11 @@ namespace DragonFruit.Common.Data.Serializers
 
         public string ContentType => "application/xml";
 
+        public ApiXmlSerializer()
+        {
+        }
+
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         public ApiXmlSerializer(Encoding encoding = null, bool autoDetectEncoding = true)
         {
             Encoding = encoding;
@@ -27,7 +33,7 @@ namespace DragonFruit.Common.Data.Serializers
             set => _encoding = value;
         }
 
-        public bool AutoDetectEncoding { get; set; }
+        public bool AutoDetectEncoding { get; set; } = true;
 
         public HttpContent Serialize<T>(T input) where T : class
         {

@@ -110,7 +110,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// This validates the <see cref="Path"/> and <see cref="RequireAuth"/> properties, throwing a <see cref="ClientValidationException"/> if it's unsatisfied with the constraints
         /// </remarks>
-        public HttpRequestMessage Build(ISerializer serializer)
+        public HttpRequestMessage Build(SerializerResolver serializer)
         {
             if (!Path.StartsWith("http"))
             {
@@ -176,13 +176,13 @@ namespace DragonFruit.Common.Data
 
             if (!request.Headers.Contains("Accept"))
             {
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.ContentType));
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.Resolve(GetType(), DataDirection.In).ContentType));
             }
 
             return request;
         }
 
-        private HttpContent GetContent(ISerializer serializer)
+        private HttpContent GetContent(SerializerResolver serializer)
         {
             switch (BodyType)
             {
@@ -190,10 +190,10 @@ namespace DragonFruit.Common.Data
                     return new FormUrlEncodedContent(ParameterUtils.GetParameter<FormParameter>(this, RequestCulture));
 
                 case BodyType.Serialized:
-                    return serializer.Serialize(this);
+                    return serializer.Resolve(GetType(), DataDirection.Out).Serialize(this);
 
                 case BodyType.SerializedProperty:
-                    var body = serializer.Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
+                    var body = serializer.Resolve(GetType(), DataDirection.Out).Serialize(ParameterUtils.GetSingleParameterObject<RequestBody>(this));
                     return body;
 
                 case BodyType.Custom:

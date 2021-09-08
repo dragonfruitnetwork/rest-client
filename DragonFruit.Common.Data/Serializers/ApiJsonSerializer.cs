@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
 using System.Buffers;
 using System.Globalization;
 using System.IO;
@@ -14,20 +15,21 @@ namespace DragonFruit.Common.Data.Serializers
     public class ApiJsonSerializer : ISerializer
     {
         private Encoding _encoding;
+        private JsonSerializer _serializer;
 
         public string ContentType => "application/json";
 
         /// <summary>
-        /// Creates a <see cref="ApiJsonSerializer"/> using the Default Culture
+        /// Creates a <see cref="ApiJsonSerializer"/> using the default culture
         /// </summary>
         public ApiJsonSerializer()
-            : this(CultureUtils.DefaultCulture)
         {
         }
 
         /// <summary>
         /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="CultureInfo"/>
         /// </summary>
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         public ApiJsonSerializer(CultureInfo culture, Encoding encoding = null, bool autoDetectEncoding = true)
             : this(new JsonSerializerSettings
             {
@@ -40,6 +42,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// <summary>
         /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="JsonSerializerSettings"/>
         /// </summary>
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         public ApiJsonSerializer(JsonSerializerSettings settings, Encoding encoding = null, bool autoDetectEncoding = true)
             : this(JsonSerializer.Create(settings), encoding, autoDetectEncoding)
         {
@@ -48,6 +51,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// <summary>
         /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="JsonSerializer"/>
         /// </summary>
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         public ApiJsonSerializer(JsonSerializer serializer, Encoding encoding = null, bool autoDetectEncoding = true)
             : this(encoding, autoDetectEncoding)
         {
@@ -57,6 +61,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// <summary>
         /// Creates a <see cref="ApiJsonSerializer"/> using the specified <see cref="Encoding"/>
         /// </summary>
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         private ApiJsonSerializer(Encoding encoding, bool autoDetectEncoding)
         {
             Encoding = encoding;
@@ -69,9 +74,13 @@ namespace DragonFruit.Common.Data.Serializers
             set => _encoding = value;
         }
 
-        public bool AutoDetectEncoding { get; set; }
+        public bool AutoDetectEncoding { get; set; } = true;
 
-        public JsonSerializer Serializer { get; set; }
+        public JsonSerializer Serializer
+        {
+            get => _serializer ??= new JsonSerializer { Culture = CultureUtils.DefaultCulture, Formatting = Formatting.Indented };
+            set => _serializer = value;
+        }
 
         public HttpContent Serialize<T>(T input) where T : class
         {
