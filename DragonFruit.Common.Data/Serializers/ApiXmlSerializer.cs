@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Common Copyright 2020 DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -9,27 +10,22 @@ using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data.Serializers
 {
-    public class ApiXmlSerializer : ISerializer
+    public class ApiXmlSerializer : ApiSerializer
     {
-        private Encoding _encoding;
+        public override string ContentType => "application/xml";
 
-        public string ContentType => "application/xml";
+        public ApiXmlSerializer()
+        {
+        }
 
+        [Obsolete("This will be removed in the future, use Serializer.Configure instead")]
         public ApiXmlSerializer(Encoding encoding = null, bool autoDetectEncoding = true)
         {
             Encoding = encoding;
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding
-        {
-            get => _encoding ?? Encoding.UTF8;
-            set => _encoding = value;
-        }
-
-        public bool AutoDetectEncoding { get; set; }
-
-        public HttpContent Serialize<T>(T input) where T : class
+        public override HttpContent Serialize<T>(T input) where T : class
         {
             var stream = new MemoryStream();
 
@@ -41,7 +37,7 @@ namespace DragonFruit.Common.Data.Serializers
             return SerializerUtils.ProcessStream(this, stream);
         }
 
-        public T Deserialize<T>(Stream input) where T : class
+        public override T Deserialize<T>(Stream input) where T : class
         {
             var serializer = new XmlSerializer(typeof(T));
             using TextReader reader = AutoDetectEncoding switch

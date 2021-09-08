@@ -14,6 +14,8 @@ using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
 
+#pragma warning disable 618
+
 namespace DragonFruit.Common.Data
 {
     /// <summary>
@@ -44,8 +46,8 @@ namespace DragonFruit.Common.Data
         /// </summary>
         public ApiClient(ISerializer serializer)
         {
-            Serializer = serializer;
             Headers = new HeaderCollection(this);
+            Serializer = new SerializerResolver(serializer);
 
             _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
@@ -55,7 +57,6 @@ namespace DragonFruit.Common.Data
         ~ApiClient()
         {
             _lock?.Dispose();
-
             Client?.Dispose();
         }
 
@@ -103,12 +104,12 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// The <see cref="ISerializer"/> to use when encoding/decoding request and response streams.
+        /// The container for <see cref="ISerializer"/>s. The default serializer can be set at <see cref="SerializerResolver.Default"/>
         /// </summary>
         /// <remarks>
         /// Defaults to <see cref="ApiJsonSerializer"/>
         /// </remarks>
-        public ISerializer Serializer { get; set; }
+        public SerializerResolver Serializer { get; }
 
         /// <summary>
         /// <see cref="HttpClient"/> used by these requests.
@@ -354,7 +355,7 @@ namespace DragonFruit.Common.Data
             response.EnsureSuccessStatusCode();
 
             using var stream = response.Content.ReadAsStreamAsync().Result;
-            return Serializer.Deserialize<T>(stream);
+            return Serializer.Resolve<T>(DataDirection.In).Deserialize<T>(stream);
         }
 
         /// <summary>
