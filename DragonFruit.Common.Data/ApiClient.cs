@@ -9,7 +9,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
@@ -209,9 +208,18 @@ namespace DragonFruit.Common.Data
         #endregion
 
         /// <summary>
-        /// Perform a <see cref="ApiRequest"/> that returns the response message. The <see cref="HttpResponseMessage"/> returned cannot be used for reading data, as the underlying <see cref="Task"/> will be disposed.
+        /// Perform a request to the specified <see cref="url"/> that returns a strongly-typed class.
         /// </summary>
-        public virtual HttpResponseMessage Perform(ApiRequest requestData, CancellationToken token = default)
+        public virtual T Perform<T>(string url, CancellationToken token = default) where T : class
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            return Perform<T>(request, token);
+        }
+
+        /// <summary>
+        /// Perform a <see cref="ApiRequest"/> that returns the response message.
+        /// </summary>
+        public HttpResponseMessage Perform(ApiRequest requestData, CancellationToken token = default)
         {
             ValidateRequest(requestData);
             return Perform(requestData.Build(this), token);
@@ -220,7 +228,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Perform an <see cref="ApiRequest"/> with a specified return type.
         /// </summary>
-        public virtual T Perform<T>(ApiRequest requestData, CancellationToken token = default) where T : class
+        public T Perform<T>(ApiRequest requestData, CancellationToken token = default) where T : class
         {
             ValidateRequest(requestData);
             return Perform<T>(requestData.Build(this), token);
@@ -243,9 +251,11 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Download a file with an <see cref="ApiRequest"/>.
-        /// Bypasses <see cref="ValidateAndProcess{T}"/>
+        /// Download a file with an <see cref="ApiRequest"/>
         /// </summary>
+        /// <remarks>
+        /// Bypasses <see cref="ValidateAndProcess{T}"/>
+        /// </remarks>
         public virtual void Perform(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
             // check request data is valid
