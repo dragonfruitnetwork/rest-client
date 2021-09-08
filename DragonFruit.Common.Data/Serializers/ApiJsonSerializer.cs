@@ -12,12 +12,11 @@ using Newtonsoft.Json;
 
 namespace DragonFruit.Common.Data.Serializers
 {
-    public class ApiJsonSerializer : ISerializer
+    public class ApiJsonSerializer : ApiSerializer
     {
-        private Encoding _encoding;
         private JsonSerializer _serializer;
 
-        public string ContentType => "application/json";
+        public override string ContentType => "application/json";
 
         /// <summary>
         /// Creates a <see cref="ApiJsonSerializer"/> using the default culture
@@ -68,21 +67,13 @@ namespace DragonFruit.Common.Data.Serializers
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding
-        {
-            get => _encoding ?? Encoding.UTF8;
-            set => _encoding = value;
-        }
-
-        public bool AutoDetectEncoding { get; set; } = true;
-
         public JsonSerializer Serializer
         {
             get => _serializer ??= new JsonSerializer { Culture = CultureUtils.DefaultCulture, Formatting = Formatting.Indented };
             set => _serializer = value;
         }
 
-        public HttpContent Serialize<T>(T input) where T : class
+        public override HttpContent Serialize<T>(T input) where T : class
         {
             var stream = new MemoryStream();
 
@@ -97,7 +88,7 @@ namespace DragonFruit.Common.Data.Serializers
             return SerializerUtils.ProcessStream(this, stream);
         }
 
-        public T Deserialize<T>(Stream input) where T : class
+        public override T Deserialize<T>(Stream input) where T : class
         {
             using var sr = AutoDetectEncoding switch
             {

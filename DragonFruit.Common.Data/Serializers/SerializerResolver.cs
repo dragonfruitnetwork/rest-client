@@ -5,12 +5,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
+#pragma warning disable 618
+
 namespace DragonFruit.Common.Data.Serializers
 {
     public class SerializerResolver
     {
-        private static Dictionary<Type, Type> DeserializerMap { get; } = new();
-        private static Dictionary<Type, Type> SerializerMap { get; } = new();
+        private static readonly Dictionary<Type, Type> SerializerMap = new();
+        private static readonly Dictionary<Type, Type> DeserializerMap = new();
 
         /// <summary>
         /// Registers a serializer for the specified type. This applies to all <see cref="ApiClient"/>s
@@ -20,7 +22,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// <typeparam name="TSerializer">The serializer to apply</typeparam>
         public static void Register<T, TSerializer>(DataDirection direction = DataDirection.All)
             where T : class
-            where TSerializer : ISerializer
+            where TSerializer : ApiSerializer, new()
         {
             if (direction.HasFlag(DataDirection.In))
             {
@@ -53,16 +55,16 @@ namespace DragonFruit.Common.Data.Serializers
         }
 
         public ISerializer Default { get; set; }
-        private ConcurrentDictionary<Type, ISerializer> SerializerCache { get; } = new();
+        private ConcurrentDictionary<Type, ApiSerializer> SerializerCache { get; } = new();
 
         /// <summary>
-        /// Resolves the <see cref="ISerializer"/> for the type provided
+        /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         /// <typeparam name="T">The type to resolve</typeparam>
         public ISerializer Resolve<T>(DataDirection direction) where T : class => Resolve(typeof(T), direction);
 
         /// <summary>
-        /// Resolves the <see cref="ISerializer"/> for the type provided
+        /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         public ISerializer Resolve(Type objectType, DataDirection direction)
         {
@@ -82,7 +84,7 @@ namespace DragonFruit.Common.Data.Serializers
             // if the map has the type registered, check the type in cache
             if (mapping.TryGetValue(objectType, out var serializerType))
             {
-                return SerializerCache.GetOrAdd(serializerType, _ => (ISerializer)Activator.CreateInstance(serializerType));
+                return SerializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
             }
 
             // use generic
@@ -93,8 +95,8 @@ namespace DragonFruit.Common.Data.Serializers
         /// Configures the specified <see cref="TSerializer"/>, creating a client-specific instance if needed
         /// </summary>
         /// <param name="options">The options to set</param>
-        /// <typeparam name="TSerializer">The <see cref="ISerializer"/> to configure</typeparam>
-        public void Configure<TSerializer>(Action<TSerializer> options) where TSerializer : ISerializer
+        /// <typeparam name="TSerializer">The <see cref="ApiSerializer"/> to configure</typeparam>
+        public void Configure<TSerializer>(Action<TSerializer> options) where TSerializer : ApiSerializer
         {
             if (Default.GetType() == typeof(TSerializer))
             {

@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using DragonFruit.Common.Data.Serializers;
 using NUnit.Framework;
 
@@ -15,25 +14,35 @@ namespace DragonFruit.Common.Data.Tests.Serializer
         [SetUp]
         public void Setup()
         {
+            // testobject will use xml
             SerializerResolver.Register<TestObject, ApiXmlSerializer>();
+
+            // anothertestobject will use the dummyserializer
             SerializerResolver.Register<AnotherTestObject, DummySerializer>();
         }
 
         [Test]
         public void TestResolution()
         {
-            Assert.AreEqual(Client.Serializer.Resolve<TestObject>(DataDirection.In).GetType(), typeof(ApiXmlSerializer));
-            Assert.AreEqual(Client.Serializer.Resolve<YetAnotherTestObject>(DataDirection.Out).GetType(), typeof(ApiJsonSerializer));
+            Assert.AreEqual(typeof(ApiXmlSerializer), Client.Serializer.Resolve<TestObject>(DataDirection.In).GetType());
+            Assert.AreEqual(typeof(ApiJsonSerializer), Client.Serializer.Resolve<YetAnotherTestObject>(DataDirection.Out).GetType());
         }
 
         [Test]
         public void TestRemovalResolution()
         {
-            Assert.AreEqual(Client.Serializer.Resolve<AnotherTestObject>(DataDirection.In).GetType(), typeof(DummySerializer));
+            Assert.AreEqual(typeof(DummySerializer), Client.Serializer.Resolve<AnotherTestObject>(DataDirection.In).GetType());
 
             SerializerResolver.Unregister<AnotherTestObject>();
+            Assert.AreEqual(typeof(ApiJsonSerializer), Client.Serializer.Resolve<AnotherTestObject>(DataDirection.In).GetType());
+        }
 
-            Assert.AreEqual(Client.Serializer.Resolve<AnotherTestObject>(DataDirection.In).GetType(), typeof(ApiJsonSerializer));
+        [Test]
+        public void TestConfigure()
+        {
+            string a = string.Empty;
+            Client.Serializer.Configure<DummySerializer>(o => a = o.ContentType);
+            Assert.AreEqual("nothing", a);
         }
     }
 
@@ -49,19 +58,11 @@ namespace DragonFruit.Common.Data.Tests.Serializer
     {
     }
 
-    public class DummySerializer : ISerializer
+    public class DummySerializer : ApiSerializer
     {
-        public string ContentType { get; }
-        public Encoding Encoding { get; set; }
+        public override string ContentType => "nothing";
 
-        public HttpContent Serialize<T>(T input) where T : class
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public T Deserialize<T>(Stream input) where T : class
-        {
-            throw new System.NotImplementedException();
-        }
+        public override HttpContent Serialize<T>(T input) where T : class => throw new System.NotImplementedException();
+        public override T Deserialize<T>(Stream input) where T : class => throw new System.NotImplementedException();
     }
 }

@@ -10,11 +10,9 @@ using DragonFruit.Common.Data.Utils;
 
 namespace DragonFruit.Common.Data.Serializers
 {
-    public class ApiXmlSerializer : ISerializer
+    public class ApiXmlSerializer : ApiSerializer
     {
-        private Encoding _encoding;
-
-        public string ContentType => "application/xml";
+        public override string ContentType => "application/xml";
 
         public ApiXmlSerializer()
         {
@@ -27,15 +25,7 @@ namespace DragonFruit.Common.Data.Serializers
             AutoDetectEncoding = autoDetectEncoding;
         }
 
-        public Encoding Encoding
-        {
-            get => _encoding ?? Encoding.UTF8;
-            set => _encoding = value;
-        }
-
-        public bool AutoDetectEncoding { get; set; } = true;
-
-        public HttpContent Serialize<T>(T input) where T : class
+        public override HttpContent Serialize<T>(T input) where T : class
         {
             var stream = new MemoryStream();
 
@@ -47,7 +37,7 @@ namespace DragonFruit.Common.Data.Serializers
             return SerializerUtils.ProcessStream(this, stream);
         }
 
-        public T Deserialize<T>(Stream input) where T : class
+        public override T Deserialize<T>(Stream input) where T : class
         {
             var serializer = new XmlSerializer(typeof(T));
             using TextReader reader = AutoDetectEncoding switch
