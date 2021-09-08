@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
 #pragma warning disable 618
@@ -37,5 +38,23 @@ namespace DragonFruit.Common.Data.Serializers
 
         public abstract HttpContent Serialize<T>(T input) where T : class;
         public abstract T Deserialize<T>(Stream input) where T : class;
+
+        /// <summary>
+        /// Converts a <see cref="Stream"/> serialized in the <see cref="ApiSerializer"/> to the <see cref="HttpContent"/> equivalent
+        /// </summary>
+        /// <param name="stream">The stream to convert</param>
+        protected HttpContent GetHttpContent(Stream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            var content = new StreamContent(stream);
+
+            content.Headers.ContentLength = stream.Length;
+            content.Headers.ContentType = new MediaTypeHeaderValue(ContentType)
+            {
+                CharSet = Encoding.HeaderName
+            };
+
+            return content;
+        }
     }
 }
