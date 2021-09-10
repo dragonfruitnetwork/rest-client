@@ -14,7 +14,6 @@ namespace DragonFruit.Common.Data.Serializers
         private static readonly Dictionary<Type, Type> SerializerMap = new Dictionary<Type, Type>();
         private static readonly Dictionary<Type, Type> DeserializerMap = new Dictionary<Type, Type>();
 
-        private ISerializer _default;
         private readonly ConcurrentDictionary<Type, ApiSerializer> _serializerCache = new ConcurrentDictionary<Type, ApiSerializer>();
 
         /// <summary>
@@ -67,21 +66,9 @@ namespace DragonFruit.Common.Data.Serializers
         }
 
         /// <summary>
-        /// The default <see cref="ISerializer"/> to use
+        /// The default <see cref="ISerializer"/> in use.
         /// </summary>
-        public ISerializer Default
-        {
-            get => _default;
-            set
-            {
-                if (value is ApiSerializer { IsGeneric: false })
-                {
-                    throw new ArgumentException("The provided serializer is non-generic.");
-                }
-
-                _default = value;
-            }
-        }
+        public ISerializer Default { get; }
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided

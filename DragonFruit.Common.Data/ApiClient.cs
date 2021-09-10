@@ -7,11 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
+using DragonFruit.Common.Data.Utils;
 
 #pragma warning disable 618
 
@@ -25,19 +25,12 @@ namespace DragonFruit.Common.Data
         #region Constructors
 
         /// <summary>
-        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using the <see cref="CultureInfo.InvariantCulture"/>
+        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> with an optional <see cref="CultureInfo"/>
         /// </summary>
-        public ApiClient()
-            : this(new ApiJsonSerializer(CultureInfo.InvariantCulture))
+        public ApiClient(CultureInfo culture = null)
+            : this(new ApiJsonSerializer())
         {
-        }
-
-        /// <summary>
-        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using a custom <see cref="CultureInfo"/>
-        /// </summary>
-        public ApiClient(CultureInfo culture)
-            : this(new ApiJsonSerializer(culture))
-        {
+            Serializer.Configure<ApiJsonSerializer>(o => o.Serializer.Culture = culture ?? CultureUtils.DefaultCulture);
         }
 
         /// <summary>
@@ -347,7 +340,7 @@ namespace DragonFruit.Common.Data
             {
                 // exit the read lock as soon as the request has been sent and processed
                 // this is because the callback could involve re-processing the request.
-                RequestFinished();
+                _lock.ExitReadLock();
             }
 
             try
@@ -411,8 +404,5 @@ namespace DragonFruit.Common.Data
                 Interlocked.CompareExchange(ref _clientAdjustmentRequestSignal, 1, 0);
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void RequestFinished() => _lock.ExitReadLock();
     }
 }
