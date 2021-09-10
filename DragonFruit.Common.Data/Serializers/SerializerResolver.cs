@@ -81,7 +81,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// </summary>
         public ISerializer Resolve(Type objectType, DataDirection direction)
         {
-            if (objectType.IsClass)
+            if (!objectType.IsClass)
             {
                 // at this point in time, we only support non-generic class
                 // this is because this isn't designed to filter generic types
