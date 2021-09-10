@@ -74,16 +74,18 @@ namespace DragonFruit.Common.Data.Serializers
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         /// <typeparam name="T">The type to resolve</typeparam>
-        public ISerializer Resolve<T>(DataDirection direction) where T : class => Resolve(typeof(T), direction);
+        public ISerializer Resolve<T>(DataDirection direction) => Resolve(typeof(T), direction);
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         public ISerializer Resolve(Type objectType, DataDirection direction)
         {
-            if (!objectType.IsClass)
+            if (objectType.IsClass)
             {
-                throw new ArgumentException("Provided object type is not a class", nameof(objectType));
+                // at this point in time, we only support non-generic class
+                // this is because this isn't designed to filter generic types
+                return Default;
             }
 
             var mapping = direction switch
