@@ -12,6 +12,7 @@ using System.Threading;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
 using DragonFruit.Common.Data.Serializers;
+using DragonFruit.Common.Data.Utils;
 
 #pragma warning disable 618
 
@@ -25,19 +26,12 @@ namespace DragonFruit.Common.Data
         #region Constructors
 
         /// <summary>
-        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using the <see cref="CultureInfo.InvariantCulture"/>
+        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> with an optional <see cref="CultureInfo"/>
         /// </summary>
-        public ApiClient()
-            : this(new ApiJsonSerializer(CultureInfo.InvariantCulture))
+        public ApiClient(CultureInfo culture = null)
+            : this(new ApiJsonSerializer())
         {
-        }
-
-        /// <summary>
-        /// Initialises a new <see cref="ApiClient"/> using an <see cref="ApiJsonSerializer"/> using a custom <see cref="CultureInfo"/>
-        /// </summary>
-        public ApiClient(CultureInfo culture)
-            : this(new ApiJsonSerializer(culture))
-        {
+            Serializer.Configure<ApiJsonSerializer>(o => o.Serializer.Culture = culture ?? CultureUtils.DefaultCulture);
         }
 
         /// <summary>
@@ -414,5 +408,21 @@ namespace DragonFruit.Common.Data
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void RequestFinished() => _lock.ExitReadLock();
+    }
+
+    /// <summary>
+    /// A <see cref="ApiClient"/> superclass designed to allow better serializer configuration
+    /// </summary>
+    /// <typeparam name="T">The <see cref="ApiSerializer"/> to use</typeparam>
+    public class ApiClient<T> : ApiClient where T : ApiSerializer, new()
+    {
+        public ApiClient(Action<T> configurationOptions = null)
+            : base(Activator.CreateInstance<T>())
+        {
+            if (configurationOptions != null)
+            {
+                Serializer.Configure(configurationOptions);
+            }
+        }
     }
 }
