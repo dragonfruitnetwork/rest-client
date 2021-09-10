@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Headers;
@@ -341,7 +340,7 @@ namespace DragonFruit.Common.Data
             {
                 // exit the read lock as soon as the request has been sent and processed
                 // this is because the callback could involve re-processing the request.
-                RequestFinished();
+                _lock.ExitReadLock();
             }
 
             try
@@ -403,25 +402,6 @@ namespace DragonFruit.Common.Data
             else
             {
                 Interlocked.CompareExchange(ref _clientAdjustmentRequestSignal, 1, 0);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void RequestFinished() => _lock.ExitReadLock();
-    }
-
-    /// <summary>
-    /// A <see cref="ApiClient"/> superclass designed to allow better serializer configuration
-    /// </summary>
-    /// <typeparam name="T">The <see cref="ApiSerializer"/> to use</typeparam>
-    public class ApiClient<T> : ApiClient where T : ApiSerializer, new()
-    {
-        public ApiClient(Action<T> configurationOptions = null)
-            : base(Activator.CreateInstance<T>())
-        {
-            if (configurationOptions != null)
-            {
-                Serializer.Configure(configurationOptions);
             }
         }
     }
