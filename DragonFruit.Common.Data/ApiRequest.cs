@@ -140,11 +140,11 @@ namespace DragonFruit.Common.Data
                     break;
 
                 case Methods.Patch:
-#if NET5_0
-                    request.Method = HttpMethod.Patch;
-#else
+#if NETSTANDARD2_0
                     // .NET Standard 2.0 doesn't have a PATCH method...
                     request.Method = new HttpMethod("PATCH");
+#else
+                    request.Method = HttpMethod.Patch;
 #endif
                     request.Content = GetContent(serializer);
                     break;
