@@ -29,6 +29,10 @@ jobs:
             dotnet-tfm: 'net5.0'
             dotnet-test-tfm: 'net5.0'
 
+          - dotnet: '6.0.x'
+              dotnet-tfm: 'net6.0'
+              dotnet-test-tfm: 'net6.0'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
