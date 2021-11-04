@@ -20,7 +20,7 @@ namespace DragonFruit.Common.Data.Serializers
         /// Initialises a new instance of <see cref="SerializerResolver"/>, providing a default <see cref="ApiSerializer"/>
         /// </summary>
         /// <param name="default"></param>
-        internal SerializerResolver(ISerializer @default)
+        internal SerializerResolver(ApiSerializer @default)
         {
             Default = @default;
         }
@@ -68,18 +68,18 @@ namespace DragonFruit.Common.Data.Serializers
         /// <summary>
         /// The default <see cref="ISerializer"/> in use.
         /// </summary>
-        public ISerializer Default { get; }
+        public ApiSerializer Default { get; }
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         /// <typeparam name="T">The type to resolve</typeparam>
-        public ISerializer Resolve<T>(DataDirection direction) => Resolve(typeof(T), direction);
+        public ApiSerializer Resolve<T>(DataDirection direction) => Resolve(typeof(T), direction);
 
         /// <summary>
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
-        public ISerializer Resolve(Type objectType, DataDirection direction)
+        public ApiSerializer Resolve(Type objectType, DataDirection direction)
         {
             if (!objectType.IsClass)
             {

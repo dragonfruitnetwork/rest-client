@@ -36,7 +36,7 @@ namespace DragonFruit.Common.Data
         /// <summary>
         /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ISerializer"/>
         /// </summary>
-        public ApiClient(ISerializer serializer)
+        public ApiClient(ApiSerializer serializer)
         {
             Headers = new HeaderCollection(this);
             Serializer = new SerializerResolver(serializer);

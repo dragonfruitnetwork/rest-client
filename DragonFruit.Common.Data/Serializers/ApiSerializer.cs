@@ -13,7 +13,7 @@ namespace DragonFruit.Common.Data.Serializers
     /// <summary>
     /// Represents the base of a serializer used by the <see cref="ApiClient"/> and <see cref="ApiRequest"/> classes
     /// </summary>
-    public abstract class ApiSerializer : ISerializer
+    public abstract class ApiSerializer
     {
         private Encoding _encoding;
 
