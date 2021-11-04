@@ -275,10 +275,11 @@ namespace DragonFruit.Common.Data
 
                 // create a new filestream and copy all data into
                 using var stream = File.Open(request.Destination, request.FileCreationMode);
-#if NET5_0
-                using var networkStream = response.Content.ReadAsStreamAsync(token).Result;
-#else
+
+#if NETSTANDARD2_0
                 using var networkStream = response.Content.ReadAsStreamAsync().Result;
+#else
+                using var networkStream = response.Content.ReadAsStreamAsync(token).Result;
 #endif
 
                 // rent a buffer for progress reporting
@@ -330,10 +331,10 @@ namespace DragonFruit.Common.Data
                 token.ThrowIfCancellationRequested();
 
                 // send request
-#if NET5_0
-                response = client.Send(request, HttpCompletionOption.ResponseHeadersRead, token);
-#else
+#if NETSTANDARD2_0
                 response = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).Result;
+#else
+                response = client.Send(request, HttpCompletionOption.ResponseHeadersRead, token);
 #endif
             }
             finally
