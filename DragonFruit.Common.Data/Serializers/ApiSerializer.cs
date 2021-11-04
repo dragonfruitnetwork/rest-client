@@ -18,6 +18,12 @@ namespace DragonFruit.Common.Data.Serializers
         private Encoding _encoding;
 
         /// <summary>
+        /// Whether <see cref="ApiSerializer"/> types can use the disk as a buffer.
+        /// Defaults to true
+        /// </summary>
+        public static bool AllowDiskBuffering { get; set; } = true;
+
+        /// <summary>
         /// The content-type header value
         /// </summary>
         public abstract string ContentType { get; }
@@ -46,6 +52,18 @@ namespace DragonFruit.Common.Data.Serializers
 
         public abstract HttpContent Serialize<T>(T input) where T : class;
         public abstract T Deserialize<T>(Stream input) where T : class;
+
+        /// <summary>
+        /// Gets a 0-positioned <see cref="Stream"/> with seek support
+        /// </summary>
+        protected Stream GetStream(bool largeBody) => largeBody switch
+        {
+            // large bodies are buffered to a temp file that's removed on disposal
+            true when AllowDiskBuffering => File.Create(Path.GetTempFileName(), 4096, FileOptions.SequentialScan | FileOptions.Asynchronous | FileOptions.DeleteOnClose),
+
+            // default memory stream
+            _ => new MemoryStream(50000)
+        };
 
         /// <summary>
         /// Converts a <see cref="Stream"/> serialized in the <see cref="ApiSerializer"/> to the <see cref="HttpContent"/> equivalent
