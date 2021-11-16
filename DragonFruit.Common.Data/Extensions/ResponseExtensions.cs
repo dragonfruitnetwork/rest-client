@@ -8,20 +8,30 @@ namespace DragonFruit.Common.Data.Extensions
 {
     public static class ResponseExtensions
     {
-        public static T To<T>(this HttpResponseMessage response)
+        public static T To<T>(this HttpResponseMessage response, bool disposeResponse = true)
         {
-            response.EnsureSuccessStatusCode();
-
-            var targetType = typeof(T);
-
-            switch (targetType.IsPrimitive)
+            try
             {
-                case true:
-                case false when targetType == typeof(string):
-                    return (T)Convert.ChangeType(response.Content.ReadAsStringAsync().Result, targetType);
+                response.EnsureSuccessStatusCode();
 
-                default:
-                    throw new ArgumentException($"Cannot convert HTTP response to {targetType}. It must be a primitive type or a string", nameof(T));
+                var targetType = typeof(T);
+
+                switch (targetType.IsPrimitive)
+                {
+                    case true:
+                    case false when targetType == typeof(string):
+                        return (T)Convert.ChangeType(response.Content.ReadAsStringAsync().Result, targetType);
+
+                    default:
+                        throw new ArgumentException($"Cannot convert HTTP response to {targetType}. It must be a primitive type or a string", nameof(T));
+                }
+            }
+            finally
+            {
+                if (disposeResponse)
+                {
+                    response.Dispose();
+                }
             }
         }
     }
