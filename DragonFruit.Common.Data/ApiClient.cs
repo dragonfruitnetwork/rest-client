@@ -288,7 +288,7 @@ namespace DragonFruit.Common.Data
             }
 
             // check if there is a filter assigned to the class and perform it
-            request.GetType().GetCustomAttribute<RequestFilter>()?.OnRequestExecuting(request);
+            request.GetType().GetCustomAttribute<RequestFilter>()?.OnRequestExecuting(this, request);
         }
 
         /// <summary>

@@ -8,6 +8,6 @@ namespace DragonFruit.Common.Data
     [AttributeUsage(AttributeTargets.Class)]
     public abstract class RequestFilter : Attribute
     {
-        protected internal abstract void OnRequestExecuting(ApiRequest request);
+        protected internal abstract void OnRequestExecuting(ApiClient client, ApiRequest request);
     }
 }

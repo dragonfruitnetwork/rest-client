@@ -18,7 +18,7 @@ namespace DragonFruit.Common.Data.Tests.Requests
 
     internal class ExceptionFilter : RequestFilter
     {
-        protected override void OnRequestExecuting(ApiRequest request)
+        protected override void OnRequestExecuting(ApiClient client, ApiRequest request)
         {
             throw new ArgumentException();
         }
