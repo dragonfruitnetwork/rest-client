@@ -204,8 +204,8 @@ namespace DragonFruit.Common.Data
         /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
         protected Task<T> InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, Task<T>> processResult, bool disposeResponse, CancellationToken token = default)
         {
-            var monitor = new TaskCompletionSource<T>();
             var (client, clientLock) = GetClient();
+            var monitor = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // post-modification
             SetupRequest(request);
@@ -214,15 +214,8 @@ namespace DragonFruit.Common.Data
             // ReSharper disable once MethodSupportsCancellation (we need to run regardless of cancellation to release lock)
             client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ContinueWith(async t =>
             {
-                // exit the read lock as soon as the request has been sent and processed
-                // this is because the callback could involve re-processing the request
-                clientLock.Dispose();
-
                 try
                 {
-                    // do another cancellation token test
-                    token.ThrowIfCancellationRequested();
-
                     // evaluate task status and update monitor
                     switch (t.Status)
                     {
@@ -251,6 +244,9 @@ namespace DragonFruit.Common.Data
                     {
                         t.Result.Dispose();
                     }
+
+                    // exit the read lock after fully processing
+                    clientLock.Dispose();
                 }
             });
 
