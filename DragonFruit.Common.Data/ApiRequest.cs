@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using DragonFruit.Common.Data.Exceptions;
 using DragonFruit.Common.Data.Parameters;
 using DragonFruit.Common.Data.Serializers;
 using DragonFruit.Common.Data.Utils;
@@ -98,6 +99,13 @@ namespace DragonFruit.Common.Data
         /// Additional abstract collection of queries provided as an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>
         /// </summary>
         protected virtual IEnumerable<KeyValuePair<string, string>> AdditionalQueries { get; }
+
+        /// <summary>
+        /// Overridable method for specifying an action to occur before sending the request to the <see cref="HttpClient"/>
+        /// </summary>
+        protected internal virtual void OnRequestExecuting(ApiClient client)
+        {
+        }
 
         /// <summary>
         /// Create a <see cref="HttpResponseMessage"/> for this <see cref="ApiRequest"/>, which can then be modified manually or overriden by <see cref="ApiClient.SetupRequest"/>

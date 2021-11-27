@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DragonFruit.Common.Data.Exceptions;
@@ -287,8 +286,7 @@ namespace DragonFruit.Common.Data
                 }
             }
 
-            // check if there is a filter assigned to the class and perform it
-            request.GetType().GetCustomAttribute<RequestFilter>()?.OnRequestExecuting(this, request);
+            request.OnRequestExecuting(this);
         }
 
         /// <summary>

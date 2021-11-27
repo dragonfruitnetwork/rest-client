@@ -5,22 +5,18 @@ using System;
 
 namespace DragonFruit.Common.Data.Tests.Requests
 {
-    [ExceptionFilter]
     internal class FilteredRequest : ApiRequest
     {
         public override string Path { get; }
+
+        protected override void OnRequestExecuting(ApiClient client)
+        {
+            throw new ArgumentException();
+        }
     }
 
     internal class InheritedRequest : FilteredRequest
     {
         // this should have the exception filter applied to it as well
-    }
-
-    internal class ExceptionFilter : RequestFilter
-    {
-        protected override void OnRequestExecuting(ApiClient client, ApiRequest request)
-        {
-            throw new ArgumentException();
-        }
     }
 }
