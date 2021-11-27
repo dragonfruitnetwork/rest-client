@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -265,6 +266,21 @@ namespace DragonFruit.Common.Data
             response.EnsureSuccessStatusCode();
 
             using var stream = await response.Content.ReadAsStreamAsync();
+
+            // raw stream
+            if (typeof(T) == typeof(Stream))
+            {
+                return stream as T;
+            }
+
+            // filestream temp file buffered to disk
+            if (typeof(T) == typeof(FileStream))
+            {
+                var fileStream = File.Create(Path.GetTempFileName(), 4096, FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+                await stream.CopyToAsync(fileStream);
+                return fileStream as T;
+            }
+
             return Serializer.Resolve<T>(DataDirection.In).Deserialize<T>(stream);
         }
 
