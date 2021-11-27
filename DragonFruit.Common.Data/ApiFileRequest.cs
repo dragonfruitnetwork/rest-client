@@ -16,14 +16,5 @@ namespace DragonFruit.Common.Data
         /// The mode of file creation
         /// </summary>
         public virtual FileMode FileCreationMode => FileMode.Create;
-
-        /// <summary>
-        /// Length, in bytes, of the buffer used for copying data from the network stream to the file.
-        /// Defaults to 32kb
-        /// </summary>
-        /// <remarks>
-        /// This should be less than 85KiB (87040 bytes) to avoid potential memory leaks
-        /// </remarks>
-        public virtual int BufferSize => 32 * 1024;
     }
 }

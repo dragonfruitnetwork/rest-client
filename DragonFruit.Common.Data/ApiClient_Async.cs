@@ -71,7 +71,7 @@ namespace DragonFruit.Common.Data
         /// <remarks>
         /// Bypasses <see cref="ValidateAndProcess{T}"/>
         /// </remarks>
-        public Task PerformAsync(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
+        public async Task PerformAsync(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
             // check request data is valid
             ValidateRequest(request);
@@ -81,39 +81,44 @@ namespace DragonFruit.Common.Data
                 throw new NullRequestException();
             }
 
-            async Task<HttpResponseMessage> CopyProcess(HttpResponseMessage response)
+            // get raw response
+            var response = await InternalPerform(request.Build(this), Task.FromResult, false, token).ConfigureAwait(false);
+
+            // validate
+            response.EnsureSuccessStatusCode();
+
+            // create a new filestream and copy all data into
+            using var stream = File.Open(request.Destination, request.FileCreationMode);
+            using var networkStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            var buffer = ArrayPool<byte>.Shared.Rent(4096);
+
+            try
             {
-                // validate
-                response.EnsureSuccessStatusCode();
-
-                // create a new filestream and copy all data into
-                using var stream = File.Open(request.Destination, request.FileCreationMode);
-                using var networkStream = await response.Content.ReadAsStreamAsync();
-
-                // rent a buffer for progress reporting
-                var buffer = ArrayPool<byte>.Shared.Rent(request.BufferSize);
                 int count;
                 int iterations = 0;
 
-                while ((count = await networkStream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
+                while ((count = await networkStream.ReadAsync(buffer, 0, buffer.Length, token).ConfigureAwait(false)) > 0)
                 {
                     Interlocked.Increment(ref iterations);
-                    await stream.WriteAsync(buffer, 0, count, token);
+                    await stream.WriteAsync(buffer, 0, count, token).ConfigureAwait(false);
 
                     // check every 10th time to stop bottlenecks (use CompareExchange to stop the int from overflowing from insanely large file downloads)
-                    if (Interlocked.CompareExchange(ref iterations, 0, 10) == 10)
+                    if (Interlocked.CompareExchange(ref iterations, 0, 100) == 100)
+                    {
                         progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                    }
                 }
 
                 // flush, return buffer and send a final update
-                await stream.FlushAsync(token);
+                await stream.FlushAsync(token).ConfigureAwait(false);
+            }
+            finally
+            {
                 ArrayPool<byte>.Shared.Return(buffer);
-
-                progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
-                return response;
             }
 
-            return InternalPerform(request.Build(this), CopyProcess, true, token);
+            progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
         }
     }
 }
