@@ -35,7 +35,7 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ISerializer"/>
+        /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ApiSerializer"/>
         /// </summary>
         public ApiClient(ApiSerializer serializer)
         {
@@ -96,7 +96,7 @@ namespace DragonFruit.Common.Data
         }
 
         /// <summary>
-        /// The container for <see cref="ISerializer"/>s. The default serializer can be set at <see cref="SerializerResolver.Default"/>
+        /// The container for <see cref="ApiSerializer"/>s. The default serializer can be set at <see cref="SerializerResolver.Default"/>
         /// </summary>
         /// <remarks>
         /// Defaults to <see cref="ApiJsonSerializer"/>
@@ -203,6 +203,7 @@ namespace DragonFruit.Common.Data
         /// <param name="request">The request to perform</param>
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
         /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
+        /// <param name="token">(optional) <see cref="CancellationToken"/></param>
         protected Task<T> InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, Task<T>> processResult, bool disposeResponse, CancellationToken token = default)
         {
             var monitor = new TaskCompletionSource<T>();
@@ -296,6 +297,8 @@ namespace DragonFruit.Common.Data
         /// <exception cref="ClientValidationException">The client can't be used because there is no auth url.</exception>
         protected virtual void ValidateRequest(ApiRequest request)
         {
+            request.OnRequestExecuting(this);
+
             // note request path is validated on build
             if (request.RequireAuth && string.IsNullOrEmpty(Authorization))
             {
@@ -305,8 +308,6 @@ namespace DragonFruit.Common.Data
                     throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
                 }
             }
-
-            request.OnRequestExecuting(this);
         }
 
         /// <summary>
