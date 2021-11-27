@@ -38,4 +38,4 @@ jobs:
           run: dotnet jb inspectcode ${{github.workspace}}/DragonFruit.Common.sln --output=${{github.workspace}}/inspectcodereport.xml --cachesDir=${{github.workspace}}/inspectcode --verbosity=WARN
 
         - name: NVika
-          run: dotnet nvika parsereport "${{github.workspace}}/inspectcodereport.xml" --treatwarningsaserrors
+          run: dotnet nvika parsereport "${{github.workspace}}/inspectcodereport.xml"
