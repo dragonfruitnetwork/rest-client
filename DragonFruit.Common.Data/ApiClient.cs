@@ -226,7 +226,7 @@ namespace DragonFruit.Common.Data
                             break;
 
                         case TaskStatus.Faulted:
-                            monitor.SetException(t.Exception?.InnerException ?? t.Exception);
+                            monitor.SetException(t.Exception?.Flatten().InnerException ?? t.Exception);
                             break;
 
                         case TaskStatus.Canceled:
