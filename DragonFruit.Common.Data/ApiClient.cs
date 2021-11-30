@@ -204,55 +204,35 @@ namespace DragonFruit.Common.Data
         /// <param name="processResult"><see cref="Func{T,TResult}"/> to process the <see cref="HttpResponseMessage"/></param>
         /// <param name="disposeResponse">Whether to dispose of the <see cref="HttpResponseMessage"/> produced after <see cref="processResult"/> has been invoked.</param>
         /// <param name="token">(optional) <see cref="CancellationToken"/></param>
-        protected Task<T> InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, Task<T>> processResult, bool disposeResponse, CancellationToken token = default)
+        protected async Task<T> InternalPerform<T>(HttpRequestMessage request, Func<HttpResponseMessage, Task<T>> processResult, bool disposeResponse, CancellationToken token = default)
         {
             var (client, clientLock) = GetClient();
-            var monitor = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // post-modification
             SetupRequest(request);
+            HttpResponseMessage response = null;
 
-            // send request
-            // ReSharper disable once MethodSupportsCancellation (we need to run regardless of cancellation to release lock)
-            client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ContinueWith(async t =>
+            try
             {
-                try
+                // send request
+                // ReSharper disable once MethodSupportsCancellation (we need to run regardless of cancellation to release lock)
+                response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+
+                // evaluate task status and update monitor
+                return await processResult.Invoke(response).ConfigureAwait(false);
+            }
+            finally
+            {
+                request.Dispose();
+
+                if (disposeResponse)
                 {
-                    // evaluate task status and update monitor
-                    switch (t.Status)
-                    {
-                        case TaskStatus.RanToCompletion:
-                            monitor.SetResult(await processResult.Invoke(t.Result).ConfigureAwait(false));
-                            break;
-
-                        case TaskStatus.Faulted:
-                            monitor.SetException(t.Exception?.Flatten().InnerException ?? t.Exception);
-                            break;
-
-                        case TaskStatus.Canceled:
-                            monitor.SetCanceled();
-                            break;
-                    }
+                    response?.Dispose();
                 }
-                catch (Exception e)
-                {
-                    monitor.SetException(e);
-                }
-                finally
-                {
-                    request.Dispose();
 
-                    if (disposeResponse)
-                    {
-                        t.Result.Dispose();
-                    }
-
-                    // exit the read lock after fully processing
-                    clientLock.Dispose();
-                }
-            });
-
-            return monitor.Task;
+                // exit the read lock after fully processing
+                clientLock.Dispose();
+            }
         }
 
         /// <summary>
