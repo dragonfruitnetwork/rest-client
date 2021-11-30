@@ -258,6 +258,8 @@ namespace DragonFruit.Common.Data
                 }
 
                 await stream.CopyToAsync(result).ConfigureAwait(false);
+                await stream.FlushAsync().ConfigureAwait(false);
+
                 result.Seek(0, SeekOrigin.Begin);
                 return result as T;
             }
