@@ -66,7 +66,7 @@ namespace DragonFruit.Common.Data.Serializers
         }
 
         /// <summary>
-        /// The default <see cref="ISerializer"/> in use.
+        /// The default <see cref="ApiSerializer"/> in use.
         /// </summary>
         public ApiSerializer Default { get; }
 
