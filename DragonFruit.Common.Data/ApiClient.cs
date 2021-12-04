@@ -242,7 +242,7 @@ namespace DragonFruit.Common.Data
         {
             response.EnsureSuccessStatusCode();
 
-            using var stream = await response.Content.ReadAsStreamAsync();
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             if (typeof(Stream).IsAssignableFrom(typeof(T)))
             {
