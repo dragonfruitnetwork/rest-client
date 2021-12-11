@@ -5,7 +5,7 @@ using System;
 using DragonFruit.Common.Data.Parameters;
 using Newtonsoft.Json;
 
-namespace DragonFruit.Common.Data.Tests.Requests.Objects
+namespace DragonFruit.Common.Data.Tests.Requests
 {
     internal class DatabaseUpdateRequest : ApiRequest
     {
