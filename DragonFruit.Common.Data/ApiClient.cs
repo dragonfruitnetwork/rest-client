@@ -52,6 +52,14 @@ namespace DragonFruit.Common.Data
             Client?.Dispose();
         }
 
+        static ApiClient()
+        {
+            // register stream resolver types
+            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
+        }
+
         #endregion
 
         #region Properties
@@ -243,28 +251,14 @@ namespace DragonFruit.Common.Data
             response.EnsureSuccessStatusCode();
 
             using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var serializer = Serializer.Resolve<T>(DataDirection.In);
 
-            if (typeof(Stream).IsAssignableFrom(typeof(T)))
+            return serializer switch
             {
-                Stream result;
-
-                if (typeof(T) == typeof(Stream) && response.Content.Headers.ContentLength < 80000 || typeof(T) == typeof(MemoryStream))
-                {
-                    result = new MemoryStream();
-                }
-                else
-                {
-                    result = File.Create(Path.GetTempFileName(), 4096, FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose);
-                }
-
-                await stream.CopyToAsync(result).ConfigureAwait(false);
-                await stream.FlushAsync().ConfigureAwait(false);
-
-                result.Seek(0, SeekOrigin.Begin);
-                return result as T;
-            }
-
-            return Serializer.Resolve<T>(DataDirection.In).Deserialize<T>(stream);
+                // if the serializer supports working asynchronously, let it do that
+                IAsyncSerializer async => await async.DeserializeAsync<T>(stream).ConfigureAwait(false),
+                _ => serializer.Deserialize<T>(stream)
+            };
         }
 
         /// <summary>
