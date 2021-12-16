@@ -31,7 +31,7 @@ jobs:
           dotnet-version: ${{ matrix.dotnet }}
 
       - name: Build
-        run: dotnet build -c Debug -f ${{ matrix.dotnet-test-tfm }}
+        run: dotnet build -c Debug
 
       - name: Unit Tests
         run: dotnet test -f ${{ matrix.dotnet-test-tfm }}
