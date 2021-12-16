@@ -45,12 +45,6 @@ namespace DragonFruit.Data.Serializers
 
         private Stream GetStream<T>()
         {
-            // check isn't needed if this class is internal
-            // if (!typeof(Stream).IsAssignableFrom(typeof(T)))
-            // {
-            //     throw new InvalidCastException($"cannot cast type {typeof(T).Name} to {nameof(Stream)}");
-            // }
-
             if (typeof(T) == typeof(MemoryStream))
             {
                 return new MemoryStream();

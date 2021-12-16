@@ -62,14 +62,12 @@ namespace DragonFruit.Data.Serializers
         /// </summary>
         protected Stream GetStream(bool largeBody)
         {
-            return largeBody switch
+            if (largeBody && AllowDiskBuffering)
             {
-                // large bodies are buffered to a temp file that's removed on disposal
-                true when AllowDiskBuffering => File.Create(Path.GetTempFileName(), 4096, FileOptions.SequentialScan | FileOptions.Asynchronous | FileOptions.DeleteOnClose),
+                return File.Create(Path.GetTempFileName(), 4096, FileOptions.SequentialScan | FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+            }
 
-                // default memory stream
-                _ => new MemoryStream(50000)
-            };
+            return new MemoryStream(50000);
         }
 
         /// <summary>

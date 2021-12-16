@@ -145,12 +145,12 @@ namespace DragonFruit.Data
             using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var serializer = Serializer.Resolve<T>(DataDirection.In);
 
-            return serializer switch
+            if (serializer is IAsyncSerializer asyncSerializer)
             {
-                // if the serializer supports working asynchronously, let it do that
-                IAsyncSerializer async => await async.DeserializeAsync<T>(stream).ConfigureAwait(false),
-                _ => serializer.Deserialize<T>(stream)
-            };
+                return await asyncSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
+            }
+
+            return serializer.Deserialize<T>(stream);
         }
 
         /// <summary>
