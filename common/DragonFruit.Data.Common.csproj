@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <PackageId>DragonFruit.Data.Common</PackageId>
+        <PackageId>DragonFruit.Common.Data</PackageId>
         <Description>A metapackage for DragonFruit.Data including the main library and the Newtonsoft serializer</Description>
     </PropertyGroup>
 
