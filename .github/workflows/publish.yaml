@@ -33,4 +33,6 @@ jobs:
         if: "!github.event.release.prerelease"
         
       - name: Publish
-        run: dotnet nuget push "$($env:GITHUB_WORKSPACE)\*.nupkg" -k ${{ secrets.NUGET_KEY }} --skip-duplicate
+        run: |
+          cd $env:GITHUB_WORKSPACE
+          dotnet nuget push *.nupkg -k ${{ secrets.NUGET_KEY }} --skip-duplicate
