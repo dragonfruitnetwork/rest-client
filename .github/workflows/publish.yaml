@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build -c Release -v normal -p:Version="$(Get-Date -UFormat "%Y.%m%d").$($env:GITHUB_RUN_NUMBER)"
+        run: dotnet build -c Release -v normal -p:Version=${{ github.ref_name }}
 
       - name: Pack (Beta)
         run: dotnet pack --include-symbols --no-build -v normal -o $env:GITHUB_WORKSPACE --version-suffix beta
