@@ -39,7 +39,7 @@ namespace DragonFruit.Data.Serializers
         /// <summary>
         /// Gets or sets the encoding the <see cref="ApiSerializer"/> uses
         /// </summary>
-        public Encoding Encoding
+        public virtual Encoding Encoding
         {
             get => _encoding ?? Encoding.UTF8;
             set => _encoding = value;
