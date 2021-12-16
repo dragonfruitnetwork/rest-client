@@ -1,0 +1,20 @@
+﻿// DragonFruit.Data Copyright DragonFruit Network
+// Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
+
+#region
+
+using System;
+using System.Collections.Generic;
+
+#endregion
+
+namespace DragonFruit.Data.Basic
+{
+    public interface IBasicApiRequest
+    {
+        /// <summary>
+        /// Collection of <see cref="KeyValuePair{TKey,TValue}"/>s to use as a query string
+        /// </summary>
+        public Lazy<List<KeyValuePair<string, string>>> Queries { get; }
+    }
+}
