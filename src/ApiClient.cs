@@ -4,6 +4,7 @@
 #region
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -40,6 +41,14 @@ namespace DragonFruit.Data
         ~ApiClient()
         {
             Client?.Dispose();
+        }
+
+        static ApiClient()
+        {
+            // register stream resolver types
+            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
         }
 
         #region Factories
