@@ -1,14 +1,11 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System.IO;
 using System.Net.Http;
 using DragonFruit.Data.Utils;
 using Newtonsoft.Json;
-
-#endregion
+using Newtonsoft.Json.Linq;
 
 namespace DragonFruit.Data.Serializers.Newtonsoft
 {
@@ -55,6 +52,16 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
             };
 
             return Serializer.Deserialize<T>(reader);
+        }
+
+        /// <summary>
+        /// Registers Newtonsoft.Json Linq objects to be resolved by this serializer
+        /// </summary>
+        public static void RegisterDefaults()
+        {
+            SerializerResolver.Register<JArray, ApiJsonSerializer>();
+            SerializerResolver.Register<JToken, ApiJsonSerializer>();
+            SerializerResolver.Register<JObject, ApiJsonSerializer>();
         }
     }
 }

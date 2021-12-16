@@ -1,15 +1,11 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System.IO;
 using System.Net.Http;
 using DragonFruit.Data.Serializers;
 using DragonFruit.Data.Serializers.Newtonsoft;
 using NUnit.Framework;
-
-#endregion
 
 namespace DragonFruit.Data.Tests.Serializer
 {

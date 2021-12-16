@@ -1,8 +1,6 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,8 +11,6 @@ using DragonFruit.Data.Exceptions;
 using DragonFruit.Data.Parameters;
 using DragonFruit.Data.Serializers;
 using DragonFruit.Data.Utils;
-
-#endregion
 
 namespace DragonFruit.Data
 {

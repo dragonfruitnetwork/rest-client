@@ -1,14 +1,10 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using DragonFruit.Data.Basic;
 using DragonFruit.Data.Extensions;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-
-#endregion
 
 namespace DragonFruit.Data.Tests.Requests
 {

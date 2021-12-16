@@ -1,8 +1,6 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -10,8 +8,6 @@ using System.Security.Authentication;
 using DragonFruit.Data.Basic;
 using DragonFruit.Data.Handlers;
 using NUnit.Framework;
-
-#endregion
 
 #pragma warning disable 618
 

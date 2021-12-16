@@ -1,16 +1,12 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-
-#endregion
 
 namespace DragonFruit.Data.Handlers
 {
@@ -143,8 +139,6 @@ namespace DragonFruit.Data.Handlers
             return newRequest;
         }
 
-        #region Switches
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsRedirect(HttpStatusCode code)
         {
@@ -170,7 +164,5 @@ namespace DragonFruit.Data.Handlers
                 _ => false
             };
         }
-
-        #endregion
     }
 }

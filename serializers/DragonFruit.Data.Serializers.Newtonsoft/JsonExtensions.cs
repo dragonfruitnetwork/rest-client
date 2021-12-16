@@ -3,13 +3,9 @@
 
 #nullable enable
 
-#region
-
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-
-#endregion
 
 namespace DragonFruit.Data.Serializers.Newtonsoft
 {

@@ -1,8 +1,6 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.IO;
 using System.Linq;
@@ -13,8 +11,6 @@ using DragonFruit.Data.Exceptions;
 using DragonFruit.Data.Headers;
 using DragonFruit.Data.Serializers;
 using Nito.AsyncEx;
-
-#endregion
 
 #pragma warning disable 618
 
@@ -257,10 +253,7 @@ namespace DragonFruit.Data
         /// <summary>
         /// Overridable method for creating a <see cref="HttpMessageHandler"/> to use with the <see cref="HttpClient"/>
         /// </summary>
-        protected virtual HttpMessageHandler CreateHandler()
-        {
-            return Handler?.Invoke();
-        }
+        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke();
 
         /// <summary>
         /// Overridable method to customise the <see cref="HttpClient"/>.

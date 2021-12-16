@@ -1,14 +1,10 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-
-#endregion
 
 namespace DragonFruit.Data.Serializers
 {

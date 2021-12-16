@@ -1,8 +1,6 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-#region
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,8 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using DragonFruit.Data.Parameters;
-
-#endregion
 
 namespace DragonFruit.Data.Utils
 {
@@ -106,8 +102,6 @@ namespace DragonFruit.Data.Utils
             return attributedProperty.GetValue(host);
         }
 
-        #region IEnumerable Converters
-
         private static IEnumerable<KeyValuePair<string, string>> ApplyRecursiveConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
         {
             return values.Select(x => x.ToKeyValuePair(keyName, culture));
@@ -141,7 +135,5 @@ namespace DragonFruit.Data.Utils
         {
             return new KeyValuePair<string, string>(key, value.AsString(culture));
         }
-
-        #endregion
     }
 }
