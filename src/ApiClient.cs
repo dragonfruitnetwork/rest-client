@@ -234,9 +234,6 @@ namespace DragonFruit.Data
         /// <summary>
         /// The container for <see cref="ApiSerializer"/>s. The default serializer can be set at <see cref="SerializerResolver.Default"/>
         /// </summary>
-        /// <remarks>
-        /// Defaults to <see cref="ApiJsonSerializer"/>
-        /// </remarks>
         public SerializerResolver Serializer { get; }
 
         /// <summary>
