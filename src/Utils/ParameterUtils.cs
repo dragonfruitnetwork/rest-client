@@ -72,7 +72,9 @@ namespace DragonFruit.Data.Utils
                     };
                 }
                 else
+                {
                     yield return propertyValue.ToKeyValuePair(keyName, culture);
+                }
             }
         }
 

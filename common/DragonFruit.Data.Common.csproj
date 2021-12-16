@@ -1,14 +1,14 @@
 <Project>
 
-    <Import Project="$(SolutionDir)res\DragonFruit.Data.props" />
+    <Import Project="$(SolutionDir)res\DragonFruit.Data.props"/>
 
     <PropertyGroup>
         <PackageId>DragonFruit.Data.Common</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\serializers\DragonFruit.Data.Serializers.Newtonsoft\DragonFruit.Data.Serializers.Newtonsoft.csproj" />
-      <ProjectReference Include="..\src\DragonFruit.Data.csproj" />
+        <ProjectReference Include="..\serializers\DragonFruit.Data.Serializers.Newtonsoft\DragonFruit.Data.Serializers.Newtonsoft.csproj"/>
+        <ProjectReference Include="..\src\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
 </Project>

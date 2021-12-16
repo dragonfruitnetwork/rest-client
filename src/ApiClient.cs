@@ -166,9 +166,13 @@ namespace DragonFruit.Data
         public void RequestClientReset(bool fullReset)
         {
             if (fullReset)
+            {
                 Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 2);
+            }
             else
+            {
                 Interlocked.CompareExchange(ref _clientAdjustmentRequestSignal, 1, 0);
+            }
         }
 
         #region Properties

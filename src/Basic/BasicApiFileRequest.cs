@@ -35,7 +35,9 @@ namespace DragonFruit.Data.Basic
                 Destination = SystemPath.Combine(destination, SystemPath.GetFileName(path));
             }
             else
+            {
                 Destination = destination;
+            }
         }
 
         internal override string UrlCompiler => Queries.IsValueCreated

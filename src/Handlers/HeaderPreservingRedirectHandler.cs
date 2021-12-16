@@ -81,7 +81,9 @@ namespace DragonFruit.Data.Handlers
                             .ContinueWith(t2 => tcs.SetResult(t2.Result), cancellationToken);
                     }
                     else
+                    {
                         tcs.SetResult(response);
+                    }
                 }, cancellationToken);
 
             return tcs.Task;

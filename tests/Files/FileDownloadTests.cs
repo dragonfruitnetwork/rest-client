@@ -42,7 +42,9 @@ namespace DragonFruit.Data.Tests.Files
             finally
             {
                 if (File.Exists(request.Destination))
+                {
                     File.Delete(request.Destination);
+                }
             }
         }
     }
