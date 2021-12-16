@@ -6,10 +6,10 @@ using System.IO;
 using DragonFruit.Data.Basic;
 using NUnit.Framework;
 
-namespace DragonFruit.Data.Tests.Files
+namespace DragonFruit.Data.Tests.Requests
 {
     [TestFixture]
-    public class FileDownloadTests : ApiTest
+    public class FileRequestTests : ApiTest
     {
         [TestCase("https://github.com/ppy/osu/archive/2020.1121.0.zip", 19018589)]
         public void FileDownloadTest(string path, long expectedFileSize)

@@ -3,7 +3,7 @@
 
 using System;
 using DragonFruit.Data.Extensions;
-using DragonFruit.Data.Tests.Header.Objects;
+using DragonFruit.Data.Tests.Requests;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 

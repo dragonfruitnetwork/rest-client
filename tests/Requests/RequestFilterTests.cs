@@ -15,5 +15,20 @@ namespace DragonFruit.Data.Tests.Requests
             Assert.Catch<ArgumentException>(() => Client.Perform(new FilteredRequest()));
             Assert.Catch<ArgumentException>(() => Client.Perform(new InheritedRequest()));
         }
+
+        internal class FilteredRequest : ApiRequest
+        {
+            public override string Path { get; }
+
+            protected override void OnRequestExecuting(ApiClient client)
+            {
+                throw new ArgumentException();
+            }
+        }
+
+        internal class InheritedRequest : FilteredRequest
+        {
+            // this should have the exception filter applied to it as well
+        }
     }
 }

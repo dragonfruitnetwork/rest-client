@@ -29,5 +29,10 @@ namespace DragonFruit.Data.Serializers.SystemJson
         public override T Deserialize<T>(Stream input) => JsonSerializer.Deserialize<T>(input, SerializerOptions);
 
         public Task<T> DeserializeAsync<T>(Stream input) where T : class => JsonSerializer.DeserializeAsync<T>(input, SerializerOptions).AsTask();
+
+        /// <summary>
+        /// Registers <see cref="JsonDocument"/> to always use the <see cref="ApiSystemTextJsonSerializer"/>
+        /// </summary>
+        public static void RegisterDefaults() => SerializerResolver.Register<JsonDocument, ApiSystemTextJsonSerializer>();
     }
 }
