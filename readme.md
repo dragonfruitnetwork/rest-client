@@ -1,4 +1,4 @@
-# DragonFruit.Common
+# DragonFruit.Data
 
 ![CI Publish](https://github.com/dragonfruitnetwork/DragonFruit.Common/workflows/Publish/badge.svg)
 ![CI Unit Tests](https://github.com/dragonfruitnetwork/DragonFruit.Common/workflows/Unit%20Tests/badge.svg)
@@ -9,8 +9,16 @@
 
 ### Overview
 
-DragonFruit.Common is aimed to reduce code repetition and make common IO-based tasks easier and faster.
+DragonFruit.Data provides the framework that all DragonFruit Apps and APIs rely on to deliver data from remote sources. This framework has been created with 5 points in mind:
+
+- Streamlined - Developers create a central `ApiClient` and pass `ApiRequest`s to be performed
+- Optimised - All official `ApiSerializer`s have been optimised for performance and memory usage
+- Expandable - `ApiSerializer` is abstract, allowing for custom serializers to be created
+- Ease of use - Requests use attributes which makes querystring and form parameter mapping easy
+- Integration - `ApiClient`s integrate with existing systems, including `HttpRequestMessage`/`HttpResponseMessage` and `HttpMessageHandler`
 
 ### Getting Started
+
+> The docs are slightly out of date, and we'll be revising them soon to bring them up-to-date
 
 See the [wiki](https://github.com/dragonfruitnetwork/DragonFruit.Common/wiki) to get started.
