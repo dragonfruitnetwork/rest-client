@@ -80,7 +80,10 @@ namespace DragonFruit.Data
             // check request data is valid
             ValidateRequest(request);
 
-            if (string.IsNullOrWhiteSpace(request.Destination)) throw new NullRequestException();
+            if (string.IsNullOrWhiteSpace(request.Destination))
+            {
+                throw new NullRequestException();
+            }
 
             // get raw response
             var response = await InternalPerform(request.Build(this), Task.FromResult, false, token).ConfigureAwait(false);
@@ -105,7 +108,10 @@ namespace DragonFruit.Data
                     await stream.WriteAsync(buffer, 0, count, token).ConfigureAwait(false);
 
                     // check every 10th time to stop bottlenecks (use CompareExchange to stop the int from overflowing from insanely large file downloads)
-                    if (Interlocked.CompareExchange(ref iterations, 0, 100) == 100) progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                    if (Interlocked.CompareExchange(ref iterations, 0, 100) == 100)
+                    {
+                        progressUpdated?.Invoke(stream.Length, response.Content.Headers.ContentLength);
+                    }
                 }
 
                 // flush, return buffer and send a final update

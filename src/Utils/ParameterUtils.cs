@@ -32,7 +32,10 @@ namespace DragonFruit.Data.Utils
         {
             foreach (var property in host.GetType().GetProperties(DefaultFlags))
             {
-                if (!property.CanRead || !(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute)) continue;
+                if (!property.CanRead || !(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
+                {
+                    continue;
+                }
 
                 var keyName = attribute.Name ?? property.Name;
                 var propertyValue = property.GetValue(host);
@@ -58,7 +61,9 @@ namespace DragonFruit.Data.Utils
 
                     foreach (var entry in entityConverter.Invoke((IEnumerable<object>)propertyValue, keyName, culture))
                         // we purposely keep nulls in here, as it might affect the ordering.
+                    {
                         yield return entry;
+                    }
                 }
                 else if (property.PropertyType.IsEnum && attribute.EnumHandling.HasValue)
                 {
@@ -88,9 +93,15 @@ namespace DragonFruit.Data.Utils
                                          .GetProperties(DefaultFlags)
                                          .SingleOrDefault(x => Attribute.GetCustomAttribute(x, targetType) is T);
 
-            if (attributedProperty == default) throw new KeyNotFoundException($"No valid {targetType.Name} was attributed. There must be a single attributed property");
+            if (attributedProperty == default)
+            {
+                throw new KeyNotFoundException($"No valid {targetType.Name} was attributed. There must be a single attributed property");
+            }
 
-            if (!attributedProperty.CanRead) throw new MemberAccessException($"Unable to read contents of property {attributedProperty.Name}");
+            if (!attributedProperty.CanRead)
+            {
+                throw new MemberAccessException($"Unable to read contents of property {attributedProperty.Name}");
+            }
 
             return attributedProperty.GetValue(host);
         }
@@ -112,7 +123,10 @@ namespace DragonFruit.Data.Utils
             var counter = 0;
             var enumerator = values.GetEnumerator();
 
-            while (enumerator.MoveNext()) yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter++}]", culture);
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter++}]", culture);
+            }
 
             enumerator.Dispose();
         }

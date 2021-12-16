@@ -44,9 +44,15 @@ namespace DragonFruit.Data.Serializers
             where T : class
             where TSerializer : ApiSerializer, new()
         {
-            if (direction.HasFlag(DataDirection.In)) DeserializerMap[typeof(T)] = typeof(TSerializer);
+            if (direction.HasFlag(DataDirection.In))
+            {
+                DeserializerMap[typeof(T)] = typeof(TSerializer);
+            }
 
-            if (direction.HasFlag(DataDirection.Out)) SerializerMap[typeof(T)] = typeof(TSerializer);
+            if (direction.HasFlag(DataDirection.Out))
+            {
+                SerializerMap[typeof(T)] = typeof(TSerializer);
+            }
         }
 
         /// <summary>
@@ -57,9 +63,15 @@ namespace DragonFruit.Data.Serializers
         public static void Unregister<T>(DataDirection direction = DataDirection.All)
             where T : class
         {
-            if (direction.HasFlag(DataDirection.In)) DeserializerMap.Remove(typeof(T));
+            if (direction.HasFlag(DataDirection.In))
+            {
+                DeserializerMap.Remove(typeof(T));
+            }
 
-            if (direction.HasFlag(DataDirection.Out)) SerializerMap.Remove(typeof(T));
+            if (direction.HasFlag(DataDirection.Out))
+            {
+                SerializerMap.Remove(typeof(T));
+            }
         }
 
         /// <summary>
@@ -92,7 +104,10 @@ namespace DragonFruit.Data.Serializers
             };
 
             // if the map has the type registered, check the type in cache
-            if (mapping.TryGetValue(objectType, out var serializerType)) return _serializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
+            if (mapping.TryGetValue(objectType, out var serializerType))
+            {
+                return _serializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
+            }
 
             // use generic
             return Default;

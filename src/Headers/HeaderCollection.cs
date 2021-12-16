@@ -64,7 +64,10 @@ namespace DragonFruit.Data.Headers
         {
             client.DefaultRequestHeaders.Clear();
 
-            foreach (var header in _values) client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            foreach (var header in _values)
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
         }
     }
 }

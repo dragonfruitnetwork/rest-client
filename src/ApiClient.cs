@@ -25,6 +25,14 @@ namespace DragonFruit.Data
     /// </summary>
     public partial class ApiClient
     {
+        static ApiClient()
+        {
+            // register stream resolver types
+            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
+        }
+
         /// <summary>
         /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ApiSerializer"/>
         /// </summary>
@@ -41,14 +49,6 @@ namespace DragonFruit.Data
         ~ApiClient()
         {
             Client?.Dispose();
-        }
-
-        static ApiClient()
-        {
-            // register stream resolver types
-            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
-            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
-            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
         }
 
         #region Factories
@@ -125,7 +125,10 @@ namespace DragonFruit.Data
             {
                 request.Dispose();
 
-                if (disposeResponse) response?.Dispose();
+                if (disposeResponse)
+                {
+                    response?.Dispose();
+                }
 
                 // exit the read lock after fully processing
                 clientLock.Dispose();
@@ -164,7 +167,10 @@ namespace DragonFruit.Data
             if (request.RequireAuth && string.IsNullOrEmpty(Authorization))
             {
                 // check if we have a custom headerset in the request
-                if (!request.CustomHeaderCollectionCreated || !request.Headers.Any(x => x.Key.Equals("Authorization"))) throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
+                if (!request.CustomHeaderCollectionCreated || !request.Headers.Any(x => x.Key.Equals("Authorization")))
+                {
+                    throw new ClientValidationException("Authorization header was expected, but not found (in request or client)");
+                }
             }
         }
 

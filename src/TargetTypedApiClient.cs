@@ -19,7 +19,10 @@ namespace DragonFruit.Data
         public ApiClient(Action<T> configurationOptions = null)
             : base(Activator.CreateInstance<T>())
         {
-            if (configurationOptions != null) Serializer.Configure(configurationOptions);
+            if (configurationOptions != null)
+            {
+                Serializer.Configure(configurationOptions);
+            }
         }
     }
 }

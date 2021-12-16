@@ -19,7 +19,7 @@ namespace DragonFruit.Data.Tests.Header
     public class HeaderTests : ApiTest
     {
         private const string HeaderName = "x-dfn-test";
-        private static readonly Random Rng = new Random();
+        private static readonly Random Rng = new();
 
         /// <summary>
         /// Test whether client headers are sent and changed successfully

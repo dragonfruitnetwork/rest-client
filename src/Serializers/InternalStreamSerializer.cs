@@ -51,7 +51,10 @@ namespace DragonFruit.Data.Serializers
             //     throw new InvalidCastException($"cannot cast type {typeof(T).Name} to {nameof(Stream)}");
             // }
 
-            if (typeof(T) == typeof(MemoryStream)) return new MemoryStream();
+            if (typeof(T) == typeof(MemoryStream))
+            {
+                return new MemoryStream();
+            }
 
             return File.Create(Path.GetTempFileName(), 4096, FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose);
         }

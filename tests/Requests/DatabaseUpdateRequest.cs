@@ -25,7 +25,7 @@ namespace DragonFruit.Data.Tests.Requests
         protected override BodyType BodyType => BodyType.SerializedProperty;
 
         [RequestBody]
-        public Employee Employee { get; set; } = new Employee
+        public Employee Employee { get; set; } = new()
         {
             Department = "R&D",
             Manager = "Alan",

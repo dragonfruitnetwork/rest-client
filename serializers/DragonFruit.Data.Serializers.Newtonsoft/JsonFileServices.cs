@@ -63,12 +63,17 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
         {
             lock (location)
             {
-                if (!File.Exists(location)) throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                if (!File.Exists(location))
+                {
+                    throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                }
 
                 using (var reader = File.OpenRead(location))
                 using (var textReader = new StreamReader(reader))
                 using (var jsonReader = new JsonTextReader(textReader))
+                {
                     return serializer.Deserialize<T>(jsonReader);
+                }
             }
         }
 
@@ -81,12 +86,17 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
         {
             lock (location)
             {
-                if (!File.Exists(location)) throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                if (!File.Exists(location))
+                {
+                    throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
+                }
 
                 using (var reader = File.OpenRead(location))
                 using (var textReader = new StreamReader(reader))
                 using (var jsonReader = new JsonTextReader(textReader))
+                {
                     return JObject.Load(jsonReader);
+                }
             }
         }
 
@@ -113,7 +123,9 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
                 using (var reader = File.Open(location, FileMode.Create))
                 using (var textWriter = new StreamWriter(reader))
                 using (var jsonWriter = new JsonTextWriter(textWriter))
+                {
                     serializer.Serialize(jsonWriter, data);
+                }
             }
         }
     }

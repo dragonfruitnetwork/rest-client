@@ -19,7 +19,10 @@ namespace DragonFruit.Data.Serializers
         {
             var stream = GetStream(false);
 
-            using (var writer = new StreamWriter(stream, Encoding, 4096, true)) new XmlSerializer(typeof(T)).Serialize(writer, input);
+            using (var writer = new StreamWriter(stream, Encoding, 4096, true))
+            {
+                new XmlSerializer(typeof(T)).Serialize(writer, input);
+            }
 
             return GetHttpContent(stream);
         }

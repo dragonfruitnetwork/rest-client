@@ -88,7 +88,10 @@ namespace DragonFruit.Data
             {
                 var queries = ParameterUtils.GetParameter<QueryParameter>(this, RequestCulture);
 
-                if (AdditionalQueries != null) queries = queries.Concat(AdditionalQueries);
+                if (AdditionalQueries != null)
+                {
+                    queries = queries.Concat(AdditionalQueries);
+                }
 
                 return QueryUtils.QueryStringFrom(queries);
             }
@@ -122,7 +125,10 @@ namespace DragonFruit.Data
         /// </remarks>
         public HttpRequestMessage Build(SerializerResolver serializer)
         {
-            if (!Path.StartsWith("http")) throw new HttpRequestException("The request path is invalid (it must start with http or https)");
+            if (!Path.StartsWith("http"))
+            {
+                throw new HttpRequestException("The request path is invalid (it must start with http or https)");
+            }
 
             var request = new HttpRequestMessage
             {
@@ -175,10 +181,16 @@ namespace DragonFruit.Data
 
             if (CustomHeaderCollectionCreated)
             {
-                foreach (var header in Headers) request.Headers.Add(header.Key, header.Value);
+                foreach (var header in Headers)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
             }
 
-            if (!request.Headers.Contains("Accept")) request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.Resolve(GetType(), DataDirection.In).ContentType));
+            if (!request.Headers.Contains("Accept"))
+            {
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.Resolve(GetType(), DataDirection.In).ContentType));
+            }
 
             return request;
         }

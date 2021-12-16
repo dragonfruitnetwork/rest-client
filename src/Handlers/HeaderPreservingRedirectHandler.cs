@@ -114,7 +114,10 @@ namespace DragonFruit.Data.Handlers
             }
 
 #if NETSTANDARD2_0
-            foreach (var property in oldRequest.Properties) newRequest.Properties.Add(property);
+            foreach (var property in oldRequest.Properties)
+            {
+                newRequest.Properties.Add(property);
+            }
 #else
             foreach (var (key, value) in oldRequest.Options)
             {
@@ -132,7 +135,10 @@ namespace DragonFruit.Data.Handlers
                 newRequest.Content = null;
                 newRequest.Method = HttpMethod.Get;
             }
-            else if (oldRequest.Content != null) newRequest.Content = new StreamContent(oldRequest.Content.ReadAsStreamAsync().Result);
+            else if (oldRequest.Content != null)
+            {
+                newRequest.Content = new StreamContent(oldRequest.Content.ReadAsStreamAsync().Result);
+            }
 
             return newRequest;
         }

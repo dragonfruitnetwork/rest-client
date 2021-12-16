@@ -32,7 +32,10 @@ namespace DragonFruit.Data.Extensions
             }
             finally
             {
-                if (disposeResponse) response.Dispose();
+                if (disposeResponse)
+                {
+                    response.Dispose();
+                }
             }
         }
     }
