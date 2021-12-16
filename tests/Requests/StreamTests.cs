@@ -3,6 +3,7 @@
 
 #region
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -20,7 +21,9 @@ namespace DragonFruit.Data.Tests.Requests
             var networkStream = await Client.PerformAsync<MemoryStream>("https://google.com");
             var fileStream = await Client.PerformAsync<FileStream>("https://google.com");
 
-            Assert.AreEqual(networkStream.Length, fileStream.Length);
+            // make sure stream lengths are _almost_ the same length
+            var difference = Math.Abs(networkStream.Length - fileStream.Length);
+            Assert.IsTrue(difference <= 10);
         }
     }
 }
