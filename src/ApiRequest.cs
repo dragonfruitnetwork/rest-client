@@ -125,7 +125,7 @@ namespace DragonFruit.Data
         /// </remarks>
         public HttpRequestMessage Build(SerializerResolver serializer)
         {
-            if (!Path.StartsWith("http"))
+            if (!Path.StartsWith("http") || !Path.StartsWith("//"))
             {
                 throw new HttpRequestException("The request path is invalid (it must start with http or https)");
             }
