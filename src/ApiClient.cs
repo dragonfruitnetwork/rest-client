@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using DragonFruit.Data.Exceptions;
 using DragonFruit.Data.Headers;
 using DragonFruit.Data.Serializers;
@@ -23,7 +24,10 @@ namespace DragonFruit.Data
     {
         static ApiClient()
         {
-            // register stream resolver types
+            // register generic xml document type
+            SerializerResolver.Register<XmlDocument, ApiXmlSerializer>();
+
+            // register stream resolver types (inwards only)
             SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
             SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
             SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);

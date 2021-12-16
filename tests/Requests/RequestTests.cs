@@ -1,9 +1,8 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Threading.Tasks;
 using DragonFruit.Data.Basic;
-using DragonFruit.Data.Extensions;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace DragonFruit.Data.Tests.Requests
@@ -11,47 +10,31 @@ namespace DragonFruit.Data.Tests.Requests
     [TestFixture]
     public class RequestTests : ApiTest
     {
-        [TestCase(Methods.Put)]
+        [TestCase(Methods.Get)]
         [TestCase(Methods.Post)]
+        [TestCase(Methods.Head)]
         [TestCase(Methods.Patch)]
         [TestCase(Methods.Delete)]
-        public void MethodWithBodyRequestTest(Methods method)
+        public async Task TestMethodRequest(Methods method)
         {
-            var request = new DatabaseUpdateRequest(method);
-            var response = Client.Perform<JObject>(request);
+            var request = new EchoRequest(method);
+            using var result = await Client.PerformAsync(request);
 
-            Assert.AreEqual(request.Employee.Department, response["json"].ToObject<Employee>().Department);
+            Assert.IsTrue(result.IsSuccessStatusCode);
         }
 
-        [TestCase]
-        public void GetRequestTest()
+        [Test]
+        public async Task TestBasicRequest()
         {
-            var request = new SteamNewsRequest();
+            var request = new BasicApiRequest("https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/")
+                          .WithQuery("appid", "440")
+                          .WithQuery("count", "3")
+                          .WithQuery("maxlength", "300")
+                          .WithQuery("format", "json");
 
-            //returns the data
-            Client.Perform<JObject>(request);
+            using var result = await Client.PerformAsync(request);
 
-            //returns just the response info - i.e a head request where serialization may not be desired
-            Assert.IsTrue(Client.Perform(request).IsSuccessStatusCode);
-        }
-
-        [TestCase]
-        public void BasicApiRequestTest()
-        {
-            var request = new BasicApiRequest("https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002")
-                          .WithQuery("appid", 359550)
-                          .WithQuery("count", 15);
-
-            Assert.IsTrue(Client.Perform(request).IsSuccessStatusCode);
-        }
-
-        [TestCase]
-        public void RawStringRequest()
-        {
-            var request = new DatabaseUpdateRequest(Methods.Post);
-            var response = JObject.Parse(Client.Perform(request).To<string>());
-
-            Assert.AreEqual(request.Employee.Department, response["json"].ToObject<Employee>().Department);
+            Assert.IsTrue(result.IsSuccessStatusCode);
         }
     }
 }

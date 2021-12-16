@@ -7,7 +7,7 @@ using DragonFruit.Data.Serializers;
 using DragonFruit.Data.Serializers.Newtonsoft;
 using NUnit.Framework;
 
-namespace DragonFruit.Data.Tests.Serializer
+namespace DragonFruit.Data.Tests.Serializers
 {
     [TestFixture]
     public class SerializerResolverTests : ApiTest
@@ -45,6 +45,13 @@ namespace DragonFruit.Data.Tests.Serializer
             Client.Serializer.Configure<DummySerializer>(o => a = o.ContentType);
             Assert.AreEqual("nothing", a);
         }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            SerializerResolver.Unregister<TestObject>();
+            SerializerResolver.Unregister<AnotherTestObject>();
+        }
     }
 
     public class TestObject
@@ -64,14 +71,8 @@ namespace DragonFruit.Data.Tests.Serializer
         public override string ContentType => "nothing";
         public override bool IsGeneric => true;
 
-        public override HttpContent Serialize<T>(T input) where T : class
-        {
-            throw new System.NotImplementedException();
-        }
+        public override HttpContent Serialize<T>(T input) where T : class => throw new System.NotImplementedException();
 
-        public override T Deserialize<T>(Stream input) where T : class
-        {
-            throw new System.NotImplementedException();
-        }
+        public override T Deserialize<T>(Stream input) where T : class => throw new System.NotImplementedException();
     }
 }
