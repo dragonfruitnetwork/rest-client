@@ -1,0 +1,15 @@
+<Project>
+
+    <PropertyGroup>
+        <PackageId>DragonFruit.Data.Common</PackageId>
+        <Description>A metapackage for DragonFruit.Data including the main library and the Newtonsoft serializer</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\src\DragonFruit.Data.csproj"/>
+        <ProjectReference Include="..\serializers\DragonFruit.Data.Serializers.Newtonsoft\DragonFruit.Data.Serializers.Newtonsoft.csproj"/>
+    </ItemGroup>
+
+    <Import Project="$(SolutionDir)res\DragonFruit.Data.props"/>
+
+</Project>

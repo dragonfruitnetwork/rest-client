@@ -8,6 +8,7 @@
 [![DragonFruit Discord](https://img.shields.io/discord/482528405292843018?label=Discord&style=popout)](https://discord.gg/VA26u5Z)
 
 ### Overview
+
 DragonFruit.Common is aimed to reduce code repetition and make common IO-based tasks easier and faster.
 
 ### Getting Started
