@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>DragonFruit.Data.Serializers.SystemJson</PackageId>
+        <Description>System.Text.Json serializer for DragonFruit.Data</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    </ItemGroup>
+
+    <Import Project="$(SolutionDir)res\DragonFruit.Data.Serializers.props" />
+
+</Project>
