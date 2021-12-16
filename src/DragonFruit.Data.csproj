@@ -1,14 +1,15 @@
 ﻿<Project>
-
-    <Import Project="$(SolutionDir)res\DragonFruit.Data.props"/>
-
+    
     <PropertyGroup>
         <PackageId>DragonFruit.Data</PackageId>
+        <Description>A web requests framework for .NET that powers the DragonFruit APIs</Description>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Nito.AsyncEx.Coordination" Version="5.1.2"/>
         <PackageReference Include="System.Buffers" Version="4.5.1"/>
     </ItemGroup>
+
+    <Import Project="$(SolutionDir)res\DragonFruit.Data.props"/>
 
 </Project>

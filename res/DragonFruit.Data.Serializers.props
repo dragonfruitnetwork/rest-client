@@ -6,14 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- by importing the latest data lib, the sdk targets are added -->
         <ProjectReference Include="$(SolutionDir)src\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="$(SolutionDir)res\icon.png">
-            <Pack>true</Pack>
-            <PackagePath>.</PackagePath>
-        </None>
-    </ItemGroup>
+    <Import Project="$(SolutionDir)res\DragonFruit.Data.Nuget.props"/>
 
 </Project>
