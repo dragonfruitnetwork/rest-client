@@ -11,12 +11,16 @@ namespace DragonFruit.Data.Serializers.SystemJson
 {
     public class ApiSystemTextJsonSerializer : ApiSerializer, IAsyncSerializer
     {
-        public override string ContentType => "application/json";
+        private JsonSerializerOptions _serializerOptions;
 
-        // System.Text.Json doesn't accept different encoding
+        public override string ContentType => "application/json";
         public override Encoding Encoding => Encoding.UTF8;
 
-        public JsonSerializerOptions SerializerOptions { get; set; }
+        public JsonSerializerOptions SerializerOptions
+        {
+            get => _serializerOptions ??= new JsonSerializerOptions();
+            set => _serializerOptions = value;
+        }
 
         public override HttpContent Serialize<T>(T input)
         {
