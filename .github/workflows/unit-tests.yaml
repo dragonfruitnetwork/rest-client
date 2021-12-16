@@ -8,10 +8,6 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: false
   
-  orbit_client_id: ${{ secrets.ORBIT_CLIENT_ID }}
-  orbit_client_secret: ${{ secrets.ORBIT_CLIENT_SECRET }}
-  
-  project: './DragonFruit.Common.Data/DragonFruit.Common.Data.csproj'
   testproject: './DragonFruit.Common.Data.Tests/DragonFruit.Common.Data.Tests.csproj'
   
 jobs:
@@ -35,9 +31,7 @@ jobs:
           dotnet-version: ${{ matrix.dotnet }}
 
       - name: Build
-        run: |
-          dotnet build $project -c Debug -f ${{ matrix.dotnet-tfm }}
-          dotnet build $testproject -c Debug -f ${{ matrix.dotnet-test-tfm }}
+        run: dotnet build -c Debug -f ${{ matrix.dotnet-test-tfm }}
 
       - name: Unit Tests
         run: dotnet test -f ${{ matrix.dotnet-test-tfm }}
