@@ -3,17 +3,16 @@
 
 using System;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
-namespace DragonFruit.Data.Serializers.Newtonsoft
+namespace DragonFruit.Data.Serializers.SystemJson
 {
     /// <summary>
     /// Lock-enabled file based I/O Methods
     /// </summary>
     public static class FileServices
     {
-        public static JsonSerializer DefaultSerializer { get; set; } = new JsonSerializer();
+        public static JsonSerializerOptions DefaultSerializer { get; set; }
 
         /// <summary>
         /// Read data from file as specified type
@@ -44,17 +43,17 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
         /// <param name="location">Location of the file</param>
         /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
         /// <returns>Type with populated data</returns>
-        public static T ReadFileOrDefault<T>(string location, JsonSerializer serializer)
+        public static T ReadFileOrDefault<T>(string location, JsonSerializerOptions serializer)
         {
             return File.Exists(location) ? ReadFile<T>(location, serializer) : default;
         }
 
         /// <summary>
-        /// Read data from file as JObject
+        /// Read data from file as a <see cref="JsonDocument"/>
         /// </summary>
         /// <param name="location">Location of the file</param>
-        /// <returns>JObject with data</returns>
-        public static JObject ReadFile(string location) => ReadFile(location, JObject.Load);
+        /// <returns><see cref="JsonDocument"/> with data</returns>
+        public static JsonDocument ReadFile(string location) => ReadFile(location, s => JsonDocument.Parse(s));
 
         /// <summary>
         /// Read data from file as specified type, or return default value if the file doesn't exist
@@ -63,7 +62,7 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
         /// <param name="location">Location of the file</param>
         /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
         /// <returns>Type with populated data</returns>
-        public static T ReadFile<T>(string location, JsonSerializer serializer) => ReadFile(location, serializer.Deserialize<T>);
+        public static T ReadFile<T>(string location, JsonSerializerOptions serializer) => ReadFile(location, s => JsonSerializer.Deserialize<T>(s, serializer));
 
         /// <summary>
         /// Writes data to a file. If the file exists then it is overwritten with no notice
@@ -78,20 +77,16 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
         /// <param name="location">Location of the file</param>
         /// <param name="data">Data to be written</param>
         /// <param name="serializer">The <see cref="JsonSerializer"/> to use</param>
-        public static void WriteFile<T>(string location, T data, JsonSerializer serializer)
+        public static void WriteFile<T>(string location, T data, JsonSerializerOptions serializer)
         {
             lock (location)
             {
-                using (var reader = File.Open(location, FileMode.Create))
-                using (var textWriter = new StreamWriter(reader))
-                using (var jsonWriter = new JsonTextWriter(textWriter))
-                {
-                    serializer.Serialize(jsonWriter, data);
-                }
+                using var writer = File.Open(location, FileMode.Create);
+                JsonSerializer.Serialize(writer, data, serializer);
             }
         }
 
-        private static T ReadFile<T>(string location, Func<JsonTextReader, T> deserializeAction)
+        private static T ReadFile<T>(string location, Func<Stream, T> deserializeAction)
         {
             lock (location)
             {
@@ -100,12 +95,8 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
                     throw new FileNotFoundException($"The File, {Path.GetFileName(location)}, does not exist in directory, {Path.GetDirectoryName(location)}.");
                 }
 
-                using (var reader = File.OpenRead(location))
-                using (var textReader = new StreamReader(reader))
-                using (var jsonReader = new JsonTextReader(textReader))
-                {
-                    return deserializeAction.Invoke(jsonReader);
-                }
+                using var reader = File.OpenRead(location);
+                return deserializeAction.Invoke(reader);
             }
         }
     }
