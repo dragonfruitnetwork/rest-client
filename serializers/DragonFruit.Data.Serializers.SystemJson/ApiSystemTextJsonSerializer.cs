@@ -14,7 +14,15 @@ namespace DragonFruit.Data.Serializers.SystemJson
         private JsonSerializerOptions _serializerOptions;
 
         public override string ContentType => "application/json";
-        public override Encoding Encoding => Encoding.UTF8;
+
+        public override Encoding Encoding
+        {
+            get => base.Encoding;
+            set
+            {
+                // set should not do anything, as the serializer doesn't support non-utf8
+            }
+        }
 
         public JsonSerializerOptions SerializerOptions
         {

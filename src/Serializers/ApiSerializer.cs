@@ -41,7 +41,7 @@ namespace DragonFruit.Data.Serializers
         /// </summary>
         public virtual Encoding Encoding
         {
-            get => _encoding ?? Encoding.UTF8;
+            get => _encoding ??= new UTF8Encoding(false);
             set => _encoding = value;
         }
 
