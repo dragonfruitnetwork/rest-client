@@ -1,6 +1,7 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -18,10 +19,7 @@ namespace DragonFruit.Data.Serializers.SystemJson
         public override Encoding Encoding
         {
             get => base.Encoding;
-            set
-            {
-                // set should not do anything, as the serializer doesn't support non-utf8
-            }
+            set => throw new NotSupportedException("System.Text.Json is UTF-8 only");
         }
 
         public JsonSerializerOptions SerializerOptions
