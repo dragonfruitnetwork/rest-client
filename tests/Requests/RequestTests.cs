@@ -1,6 +1,8 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DragonFruit.Data.Basic;
 using NUnit.Framework;
@@ -35,6 +37,16 @@ namespace DragonFruit.Data.Tests.Requests
             using var result = await Client.PerformAsync(request);
 
             Assert.IsTrue(result.IsSuccessStatusCode);
+        }
+
+        [Test]
+        public void TestSyncHttp2Request()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://google.com") { Version = HttpVersion.Version20 };
+            using var result = Client.Perform(request);
+
+            Assert.IsTrue(result.IsSuccessStatusCode);
+            Assert.AreEqual(request.Version, result.Version);
         }
     }
 }
