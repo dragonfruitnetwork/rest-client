@@ -17,14 +17,14 @@ namespace DragonFruit.Data.Utils
 #if NETSTANDARD
                 return System.Net.HttpVersion.Version11;
 #else
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) && Environment.OSVersion.Version.Major < 10)
-            {
-                // because the WinHttpHandler exists, versions prior to Windows 10 might fallover and cause unexpected breakage.
-                // if this isn't the case, a developer can simply override the version on initialisation, bypassing this check.
-                return System.Net.HttpVersion.Version11;
-            }
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) && Environment.OSVersion.Version.Major < 10)
+                {
+                    // because the WinHttpHandler exists, versions prior to Windows 10 might fallover and cause unexpected breakage.
+                    // if this isn't the case, a developer can simply override the version on initialisation, bypassing this check.
+                    return System.Net.HttpVersion.Version11;
+                }
 
-            return System.Net.HttpVersion.Version20;
+                return System.Net.HttpVersion.Version20;
 #endif
             }
         }

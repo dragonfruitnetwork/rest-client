@@ -40,13 +40,13 @@ namespace DragonFruit.Data.Tests.Requests
         }
 
         [Test]
-        public async Task TestLegacyHttpRequest()
+        public void TestSyncHttp2Request()
         {
-            var builtRequest = new HttpRequestMessage(HttpMethod.Get, "https://google.com") { Version = HttpVersion.Version11 };
-            using var result = await Client.PerformAsync(builtRequest);
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://google.com") { Version = HttpVersion.Version20 };
+            using var result = Client.Perform(request);
 
             Assert.IsTrue(result.IsSuccessStatusCode);
-            Assert.AreEqual(result.Version, builtRequest.Version);
+            Assert.AreEqual(request.Version, result.Version);
         }
     }
 }
