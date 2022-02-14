@@ -22,6 +22,12 @@ namespace DragonFruit.Data
     /// </summary>
     public partial class ApiClient
     {
+        private HttpClient _client;
+        private Version _httpVersion;
+        private Func<HttpMessageHandler> _handler;
+        private long _clientAdjustmentRequestSignal;
+        private readonly AsyncReaderWriterLock _lock;
+
         /// <summary>
         /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ApiSerializer"/>
         /// </summary>
@@ -37,7 +43,7 @@ namespace DragonFruit.Data
 
         ~ApiClient()
         {
-            Client?.Dispose();
+            _client?.Dispose();
         }
 
         static ApiClient()
@@ -56,7 +62,7 @@ namespace DragonFruit.Data
         /// <summary>
         /// Checks the current <see cref="HttpClient"/> and replaces it if headers or <see cref="Handler"/> has been modified
         /// </summary>
-        protected (HttpClient Client, IDisposable Lock) GetClient()
+        private (HttpClient Client, IDisposable Lock) GetClient()
         {
             // return current client if there are no changes
             var resetLevel = Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
@@ -73,22 +79,22 @@ namespace DragonFruit.Data
                     {
                         var handler = CreateHandler();
 
-                        Client?.Dispose();
-                        Client = handler != null ? new HttpClient(handler, true) : new HttpClient();
+                        _client?.Dispose();
+                        _client = handler != null ? new HttpClient(handler, true) : new HttpClient();
                     }
 
                     // apply new headers
-                    Headers.ApplyTo(Client);
+                    Headers.ApplyTo(_client);
 
                     // allow the consumer to change the client
-                    SetupClient(Client, resetClient);
+                    SetupClient(_client, resetClient);
 
                     // reset the state
                     Interlocked.Exchange(ref _clientAdjustmentRequestSignal, 0);
                 }
             }
 
-            return (Client, _lock.ReaderLock());
+            return (_client, _lock.ReaderLock());
         }
 
         #endregion
@@ -216,6 +222,16 @@ namespace DragonFruit.Data
         public HeaderCollection Headers { get; }
 
         /// <summary>
+        /// Gets or sets the HTTP version to use on requests passed through the <see cref="ApiClient"/>.
+        /// When setting this property, consider all target devices and whether they have support for the version targeted.
+        /// </summary>
+        public Version HttpVersion
+        {
+            get => _httpVersion ??= GetDefaultHttpVersion();
+            set => _httpVersion = value;
+        }
+
+        /// <summary>
         /// Optional <see cref="HttpMessageHandler"/> factory to be consumed by the <see cref="HttpClient"/>
         /// </summary>
         /// <remarks>
@@ -236,20 +252,6 @@ namespace DragonFruit.Data
         /// </summary>
         public SerializerResolver Serializer { get; }
 
-        /// <summary>
-        /// <see cref="HttpClient"/> used by these requests.
-        /// This is used by the library and as such, should **not** be disposed in any way
-        /// </summary>
-        protected HttpClient Client { get; private set; }
-
-        #endregion
-
-        #region Private Vars
-
-        private readonly AsyncReaderWriterLock _lock;
-        private long _clientAdjustmentRequestSignal;
-        private Func<HttpMessageHandler> _handler;
-
         #endregion
 
         #region Empty Overrides (Inherited)
@@ -257,6 +259,10 @@ namespace DragonFruit.Data
         /// <summary>
         /// Overridable method for creating a <see cref="HttpMessageHandler"/> to use with the <see cref="HttpClient"/>
         /// </summary>
+        /// <remarks>
+        /// This should be used when a library needs to enforce a <see cref="DelegatingHandler"/> is wrapped over the <see cref="Handler"/>.
+        /// If overriden, it should be sealed to prevent misuse
+        /// </remarks>
         protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke();
 
         /// <summary>
@@ -280,8 +286,26 @@ namespace DragonFruit.Data
         /// </summary>
         protected virtual void SetupRequest(HttpRequestMessage request)
         {
+            // we need to override at the request level as targeting the client won't work
+            request.Version = HttpVersion;
         }
 
         #endregion
+
+        private Version GetDefaultHttpVersion()
+        {
+#if NETSTANDARD
+            return System.Net.HttpVersion.Version11;
+#else
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) && Environment.OSVersion.Version.Major < 10)
+            {
+                // because the WinHttpHandler exists, versions prior to Windows 10 might fallover and cause unexpected breakage.
+                // if this isn't the case, a developer can simply override the version on initialisation, bypassing this check.
+                return System.Net.HttpVersion.Version11;
+            }
+
+            return System.Net.HttpVersion.Version20;
+#endif
+        }
     }
 }
