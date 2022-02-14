@@ -22,17 +22,6 @@ namespace DragonFruit.Data
     /// </summary>
     public partial class ApiClient
     {
-        static ApiClient()
-        {
-            // register generic xml document type
-            SerializerResolver.Register<XmlDocument, ApiXmlSerializer>();
-
-            // register stream resolver types (inwards only)
-            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
-            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
-            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
-        }
-
         /// <summary>
         /// Initialises a new <see cref="ApiClient"/> using a user-set <see cref="ApiSerializer"/>
         /// </summary>
@@ -49,6 +38,17 @@ namespace DragonFruit.Data
         ~ApiClient()
         {
             Client?.Dispose();
+        }
+
+        static ApiClient()
+        {
+            // register generic xml document type
+            SerializerResolver.Register<XmlDocument, ApiXmlSerializer>();
+
+            // register stream resolver types (inwards only)
+            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
         }
 
         #region Factories
