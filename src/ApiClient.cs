@@ -11,6 +11,7 @@ using System.Xml;
 using DragonFruit.Data.Exceptions;
 using DragonFruit.Data.Headers;
 using DragonFruit.Data.Serializers;
+using DragonFruit.Data.Utils;
 using Nito.AsyncEx;
 
 #pragma warning disable 618
@@ -227,7 +228,7 @@ namespace DragonFruit.Data
         /// </summary>
         public Version HttpVersion
         {
-            get => _httpVersion ??= GetDefaultHttpVersion();
+            get => _httpVersion ??= HttpVersionUtils.DefaultHttpVersion;
             set => _httpVersion = value;
         }
 
@@ -286,26 +287,10 @@ namespace DragonFruit.Data
         /// </summary>
         protected virtual void SetupRequest(HttpRequestMessage request)
         {
-            // we need to override at the request level as targeting the client won't work
+            // HTTP versions need to be overriden at the request level - targeting the client won't work
             request.Version = HttpVersion;
         }
 
         #endregion
-
-        private Version GetDefaultHttpVersion()
-        {
-#if NETSTANDARD
-            return System.Net.HttpVersion.Version11;
-#else
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) && Environment.OSVersion.Version.Major < 10)
-            {
-                // because the WinHttpHandler exists, versions prior to Windows 10 might fallover and cause unexpected breakage.
-                // if this isn't the case, a developer can simply override the version on initialisation, bypassing this check.
-                return System.Net.HttpVersion.Version11;
-            }
-
-            return System.Net.HttpVersion.Version20;
-#endif
-        }
     }
 }
