@@ -1,10 +1,13 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DragonFruit.Data.Basic;
+using DragonFruit.Data.Parameters;
 using NUnit.Framework;
 
 namespace DragonFruit.Data.Tests.Requests
@@ -47,6 +50,26 @@ namespace DragonFruit.Data.Tests.Requests
 
             Assert.IsTrue(result.IsSuccessStatusCode);
             Assert.AreEqual(request.Version, result.Version);
+        }
+
+        [Test]
+        public void TestConcatEnumerable()
+        {
+            var req = new EnumerableTest(Enumerable.Range(1, 5));
+            Assert.True(req.FullUrl.Contains("1,2,3"));
+        }
+
+        private class EnumerableTest : ApiRequest
+        {
+            public override string Path => "https://example.com";
+
+            public EnumerableTest(IEnumerable<int> data)
+            {
+                Data = data;
+            }
+
+            [QueryParameter("data", CollectionConversionMode.Concatenated)]
+            public IEnumerable<int> Data { get; set; }
         }
     }
 }

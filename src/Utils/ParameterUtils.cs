@@ -45,18 +45,18 @@ namespace DragonFruit.Data.Utils
                 // check if the type we've got is an IEnumerable of anything AND we have a valid collection handler mode
                 if (attribute.CollectionHandling.HasValue && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
                 {
-                    Func<IEnumerable<object>, string, CultureInfo, IEnumerable<KeyValuePair<string, string>>> entityConverter = attribute.CollectionHandling switch
+                    Func<IEnumerable, IEnumerable<KeyValuePair<string, string>>> entityConverter = attribute.CollectionHandling switch
                     {
-                        CollectionConversionMode.Recursive => ApplyRecursiveConversion,
-                        CollectionConversionMode.Unordered => ApplyUnorderedConversion,
-                        CollectionConversionMode.Ordered => ApplyOrderedConversion,
-                        CollectionConversionMode.Concatenated => (a, b, c) => ApplyConcatenation(a, b, c, attribute.CollectionSeparator ?? DefaultConcatenationCharacter),
+                        CollectionConversionMode.Ordered => values => ApplyOrderedConversion(values, keyName, culture),
+                        CollectionConversionMode.Recursive => values => values.Cast<object>().Select(x => x.ToKeyValuePair(keyName, culture)),
+                        CollectionConversionMode.Unordered => values => values.Cast<object>().Select(x => x.ToKeyValuePair($"{keyName}[]", culture)),
+                        CollectionConversionMode.Concatenated => values => ApplyConcatenation(values, keyName, culture, attribute.CollectionSeparator ?? DefaultConcatenationCharacter),
 
                         _ => throw new ArgumentOutOfRangeException()
                     };
 
-                    foreach (var entry in entityConverter.Invoke((IEnumerable<object>)propertyValue, keyName, culture))
-                        // we purposely keep nulls in here, as it might affect the ordering.
+                    // we purposely keep nulls in here, as it might affect the ordering.
+                    foreach (var entry in entityConverter.Invoke((IEnumerable)propertyValue))
                     {
                         yield return entry;
                     }
@@ -102,17 +102,7 @@ namespace DragonFruit.Data.Utils
             return attributedProperty.GetValue(host);
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> ApplyRecursiveConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
-        {
-            return values.Select(x => x.ToKeyValuePair(keyName, culture));
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> ApplyUnorderedConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
-        {
-            return values.Select(x => x.ToKeyValuePair($"{keyName}[]", culture));
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> ApplyOrderedConversion(IEnumerable<object> values, string keyName, CultureInfo culture)
+        private static IEnumerable<KeyValuePair<string, string>> ApplyOrderedConversion(IEnumerable values, string keyName, CultureInfo culture)
         {
             var counter = 0;
             var enumerator = values.GetEnumerator();
@@ -122,12 +112,13 @@ namespace DragonFruit.Data.Utils
                 yield return enumerator.Current.ToKeyValuePair($"{keyName}[{counter++}]", culture);
             }
 
-            enumerator.Dispose();
+            // dispose if possible
+            (enumerator as IDisposable)?.Dispose();
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable<object> values, string keyName, CultureInfo culture, string concatCharacter)
+        private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable values, string keyName, CultureInfo culture, string concatCharacter)
         {
-            yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Select(x => x.AsString(culture))));
+            yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Cast<object>().Select(x => x.AsString(culture))));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
