@@ -55,8 +55,10 @@ namespace DragonFruit.Data.Tests.Requests
         [Test]
         public void TestConcatEnumerable()
         {
-            var req = new EnumerableTest(Enumerable.Range(1, 5));
-            Assert.True(req.FullUrl.Contains("1,2,3"));
+            var req = new EnumerableTest(Enumerable.Range(1, 5)).FullUrl;
+
+            Assert.True(req.Contains("sdata=1,2,3"));
+            Assert.True(req.Contains("numbers=1,2,3"));
         }
 
         private class EnumerableTest : ApiRequest
@@ -68,8 +70,11 @@ namespace DragonFruit.Data.Tests.Requests
                 Data = data;
             }
 
-            [QueryParameter("data", CollectionConversionMode.Concatenated)]
+            [QueryParameter("numbers", CollectionConversionMode.Concatenated)]
             public IEnumerable<int> Data { get; set; }
+
+            [QueryParameter("sdata", CollectionConversionMode.Concatenated)]
+            public IEnumerable<string> StringData => Data.Select(x => x.ToString());
         }
     }
 }
