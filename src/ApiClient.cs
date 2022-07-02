@@ -123,7 +123,6 @@ namespace DragonFruit.Data
             try
             {
                 // send request
-                // ReSharper disable once MethodSupportsCancellation (we need to run regardless of cancellation to release lock)
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
                 // evaluate task status and update monitor
@@ -138,7 +137,6 @@ namespace DragonFruit.Data
                     response?.Dispose();
                 }
 
-                // exit the read lock after fully processing
                 clientLock.Dispose();
             }
         }
