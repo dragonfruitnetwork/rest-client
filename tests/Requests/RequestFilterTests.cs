@@ -13,8 +13,8 @@ namespace DragonFruit.Data.Tests.Requests
         [Test]
         public void TestFilteredRequests()
         {
-            Assert.Catch<ArgumentException>(() => Client.Perform(new FilteredRequest()));
-            Assert.Catch<ArgumentException>(() => Client.Perform(new InheritedRequest()));
+            Assert.Catch<AggregateException>(() => Client.Perform(new FilteredRequest()));
+            Assert.CatchAsync<ArgumentException>(() => Client.PerformAsync(new InheritedRequest()));
         }
 
         internal class FilteredRequest : ApiRequest, IRequestExecutingCallback
