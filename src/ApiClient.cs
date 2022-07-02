@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using DragonFruit.Data.Exceptions;
 using DragonFruit.Data.Headers;
+using DragonFruit.Data.Requests;
 using DragonFruit.Data.Serializers;
 using DragonFruit.Data.Utils;
 using Nito.AsyncEx;
@@ -122,7 +123,6 @@ namespace DragonFruit.Data
             try
             {
                 // send request
-                // ReSharper disable once MethodSupportsCancellation (we need to run regardless of cancellation to release lock)
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
                 // evaluate task status and update monitor
@@ -137,7 +137,6 @@ namespace DragonFruit.Data
                     response?.Dispose();
                 }
 
-                // exit the read lock after fully processing
                 clientLock.Dispose();
             }
         }
@@ -166,9 +165,17 @@ namespace DragonFruit.Data
         /// <param name="request">The request to validate</param>
         /// <exception cref="NullRequestException">The request can't be performed due to a poorly-formed url</exception>
         /// <exception cref="ClientValidationException">The client can't be used because there is no auth url.</exception>
-        protected virtual void ValidateRequest(ApiRequest request)
+        protected virtual async Task ValidateRequest(ApiRequest request)
         {
-            request.OnRequestExecuting(this);
+            if (request is IRequestExecutingCallback syncCallback)
+            {
+                syncCallback.OnRequestExecuting(this);
+            }
+
+            if (request is IAsyncRequestExecutingCallback asyncCallback)
+            {
+                await asyncCallback.OnRequestExecutingAsync(this).ConfigureAwait(false);
+            }
 
             // note request path is validated on build
             if (request.RequireAuth && string.IsNullOrEmpty(Authorization))
@@ -262,7 +269,7 @@ namespace DragonFruit.Data
         /// </summary>
         /// <remarks>
         /// This should be used when a library needs to enforce a <see cref="DelegatingHandler"/> is wrapped over the <see cref="Handler"/>.
-        /// If overriden, it should be sealed to prevent misuse
+        /// If overriden, the client should be sealed to prevent unintended changes
         /// </remarks>
         protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke();
 
