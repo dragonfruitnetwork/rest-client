@@ -11,13 +11,13 @@ namespace DragonFruit.Data.Serializers
     {
         public override string ContentType => "application/xml";
 
-        public override HttpContent Serialize<T>(T input) where T : class
+        public override HttpContent Serialize(object input)
         {
             var stream = GetStream(false);
 
             using (var writer = new StreamWriter(stream, Encoding, 4096, true))
             {
-                new XmlSerializer(typeof(T)).Serialize(writer, input);
+                new XmlSerializer(input.GetType()).Serialize(writer, input);
             }
 
             return GetHttpContent(stream);

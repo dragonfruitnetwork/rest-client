@@ -10,33 +10,31 @@ namespace DragonFruit.Data.Serializers.Html
         public override string ContentType => "text/html";
         public override bool IsGeneric => false;
 
-        public override HttpContent Serialize<T>(T input)
+        public override HttpContent Serialize(object input)
         {
-            ValidateType<T>();
+            if (!(input is HtmlDocument document))
+            {
+                throw new ArgumentException($"Cannot process {input.GetType().Name}", nameof(input));
+            }
 
             // html is usually larger than 80kb
             var stream = GetStream(true);
-            (input as HtmlDocument)!.Save(stream, Encoding);
+            document.Save(stream, Encoding);
 
             return GetHttpContent(stream);
         }
 
         public override T Deserialize<T>(Stream input)
         {
-            ValidateType<T>();
+            if (typeof(T) != typeof(HtmlDocument))
+            {
+                throw new ArgumentException($"Cannot process {typeof(T).Name}", nameof(T));
+            }
 
             var document = new HtmlDocument();
             document.Load(input, Encoding, AutoDetectEncoding);
 
             return document as T; // where T is validated as a HtmlDocument
-        }
-
-        private static void ValidateType<T>()
-        {
-            if (typeof(T) != typeof(HtmlDocument))
-            {
-                throw new ArgumentException($"Cannot process {typeof(T).Name}", nameof(T));
-            }
         }
 
         /// <summary>

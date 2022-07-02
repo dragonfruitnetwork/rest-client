@@ -28,17 +28,17 @@ namespace DragonFruit.Data.Serializers.SystemJson
             set => _serializerOptions = value;
         }
 
-        public override HttpContent Serialize<T>(T input)
+        public override HttpContent Serialize(object input)
         {
-            var stream = GetStream(false);
-            JsonSerializer.Serialize(stream, input, SerializerOptions);
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(input, input.GetType(), SerializerOptions);
+            var stream = new MemoryStream(bytes);
 
             return GetHttpContent(stream);
         }
 
         public override T Deserialize<T>(Stream input) => JsonSerializer.Deserialize<T>(input, SerializerOptions);
 
-        public Task<T> DeserializeAsync<T>(Stream input) where T : class => JsonSerializer.DeserializeAsync<T>(input, SerializerOptions).AsTask();
+        public ValueTask<T> DeserializeAsync<T>(Stream input) where T : class => JsonSerializer.DeserializeAsync<T>(input, SerializerOptions);
 
         /// <summary>
         /// Registers <see cref="JsonDocument"/> to always use the <see cref="ApiSystemTextJsonSerializer"/>

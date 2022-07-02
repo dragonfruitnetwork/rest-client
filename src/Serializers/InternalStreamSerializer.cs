@@ -12,7 +12,7 @@ namespace DragonFruit.Data.Serializers
     {
         public override string ContentType => "application/octet-stream";
 
-        public async Task<T> DeserializeAsync<T>(Stream input) where T : class
+        public async ValueTask<T> DeserializeAsync<T>(Stream input) where T : class
         {
             var stream = GetStream<T>();
             await input.CopyToAsync(stream).ConfigureAwait(false);
@@ -23,7 +23,7 @@ namespace DragonFruit.Data.Serializers
             return stream as T;
         }
 
-        public override HttpContent Serialize<T>(T input)
+        public override HttpContent Serialize(object input)
         {
             throw new NotSupportedException("Stream serialization is currently one-way");
         }
