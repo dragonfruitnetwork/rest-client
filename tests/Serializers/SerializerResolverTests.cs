@@ -71,7 +71,7 @@ namespace DragonFruit.Data.Tests.Serializers
         public override string ContentType => "nothing";
         public override bool IsGeneric => true;
 
-        public override HttpContent Serialize<T>(T input) where T : class => throw new System.NotImplementedException();
+        public override HttpContent Serialize(object input) => throw new System.NotImplementedException();
 
         public override T Deserialize<T>(Stream input) where T : class => throw new System.NotImplementedException();
     }
