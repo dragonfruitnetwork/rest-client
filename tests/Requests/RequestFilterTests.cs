@@ -2,6 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using DragonFruit.Data.Requests;
 using NUnit.Framework;
 
 namespace DragonFruit.Data.Tests.Requests
@@ -16,11 +17,11 @@ namespace DragonFruit.Data.Tests.Requests
             Assert.Catch<ArgumentException>(() => Client.Perform(new InheritedRequest()));
         }
 
-        internal class FilteredRequest : ApiRequest
+        internal class FilteredRequest : ApiRequest, IRequestExecutingCallback
         {
             public override string Path { get; }
 
-            protected override void OnRequestExecuting(ApiClient client)
+            void IRequestExecutingCallback.OnRequestExecuting(ApiClient client)
             {
                 throw new ArgumentException();
             }
