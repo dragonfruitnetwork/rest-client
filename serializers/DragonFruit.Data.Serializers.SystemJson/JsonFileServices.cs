@@ -82,7 +82,7 @@ namespace DragonFruit.Data.Serializers.SystemJson
             lock (location)
             {
                 using var writer = File.Open(location, FileMode.Create);
-                JsonSerializer.Serialize(writer, data, serializer);
+                JsonSerializer.Serialize(writer, data, data.GetType(), serializer);
             }
         }
 
