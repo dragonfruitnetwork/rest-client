@@ -50,7 +50,7 @@ namespace DragonFruit.Data.Serializers
         /// </summary>
         public bool AutoDetectEncoding { get; set; } = true;
 
-        public abstract HttpContent Serialize<T>(T input) where T : class;
+        public abstract HttpContent Serialize(object input);
         public abstract T Deserialize<T>(Stream input) where T : class;
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace DragonFruit.Data.Serializers
                 return File.Create(Path.GetTempFileName(), 4096, FileOptions.SequentialScan | FileOptions.Asynchronous | FileOptions.DeleteOnClose);
             }
 
-            return new MemoryStream(50000);
+            return new MemoryStream(4096);
         }
 
         /// <summary>
