@@ -31,9 +31,11 @@ namespace DragonFruit.Data.Serializers.SystemJson
         public override HttpContent Serialize(object input)
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(input, input.GetType(), SerializerOptions);
-            var stream = new MemoryStream(bytes);
+            var content = new ByteArrayContent(bytes);
 
-            return GetHttpContent(stream);
+            SetContentHeader(content);
+
+            return content;
         }
 
         public override T Deserialize<T>(Stream input) => JsonSerializer.Deserialize<T>(input, SerializerOptions);

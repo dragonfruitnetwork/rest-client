@@ -75,13 +75,21 @@ namespace DragonFruit.Data.Serializers
             stream.Seek(0, SeekOrigin.Begin);
             var content = new StreamContent(stream);
 
+            SetContentHeader(content);
             content.Headers.ContentLength = stream.Length;
+
+            return content;
+        }
+
+        /// <summary>
+        /// Applies the Content-Type header to the provided <see cref="HttpContent"/>
+        /// </summary>
+        protected void SetContentHeader(HttpContent content)
+        {
             content.Headers.ContentType = new MediaTypeHeaderValue(ContentType)
             {
                 CharSet = Encoding.HeaderName
             };
-
-            return content;
         }
     }
 }
