@@ -21,7 +21,7 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
             set => _serializer = value;
         }
 
-        public override HttpContent Serialize<T>(T input) where T : class
+        public override HttpContent Serialize(object input)
         {
             var stream = GetStream(false);
 
