@@ -11,6 +11,6 @@ namespace DragonFruit.Data.Serializers
     /// </summary>
     public interface IAsyncSerializer
     {
-        Task<T> DeserializeAsync<T>(Stream input) where T : class;
+        ValueTask<T> DeserializeAsync<T>(Stream input) where T : class;
     }
 }
