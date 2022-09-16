@@ -25,10 +25,10 @@ namespace DragonFruit.Data
         /// <summary>
         /// Perform an <see cref="ApiRequest"/> with a specified return type.
         /// </summary>
-        public Task<T> PerformAsync<T>(ApiRequest requestData, CancellationToken token = default) where T : class
+        public async Task<T> PerformAsync<T>(ApiRequest requestData, CancellationToken token = default) where T : class
         {
-            ValidateRequest(requestData);
-            return PerformAsync<T>(requestData.Build(this), token);
+            await ValidateRequest(requestData).ConfigureAwait(false);
+            return await PerformAsync<T>(requestData.Build(this), token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -51,10 +51,10 @@ namespace DragonFruit.Data
         /// <summary>
         /// Perform a <see cref="ApiRequest"/> that returns the response message.
         /// </summary>
-        public Task<HttpResponseMessage> PerformAsync(ApiRequest requestData, CancellationToken token = default)
+        public async Task<HttpResponseMessage> PerformAsync(ApiRequest requestData, CancellationToken token = default)
         {
-            ValidateRequest(requestData);
-            return PerformAsync(requestData.Build(this), token);
+            await ValidateRequest(requestData).ConfigureAwait(false);
+            return await PerformAsync(requestData.Build(this), token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace DragonFruit.Data
         public async Task PerformAsync(ApiFileRequest request, Action<long, long?> progressUpdated = null, CancellationToken token = default)
         {
             // check request data is valid
-            ValidateRequest(request);
+            await ValidateRequest(request).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(request.Destination))
             {

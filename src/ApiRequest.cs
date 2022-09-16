@@ -99,13 +99,6 @@ namespace DragonFruit.Data
         protected virtual IEnumerable<KeyValuePair<string, string>> AdditionalQueries { get; }
 
         /// <summary>
-        /// Overridable method for specifying an action to occur before sending the request to the <see cref="HttpClient"/>
-        /// </summary>
-        protected internal virtual void OnRequestExecuting(ApiClient client)
-        {
-        }
-
-        /// <summary>
         /// Create a <see cref="HttpResponseMessage"/> for this <see cref="ApiRequest"/>, which can then be modified manually or overriden by <see cref="ApiClient.SetupRequest"/>
         /// </summary>
         public HttpRequestMessage Build(ApiClient client)
