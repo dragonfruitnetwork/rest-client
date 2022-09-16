@@ -116,28 +116,29 @@ namespace DragonFruit.Data
         {
             var (client, clientLock) = GetClient();
 
-            // post-modification
-            SetupRequest(request);
-            HttpResponseMessage response = null;
-
-            try
+            using (clientLock)
             {
-                // send request
-                response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+                // post-modification
+                await SetupRequest(request).ConfigureAwait(false);
+                HttpResponseMessage response = null;
 
-                // evaluate task status and update monitor
-                return await processResult.Invoke(response).ConfigureAwait(false);
-            }
-            finally
-            {
-                request.Dispose();
-
-                if (disposeResponse)
+                try
                 {
-                    response?.Dispose();
-                }
+                    // send request
+                    response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
-                clientLock.Dispose();
+                    // evaluate task status and update monitor
+                    return await processResult.Invoke(response).ConfigureAwait(false);
+                }
+                finally
+                {
+                    request.Dispose();
+
+                    if (disposeResponse)
+                    {
+                        response?.Dispose();
+                    }
+                }
             }
         }
 
@@ -290,9 +291,10 @@ namespace DragonFruit.Data
         }
 
         /// <summary>
-        /// When overridden, this can be used to alter all <see cref="HttpRequestMessage"/> created.
+        /// Sets properties of the <see cref="HttpRequestMessage"/> to be sent.
         /// </summary>
-        protected virtual void SetupRequest(HttpRequestMessage request)
+        /// <param name="request">The request to be sent to the remote server</param>
+        protected virtual async ValueTask SetupRequest(HttpRequestMessage request)
         {
             // HTTP versions need to be overriden at the request level - targeting the client won't work
             request.Version = HttpVersion;
