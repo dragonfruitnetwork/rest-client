@@ -67,6 +67,7 @@ namespace DragonFruit.Data.Utils
                     {
                         EnumHandlingMode.Numeric => ((int)propertyValue).ToKeyValuePair(keyName, culture),
                         EnumHandlingMode.StringLower => propertyValue.ToString().ToLower(culture).ToKeyValuePair(keyName, culture),
+                        EnumHandlingMode.StringUpper => propertyValue.ToString().ToUpper(culture).ToKeyValuePair(keyName, culture),
 
                         // default includes string handling
                         _ => propertyValue.ToKeyValuePair(keyName, culture)

@@ -77,6 +77,11 @@ namespace DragonFruit.Data
         /// <summary>
         /// Convert to lowercase string form
         /// </summary>
-        StringLower
+        StringLower,
+
+        /// <summary>
+        /// Convert to uppercase string form
+        /// </summary>
+        StringUpper
     }
 }
