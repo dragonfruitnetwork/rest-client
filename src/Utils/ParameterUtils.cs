@@ -61,17 +61,26 @@ namespace DragonFruit.Data.Utils
                         yield return entry;
                     }
                 }
-                else if (property.PropertyType.IsEnum && attribute.EnumHandling.HasValue)
+                else if (property.PropertyType.IsEnum)
                 {
-                    yield return attribute.EnumHandling.Value switch
+                    switch (attribute.EnumHandling)
                     {
-                        EnumHandlingMode.Numeric => ((int)propertyValue).ToKeyValuePair(keyName, culture),
-                        EnumHandlingMode.StringLower => propertyValue.ToString().ToLower(culture).ToKeyValuePair(keyName, culture),
-                        EnumHandlingMode.StringUpper => propertyValue.ToString().ToUpper(culture).ToKeyValuePair(keyName, culture),
+                        case EnumHandlingMode.Numeric:
+                            yield return ((int)propertyValue).ToKeyValuePair(keyName, culture);
+                            break;
 
-                        // default includes string handling
-                        _ => propertyValue.ToKeyValuePair(keyName, culture)
-                    };
+                        case EnumHandlingMode.StringLower:
+                            yield return propertyValue.ToString().ToLower(culture).Replace(" ", string.Empty).ToKeyValuePair(keyName, culture);
+                            break;
+
+                        case EnumHandlingMode.StringUpper:
+                            yield return propertyValue.ToString().ToUpper(culture).Replace(" ", string.Empty).ToKeyValuePair(keyName, culture);
+                            break;
+
+                        case null:
+                            yield return propertyValue.ToKeyValuePair(keyName, culture);
+                            break;
+                    }
                 }
                 else
                 {
