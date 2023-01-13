@@ -135,7 +135,7 @@ namespace DragonFruit.Data.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static IEnumerable<PropertyInfo> GetTargetProperties(this Type target)
         {
-#if NET6_0_ANDROID
+#if ANDROID
             // android has an issue where nonpublic properties aren't returned from base classes (see https://github.com/dotnet/runtime/pull/77169)
             var props = target.GetRuntimeProperties();
             var baseType = target.BaseType;
@@ -147,9 +147,9 @@ namespace DragonFruit.Data.Utils
             }
 
             return props;
-#endif
-
+#else
             return target.GetRuntimeProperties();
+#endif
         }
     }
 }
