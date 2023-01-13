@@ -3,7 +3,7 @@
     <Import Project="$(SolutionDir)res\DragonFruit.Data.props" />
     
     <PropertyGroup>
-        <TargetFrameworks>$(TargetFrameworks);net6.0-android</TargetFrameworks>
+        <TargetFrameworks Condition="'$(EnableAndroid)' == 'true'">$(TargetFrameworks);net6.0-android</TargetFrameworks>
         
         <PackageId>DragonFruit.Data</PackageId>
         <Description>A web requests framework for .NET that powers the DragonFruit APIs</Description>

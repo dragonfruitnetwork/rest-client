@@ -29,9 +29,7 @@ jobs:
           dotnet-version: "6.0.x"
 
       - name: Restore Tools
-        run: |
-          sudo dotnet workload restore
-          dotnet tool restore
+        run: dotnet tool restore
 
       - name: Restore Packages
         run: dotnet restore
