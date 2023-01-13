@@ -17,16 +17,11 @@ namespace DragonFruit.Data.Utils
         private const string DefaultConcatenationCharacter = ",";
 
         /// <summary>
-        /// Default <see cref="BindingFlags"/> to search for matching properties
-        /// </summary>
-        private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
-        /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s from properties with a specified <see cref="IProperty"/>-inheriting attribute.
         /// </summary>
         internal static IEnumerable<KeyValuePair<string, string>> GetParameter<T>(object host, CultureInfo culture) where T : IProperty
         {
-            foreach (var property in host.GetType().GetProperties(DefaultFlags))
+            foreach (var property in host.GetType().GetRuntimeProperties())
             {
                 if (!property.CanRead || !(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
                 {
@@ -96,7 +91,7 @@ namespace DragonFruit.Data.Utils
         {
             var targetType = typeof(T);
             var attributedProperty = host.GetType()
-                                         .GetProperties(DefaultFlags)
+                                         .GetRuntimeProperties()
                                          .SingleOrDefault(x => Attribute.GetCustomAttribute(x, targetType) is T);
 
             if (attributedProperty == default)
