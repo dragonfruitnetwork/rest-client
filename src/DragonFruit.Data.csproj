@@ -1,6 +1,8 @@
 ﻿<Project>
     
     <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net5.0;net6.0;net6.0-android</TargetFrameworks>
+        
         <PackageId>DragonFruit.Data</PackageId>
         <Description>A web requests framework for .NET that powers the DragonFruit APIs</Description>
     </PropertyGroup>
