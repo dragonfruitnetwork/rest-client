@@ -3,13 +3,14 @@
 
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using DragonFruit.Data.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DragonFruit.Data.Serializers.Newtonsoft
 {
-    public class ApiJsonSerializer : ApiSerializer
+    public class ApiJsonSerializer : ApiSerializer, IAsyncSerializer
     {
         private JsonSerializer _serializer;
 
@@ -38,20 +39,16 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
 
         public override T Deserialize<T>(Stream input) where T : class
         {
-            using var sr = AutoDetectEncoding switch
-            {
-                true => new StreamReader(input, true),
-
-                false when Encoding is null => new StreamReader(input),
-                false => new StreamReader(input, Encoding)
-            };
-
-            using var reader = new JsonTextReader(sr)
-            {
-                ArrayPool = JsonArrayPool.Instance
-            };
-
+            var reader = GetReader(input);
             return Serializer.Deserialize<T>(reader);
+        }
+
+        public async ValueTask<T> DeserializeAsync<T>(Stream input) where T : class
+        {
+            var reader = GetReader(input);
+            var token = await JToken.LoadAsync(reader).ConfigureAwait(false);
+
+            return token.ToObject<T>();
         }
 
         /// <summary>
@@ -62,6 +59,22 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
             SerializerResolver.Register<JArray, ApiJsonSerializer>();
             SerializerResolver.Register<JToken, ApiJsonSerializer>();
             SerializerResolver.Register<JObject, ApiJsonSerializer>();
+        }
+
+        private JsonTextReader GetReader(Stream input)
+        {
+            var sr = AutoDetectEncoding switch
+            {
+                true => new StreamReader(input, true),
+
+                false when Encoding is null => new StreamReader(input),
+                false => new StreamReader(input, Encoding)
+            };
+
+            return new JsonTextReader(sr)
+            {
+                ArrayPool = JsonArrayPool.Instance
+            };
         }
     }
 }
