@@ -2,6 +2,7 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Threading.Tasks;
 using DragonFruit.Data.Extensions;
 using DragonFruit.Data.Tests.Requests;
 using Newtonsoft.Json.Linq;
@@ -19,7 +20,7 @@ namespace DragonFruit.Data.Tests.Header
         /// Test whether request-headers and default headers are sent together successfully
         /// </summary>
         [TestCase]
-        public void LevelSpecificHeaderTest()
+        public async Task LevelSpecificHeaderTest()
         {
             var request = new EchoRequest();
 
@@ -29,7 +30,7 @@ namespace DragonFruit.Data.Tests.Header
             Client.Headers[GlobalHeaderName] = globalHeaderValue;
             request.WithHeader(HeaderName, requestHeaderValue);
 
-            var response = Client.Perform<JObject>(request);
+            var response = await Client.PerformAsync<JObject>(request);
             Assert.AreEqual(requestHeaderValue, (string)response["headers"]![HeaderName]);
             Assert.AreEqual(globalHeaderValue, (string)response["headers"][GlobalHeaderName]);
         }
@@ -39,7 +40,7 @@ namespace DragonFruit.Data.Tests.Header
         /// with the request header taking priority
         /// </summary>
         [TestCase]
-        public void LevelOverrideHeaderTest()
+        public async Task LevelOverrideHeaderTest()
         {
             var request = new EchoRequest();
 
@@ -49,7 +50,7 @@ namespace DragonFruit.Data.Tests.Header
             Client.Headers[GlobalHeaderName] = globalHeaderValue;
             request.WithHeader(GlobalHeaderName, requestHeaderValue);
 
-            var response = Client.Perform<JObject>(request);
+            var response = await Client.PerformAsync<JObject>(request);
             Assert.AreEqual(requestHeaderValue, (string)response["headers"]![GlobalHeaderName]);
         }
     }

@@ -43,10 +43,10 @@ namespace DragonFruit.Data.Tests.Requests
         }
 
         [Test]
-        public void TestSyncHttp2Request()
+        public async Task TestHttp2Request()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "https://google.com") { Version = HttpVersion.Version20 };
-            using var result = Client.Perform(request);
+            using var result = await Client.PerformAsync(request);
 
             Assert.IsTrue(result.IsSuccessStatusCode);
             Assert.AreEqual(request.Version, result.Version);
