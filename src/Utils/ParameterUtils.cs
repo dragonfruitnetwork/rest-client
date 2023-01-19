@@ -121,21 +121,9 @@ namespace DragonFruit.Data.Utils
             (enumerator as IDisposable)?.Dispose();
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable values, string keyName, CultureInfo culture, string concatCharacter)
-        {
-            yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Cast<object>().Select(x => x.AsString(culture))));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static KeyValuePair<string, string> ToKeyValuePair(this object value, string key, CultureInfo culture)
-        {
-            return new KeyValuePair<string, string>(key, value.AsString(culture));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static IEnumerable<PropertyInfo> GetTargetProperties(this Type target)
         {
-#if ANDROID
+#if NET6_0 && ANDROID
             // android has an issue where nonpublic properties aren't returned from base classes (see https://github.com/dotnet/runtime/pull/77169)
             var props = target.GetRuntimeProperties();
             var baseType = target.BaseType;
@@ -150,6 +138,17 @@ namespace DragonFruit.Data.Utils
 #else
             return target.GetRuntimeProperties();
 #endif
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable values, string keyName, CultureInfo culture, string concatCharacter)
+        {
+            yield return new KeyValuePair<string, string>(keyName, string.Join(concatCharacter, values.Cast<object>().Select(x => x.AsString(culture))));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static KeyValuePair<string, string> ToKeyValuePair(this object value, string key, CultureInfo culture)
+        {
+            return new KeyValuePair<string, string>(key, value.AsString(culture));
         }
     }
 }
