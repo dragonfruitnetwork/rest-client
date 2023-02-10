@@ -2,12 +2,11 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Threading.Tasks;
 using DragonFruit.Data.Extensions;
 using DragonFruit.Data.Tests.Requests;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-
-#pragma warning disable 1998
 
 namespace DragonFruit.Data.Tests.Header
 {
@@ -21,18 +20,19 @@ namespace DragonFruit.Data.Tests.Header
         /// Test whether client headers are sent and changed successfully
         /// </summary>
         [TestCase]
-        public void HeaderTest()
+        public async Task HeaderTest()
         {
             var headerValue = Rng.Next().ToString();
             var request = new EchoRequest();
 
             Client.Headers[HeaderName] = headerValue;
-            var response = Client.Perform<JObject>(request);
+            var response = await Client.PerformAsync<JObject>(request);
             Assert.AreEqual(headerValue, (string)response["headers"][HeaderName]);
 
             headerValue = Rng.Next().ToString();
             Client.Headers[HeaderName] = headerValue;
-            response = Client.Perform<JObject>(request);
+
+            response = await Client.PerformAsync<JObject>(request);
             Assert.AreEqual(headerValue, (string)response["headers"][HeaderName]);
         }
 
@@ -40,12 +40,12 @@ namespace DragonFruit.Data.Tests.Header
         /// Test whether a header sent in a request is recieved successfully
         /// </summary>
         [TestCase]
-        public void PerRequestHeaderTest()
+        public async Task PerRequestHeaderTest()
         {
             var headerValue = Rng.Next().ToString();
 
             var request = new EchoRequest().WithHeader(HeaderName, headerValue);
-            var response = Client.Perform<JObject>(request);
+            var response = await Client.PerformAsync<JObject>(request);
 
             Assert.AreEqual((string)response["headers"]![HeaderName], headerValue);
         }

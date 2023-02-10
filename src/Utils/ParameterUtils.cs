@@ -17,16 +17,11 @@ namespace DragonFruit.Data.Utils
         private const string DefaultConcatenationCharacter = ",";
 
         /// <summary>
-        /// Default <see cref="BindingFlags"/> to search for matching properties
-        /// </summary>
-        private const BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-
-        /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s from properties with a specified <see cref="IProperty"/>-inheriting attribute.
         /// </summary>
         internal static IEnumerable<KeyValuePair<string, string>> GetParameter<T>(object host, CultureInfo culture) where T : IProperty
         {
-            foreach (var property in host.GetType().GetProperties(DefaultFlags))
+            foreach (var property in host.GetType().GetTargetProperties())
             {
                 if (!property.CanRead || !(Attribute.GetCustomAttribute(property, typeof(T)) is T attribute))
                 {
@@ -77,7 +72,7 @@ namespace DragonFruit.Data.Utils
                             yield return propertyValue.ToString().ToUpper(culture).Replace(" ", string.Empty).ToKeyValuePair(keyName, culture);
                             break;
 
-                        case null:
+                        default:
                             yield return propertyValue.ToKeyValuePair(keyName, culture);
                             break;
                     }
@@ -96,7 +91,7 @@ namespace DragonFruit.Data.Utils
         {
             var targetType = typeof(T);
             var attributedProperty = host.GetType()
-                                         .GetProperties(DefaultFlags)
+                                         .GetTargetProperties()
                                          .SingleOrDefault(x => Attribute.GetCustomAttribute(x, targetType) is T);
 
             if (attributedProperty == default)
@@ -124,6 +119,25 @@ namespace DragonFruit.Data.Utils
 
             // dispose if possible
             (enumerator as IDisposable)?.Dispose();
+        }
+
+        private static IEnumerable<PropertyInfo> GetTargetProperties(this Type target)
+        {
+#if NET6_0 && ANDROID
+            // android has an issue where nonpublic properties aren't returned from base classes (see https://github.com/dotnet/runtime/pull/77169)
+            var props = target.GetRuntimeProperties();
+            var baseType = target.BaseType;
+
+            while (baseType != null && baseType != typeof(ApiRequest))
+            {
+                props = props.Concat(baseType.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static));
+                baseType = baseType.BaseType;
+            }
+
+            return props;
+#else
+            return target.GetRuntimeProperties();
+#endif
         }
 
         private static IEnumerable<KeyValuePair<string, string>> ApplyConcatenation(IEnumerable values, string keyName, CultureInfo culture, string concatCharacter)

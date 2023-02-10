@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using DragonFruit.Data.Basic;
 using NUnit.Framework;
 
@@ -12,7 +13,7 @@ namespace DragonFruit.Data.Tests.Requests
     public class FileRequestTests : ApiTest
     {
         [TestCase("https://github.com/ppy/osu/archive/2020.1121.0.zip", 19018589)]
-        public void FileDownloadTest(string path, long expectedFileSize)
+        public async Task FileDownloadTest(string path, long expectedFileSize)
         {
             var request = new BasicApiFileRequest(path, Path.GetTempPath());
 
@@ -30,7 +31,7 @@ namespace DragonFruit.Data.Tests.Requests
 
             try
             {
-                Client.Perform(request, (progress, total) => TestContext.Out.WriteLine($"Progress: {progress:n0}/{total:n0} ({Convert.ToSingle(progress) / Convert.ToSingle(total):F2}%)"));
+                await Client.PerformAsync(request, (progress, total) => TestContext.Out.WriteLine($"Progress: {progress:n0}/{total:n0} ({Convert.ToSingle(progress) / Convert.ToSingle(total):F2}%)"));
 
                 Assert.IsTrue(File.Exists(request.Destination));
                 Assert.GreaterOrEqual(new FileInfo(request.Destination).Length, expectedFileSize);

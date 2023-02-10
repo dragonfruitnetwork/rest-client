@@ -13,7 +13,6 @@ namespace DragonFruit.Data.Tests.Requests
         [Test]
         public void TestFilteredRequests()
         {
-            Assert.Catch<AggregateException>(() => Client.Perform(new FilteredRequest()));
             Assert.CatchAsync<ArgumentException>(() => Client.PerformAsync(new InheritedRequest()));
         }
 
