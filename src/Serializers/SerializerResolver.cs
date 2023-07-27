@@ -40,14 +40,25 @@ namespace DragonFruit.Data.Serializers
             where T : class
             where TSerializer : ApiSerializer, new()
         {
+            Register<TSerializer>(typeof(T), direction);
+        }
+
+        /// <summary>
+        /// Registers a serializer for the specified type. This applies to all <see cref="ApiClient"/>s
+        /// </summary>
+        /// <param name="targetType">The object type to specify the serializer for</param>
+        /// <param name="direction">Whether this serializer should apply to incoming/outgoing data</param>
+        /// <typeparam name="TSerializer">The serializer to apply</typeparam>
+        public static void Register<TSerializer>(Type targetType, DataDirection direction = DataDirection.All) where TSerializer : ApiSerializer, new()
+        {
             if (direction.HasFlag(DataDirection.In))
             {
-                DeserializerMap[typeof(T)] = typeof(TSerializer);
+                DeserializerMap[targetType] = typeof(TSerializer);
             }
 
             if (direction.HasFlag(DataDirection.Out))
             {
-                SerializerMap[typeof(T)] = typeof(TSerializer);
+                SerializerMap[targetType] = typeof(TSerializer);
             }
         }
 
@@ -56,17 +67,31 @@ namespace DragonFruit.Data.Serializers
         /// </summary>
         /// <param name="direction">Whether this serializer should be removed from incoming/outgoing data</param>
         /// <typeparam name="T">The object type to remove the serializer for</typeparam>
-        public static void Unregister<T>(DataDirection direction = DataDirection.All)
-            where T : class
+        public static void Unregister<T>(DataDirection direction = DataDirection.All) where T : class
         {
+            Unregister(typeof(T), direction);
+        }
+
+        /// <summary>
+        /// Removes the registered serializer for the type. This applies to all <see cref="ApiClient"/>s
+        /// </summary>
+        /// <param name="targetType">The object type to remove the serializer for</param>
+        /// <param name="direction">Whether this serializer should be removed from incoming/outgoing data</param>
+        public static void Unregister(Type targetType, DataDirection direction = DataDirection.All)
+        {
+            if (targetType.IsClass)
+            {
+                throw new ArgumentException($"{targetType.Name} is not a class", nameof(targetType));
+            }
+
             if (direction.HasFlag(DataDirection.In))
             {
-                DeserializerMap.Remove(typeof(T));
+                DeserializerMap.Remove(targetType);
             }
 
             if (direction.HasFlag(DataDirection.Out))
             {
-                SerializerMap.Remove(typeof(T));
+                SerializerMap.Remove(targetType);
             }
         }
 
@@ -74,7 +99,7 @@ namespace DragonFruit.Data.Serializers
         /// Resolves the <see cref="ApiSerializer"/> for the type provided
         /// </summary>
         /// <typeparam name="T">The type to resolve</typeparam>
-        public ApiSerializer Resolve<T>(DataDirection direction)
+        public ApiSerializer Resolve<T>(DataDirection direction) where T : class
         {
             return Resolve(typeof(T), direction);
         }
@@ -99,8 +124,10 @@ namespace DragonFruit.Data.Serializers
                 _ => throw new ArgumentException(nameof(direction))
             };
 
+            Type serializerType;
+
             // if the map has the type registered, check the type in cache
-            if (mapping.TryGetValue(objectType, out var serializerType))
+            if (mapping.TryGetValue(objectType, out serializerType) || (objectType.IsConstructedGenericType && mapping.TryGetValue(objectType.GetGenericTypeDefinition(), out serializerType)))
             {
                 return _serializerCache.GetOrAdd(serializerType, _ => (ApiSerializer)Activator.CreateInstance(serializerType));
             }
