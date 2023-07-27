@@ -51,6 +51,11 @@ namespace DragonFruit.Data.Serializers
         /// <typeparam name="TSerializer">The serializer to apply</typeparam>
         public static void Register<TSerializer>(Type targetType, DataDirection direction = DataDirection.All) where TSerializer : ApiSerializer, new()
         {
+            if (!targetType.IsClass)
+            {
+                throw new ArgumentException($"{targetType.Name} is not a class", nameof(targetType));
+            }
+
             if (direction.HasFlag(DataDirection.In))
             {
                 DeserializerMap[targetType] = typeof(TSerializer);
@@ -79,7 +84,7 @@ namespace DragonFruit.Data.Serializers
         /// <param name="direction">Whether this serializer should be removed from incoming/outgoing data</param>
         public static void Unregister(Type targetType, DataDirection direction = DataDirection.All)
         {
-            if (targetType.IsClass)
+            if (!targetType.IsClass)
             {
                 throw new ArgumentException($"{targetType.Name} is not a class", nameof(targetType));
             }

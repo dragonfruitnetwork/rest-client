@@ -20,6 +20,8 @@ namespace DragonFruit.Data.Tests.Serializers
 
             // anothertestobject will use the dummyserializer
             SerializerResolver.Register<AnotherTestObject, DummySerializer>();
+
+            SerializerResolver.Register<DummySerializer>(typeof(TestContainer<>));
         }
 
         [Test]
@@ -27,6 +29,8 @@ namespace DragonFruit.Data.Tests.Serializers
         {
             Assert.AreEqual(typeof(ApiXmlSerializer), Client.Serializer.Resolve<TestObject>(DataDirection.In).GetType());
             Assert.AreEqual(typeof(ApiJsonSerializer), Client.Serializer.Resolve<YetAnotherTestObject>(DataDirection.Out).GetType());
+
+            Assert.AreEqual(typeof(DummySerializer), Client.Serializer.Resolve<TestContainer<TestObject>>(DataDirection.In).GetType());
         }
 
         [Test]
@@ -64,6 +68,11 @@ namespace DragonFruit.Data.Tests.Serializers
 
     public class YetAnotherTestObject
     {
+    }
+
+    public class TestContainer<T>
+    {
+        public T Item { get; set; }
     }
 
     public class DummySerializer : ApiSerializer
