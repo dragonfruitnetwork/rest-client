@@ -8,9 +8,7 @@ namespace DragonFruit.Data
     public abstract class ApiRequest
     {
         public abstract string RequestPath { get; }
-        
+
         public virtual HttpMethod RequestMethod => HttpMethod.Get;
-        
-        
     }
 }
