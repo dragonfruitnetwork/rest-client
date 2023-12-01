@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data", "src\Dra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serializers", "Serializers", "{5A8982CD-EEF9-4B9F-AF74-C8D45241E137}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Roslyn", "DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.csproj", "{B840D80F-BD03-46A6-A18B-524D099F9F64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Roslyn.Tests", "DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.Tests\DragonFruit.Data.Roslyn.Tests.csproj", "{DE9CFE49-BB70-47CC-BAF2-0243150829E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{0A0921D2-637F-4245-B993-054983A97EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A0921D2-637F-4245-B993-054983A97EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A0921D2-637F-4245-B993-054983A97EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B840D80F-BD03-46A6-A18B-524D099F9F64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B840D80F-BD03-46A6-A18B-524D099F9F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B840D80F-BD03-46A6-A18B-524D099F9F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B840D80F-BD03-46A6-A18B-524D099F9F64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE9CFE49-BB70-47CC-BAF2-0243150829E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE9CFE49-BB70-47CC-BAF2-0243150829E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE9CFE49-BB70-47CC-BAF2-0243150829E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE9CFE49-BB70-47CC-BAF2-0243150829E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
