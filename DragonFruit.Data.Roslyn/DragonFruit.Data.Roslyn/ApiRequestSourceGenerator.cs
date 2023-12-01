@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace DragonFruit.Data.Roslyn
 {
-    [Generator]
+    [Generator(LanguageNames.CSharp)]
     public class ApiRequestSourceGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
