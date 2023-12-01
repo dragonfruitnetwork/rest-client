@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace DragonFruit.Data.Roslyn
+namespace DragonFruit.Data.Roslyn.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ApiRequestClassAnalyzer : DiagnosticAnalyzer
@@ -32,7 +32,7 @@ namespace DragonFruit.Data.Roslyn
             }
 
             // check if class inherits from apiRequestType using type checking
-            var apiRequestType = context.Compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
+            var apiRequestType = context.Compilation.GetTypeByMetadataName("DragonFruit.Data.ApiRequest");
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclarationNode);
 
             if (apiRequestType == null || classSymbol == null || !InheritsFrom(classSymbol, apiRequestType))
