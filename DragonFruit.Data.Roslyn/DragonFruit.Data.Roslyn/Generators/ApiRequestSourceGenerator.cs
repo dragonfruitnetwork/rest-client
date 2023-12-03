@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using DragonFruit.Data.Roslyn.References;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace DragonFruit.Data.Roslyn
+namespace DragonFruit.Data.Roslyn.Generators
 {
     [Generator(LanguageNames.CSharp)]
     public class ApiRequestSourceGenerator : IIncrementalGenerator
@@ -146,16 +147,6 @@ namespace DragonFruit.Data.Roslyn
                                    .Where(x => x.GetAttributes().Any(y => y.AttributeClass?.ToString() == typeName));
 
             return candidates;
-        }
-
-        /// <summary>
-        /// Clone of "DragonFruit.Data.Requests.ParameterType" to avoid a dependency on the main library
-        /// </summary>
-        private enum ParameterType
-        {
-            Query = 1,
-            Form = 2,
-            Header = 3
         }
     }
 }

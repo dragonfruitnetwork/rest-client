@@ -1,11 +1,12 @@
 // DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using DragonFruit.Data.Roslyn.References;
 using Microsoft.CodeAnalysis;
 
 namespace DragonFruit.Data.Roslyn.Generators
 {
-    public class RequestSymbol
+    public class RequestSymbolMetadata
     {
         public int Depth { get; set; }
 
