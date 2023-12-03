@@ -1,9 +1,9 @@
 // DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-namespace DragonFruit.Data.Requests.Converters
+namespace DragonFruit.Data.Requests
 {
-    public enum CollectionOptions
+    public enum EnumerableOption
     {
         /// <summary>
         /// The query name is repeated and a new element created for each (a=1&a=2&a=3)

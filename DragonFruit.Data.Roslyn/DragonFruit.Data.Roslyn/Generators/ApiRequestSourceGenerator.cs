@@ -1,11 +1,15 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using DragonFruit.Data.Roslyn.References;
+using DragonFruit.Data.Requests;
+using DragonFruit.Data.Requests.Converters;
+using DragonFruit.Data.Roslyn.Generators.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -81,20 +85,7 @@ namespace DragonFruit.Data.Roslyn.Generators
                 sourceBuilder.AppendLine("UriBuilder uriBuilder = new UriBuilder(RequestPath);");
                 sourceBuilder.AppendLine("StringBuilder builder = new StringBuilder();");
 
-                var parameters = GetParameters(classSymbol, "DragonFruit.Data.Requests.RequestParameterAttribute")
-                                 .Select(x =>
-                                 {
-                                     var attributeArgs = x.GetAttributes().Single(y => y.AttributeClass?.ToString() == "DragonFruit.Data.Requests.RequestParameterAttribute").ConstructorArguments;
-
-                                     return new
-                                     {
-                                         Symbol = x,
-                                         Accessor = x is IPropertySymbol propertySymbol ? $"this.{propertySymbol.Name}" : $"this.{x.Name}()",
-                                         ParameterType = (ParameterType)attributeArgs[0].Value!,
-                                         PropertyName = attributeArgs[1].Value
-                                     };
-                                 })
-                                 .ToLookup(x => x.ParameterType);
+                var parameters = GetRequestSymbolMetadata(compilation, classSymbol);
 
                 // insert queries
                 foreach (var query in parameters[ParameterType.Query])
@@ -125,7 +116,9 @@ namespace DragonFruit.Data.Roslyn.Generators
                 // todo add headers, add form body content
 
                 // add request body - if it is derived from HttpContent then set it directly, otherwise pass to serializer
-                var requestBody = GetParameters(classSymbol, "DragonFruit.Data.Attributes.RequestBodyAttribute").FirstOrDefault();
+                var requestBody = classSymbol.GetMembers()
+                                             .Where(x => x is IPropertySymbol or IMethodSymbol { Parameters.Length: 0 })
+                                             .FirstOrDefault(x => x.GetAttributes().Any(y => y.AttributeClass?.ToString() == typeof(RequestBodyAttribute).FullName));
 
                 if (requestBody != null)
                 {
@@ -139,14 +132,95 @@ namespace DragonFruit.Data.Roslyn.Generators
             }
         }
 
-        private static IEnumerable<ISymbol> GetParameters(INamespaceOrTypeSymbol symbol, string typeName)
+        private static IReadOnlyDictionary<ParameterType, IList<RequestSymbolMetadata>> GetRequestSymbolMetadata(Compilation compilation, INamespaceOrTypeSymbol symbol)
         {
-            // check if member is a method with no parameters or a property then check if it has the [RequestBody] attribute
-            var candidates = symbol.GetMembers()
-                                   .Where(x => x is IPropertySymbol or IMethodSymbol { Parameters.Length: 0 })
-                                   .Where(x => x.GetAttributes().Any(y => y.AttributeClass?.ToString() == typeName));
+            var symbols = Enum.GetValues(typeof(ParameterType)).Cast<ParameterType>().ToDictionary(x => x, _ => (IList<RequestSymbolMetadata>)new List<RequestSymbolMetadata>());
 
-            return candidates;
+            // get types used in member processing
+            var enumerableParameterAttribute = compilation.GetTypeByMetadataName(typeof(EnumerableOptionsAttribute).FullName);
+            var requestParameterAttribute = compilation.GetTypeByMetadataName(typeof(RequestParameterAttribute).FullName);
+            var enumParameterAttribute = compilation.GetTypeByMetadataName(typeof(EnumOptionsAttribute).FullName);
+
+            var enumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable<>).FullName);
+
+            // todo recursively select all derived types' members as well
+
+            foreach (var candidate in symbol.GetMembers().Where(x => x is IPropertySymbol or IMethodSymbol { Parameters.Length: 0 }))
+            {
+                var requestAttribute = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(requestParameterAttribute, SymbolEqualityComparer.Default) == true);
+
+                if (requestAttribute == null)
+                {
+                    continue;
+                }
+
+                var returnType = candidate switch
+                {
+                    IPropertySymbol propertySymbol => propertySymbol.Type,
+                    IMethodSymbol methodSymbol => methodSymbol.ReturnType,
+
+                    _ => throw new NotSupportedException()
+                };
+
+                var parameterType = (ParameterType)requestAttribute.ConstructorArguments[0].Value!;
+                var parameterName = (string)requestAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
+
+                RequestSymbolMetadata metadata = null;
+
+                // handle enums
+                if (returnType.TypeKind == TypeKind.Enum)
+                {
+                    var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
+
+                    metadata = new EnumRequestSymbolMetadata
+                    {
+                        Options = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None
+                    };
+                }
+                // handle common types - strings, primitives and structs
+                else if (returnType.SpecialType == SpecialType.System_String || returnType.IsValueType)
+                {
+                    metadata = new RequestSymbolMetadata();
+                }
+                // handle arrays, IEnumerable, IEnumerable<T>
+                else if (returnType.SpecialType == SpecialType.System_Array || returnType.AllInterfaces.Any(i => enumerableTypeSymbol!.Equals(i.OriginalDefinition, SymbolEqualityComparer.Default)))
+                {
+                    var enumerableInterfaces = returnType.AllInterfaces.Where(i => enumerableTypeSymbol!.Equals(i.OriginalDefinition, SymbolEqualityComparer.Default));
+                    
+                    // if ienumerable<T> check T is primitive or string
+                    if (returnType is INamedTypeSymbol { TypeArguments.Length: 1 } namedTypeSymbol)
+                    {
+                        var typeArgument = namedTypeSymbol.TypeArguments[0];
+
+                        if (typeArgument.SpecialType != SpecialType.System_String && typeArgument.IsValueType)
+                        {
+                            continue;
+                        }
+                    }
+
+                    var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
+
+                    metadata = new EnumerableRequestSymbolMetadata
+                    {
+                        Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
+                        Options = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated
+                    };
+                }
+
+                if (metadata == null)
+                {
+                    continue;
+                }
+
+                metadata.Symbol = candidate;
+                metadata.Name = parameterName;
+                metadata.Accessor = candidate is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{candidate.Name}()";
+                metadata.Nullable = returnType.IsReferenceType || (returnType.IsValueType && returnType.NullableAnnotation == NullableAnnotation.Annotated);
+
+                symbols[parameterType].Add(metadata);
+            }
+
+            return symbols;
         }
     }
 }
