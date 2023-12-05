@@ -19,6 +19,17 @@ namespace DragonFruit.Data.Roslyn.Generators
     [Generator(LanguageNames.CSharp)]
     public class ApiRequestSourceGenerator : IIncrementalGenerator
     {
+        private static readonly HashSet<SpecialType> SupportedCollectionTypes = new(new[]
+        {
+            SpecialType.System_Array,
+            SpecialType.System_Collections_IEnumerable,
+            SpecialType.System_Collections_Generic_IList_T,
+            SpecialType.System_Collections_Generic_ICollection_T,
+            SpecialType.System_Collections_Generic_IEnumerable_T,
+            SpecialType.System_Collections_Generic_IReadOnlyList_T,
+            SpecialType.System_Collections_Generic_IReadOnlyCollection_T,
+        });
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(
@@ -190,7 +201,7 @@ namespace DragonFruit.Data.Roslyn.Generators
                         };
                     }
                     // handle arrays/IEnumerable
-                    else if (returnType.SpecialType == SpecialType.System_Array || returnType.FindImplementationForInterfaceMember(enumerableTypeSymbol) != null)
+                    else if (SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.FindImplementationForInterfaceMember(enumerableTypeSymbol) != null)
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
 
