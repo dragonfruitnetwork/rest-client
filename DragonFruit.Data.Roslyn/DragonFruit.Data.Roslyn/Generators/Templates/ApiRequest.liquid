@@ -1,0 +1,57 @@
+using System;
+using System.Text;
+using System.Net.Http;
+using DragonFruit.Data;
+using DragonFruit.Data.Requests;
+
+namespace {{ Namespace }}
+{
+    partial class {{ ClassName }} : global::DragonFruit.Data.Requests.IRequestBuilder
+    {
+        public global::System.Net.Http.HttpRequestMessage BuildRequest()
+        {
+            global::System.UriBuilder uriBuilder = new global::System.UriBuilder(RequestPath);
+            global::System.Text.StringBuilder queryBuilder = new global::System.Text.StringBuilder();
+            
+            {%- for query in query_parameters -%}
+                {% capture query_append %}
+                    builder.Append($"{{ query.parameter_name }}={global::System.Uri.EscapeDataString({{ query.accessor }}.ToString())}&");
+                {% endcapture %}
+
+                {% if query.nullable %}
+                    if ({{ query.accessor }} != null)
+                    {
+                        {{ query_append }}
+                    }
+                {% else %}
+                    {{ query_append }}
+                {% endif %}
+            {% endfor -%}
+
+            if (queryBuilder.Length > 0)
+            {
+                queryBuilder.Length--; // remove trailing &
+                uriBuilder.Query = queryBuilder.ToString();
+            }
+
+            global::System.Net.Http.HttpRequestMessage request = new global::System.Net.Http.HttpRequestMessage(RequestMethod, uriBuilder.Uri);
+
+            {%- for header in header_parameters -%}
+                {% capture header_append %}
+                    request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
+                {% endcapture %}
+                
+                {% if header.nullable %}
+                    if ({{ header.accessor }} != null)
+                    {
+                        {{ header_append }}
+                    }
+                {% else %}
+                    {{ header_append }}
+                {% endif %}
+            {% endfor -%}
+
+            return request;
+        }
+    }
+}

@@ -4,7 +4,7 @@
 using DragonFruit.Data.Requests;
 using Microsoft.CodeAnalysis;
 
-namespace DragonFruit.Data.Roslyn.Generators.Metadata
+namespace DragonFruit.Data.Roslyn.Generators
 {
     internal class RequestSymbolMetadata
     {
@@ -14,7 +14,7 @@ namespace DragonFruit.Data.Roslyn.Generators.Metadata
         public bool Nullable { get; set; }
 
         public ISymbol Symbol { get; set; }
-        public string Name { get; set; }
+        public string ParameterName { get; set; }
 
         public string Accessor => Symbol is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{Symbol.Name}()";
     }
