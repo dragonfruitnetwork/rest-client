@@ -13,10 +13,10 @@ namespace DragonFruit.Data.Roslyn.Generators.Metadata
         public bool IsString { get; set; }
         public bool Nullable { get; set; }
 
-        public string Name { get; set; }
-        public string Accessor { get; set; }
-
         public ISymbol Symbol { get; set; }
+        public string Name { get; set; }
+
+        public string Accessor => Symbol is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{Symbol.Name}()";
     }
 
     internal class EnumRequestSymbolMetadata : RequestSymbolMetadata

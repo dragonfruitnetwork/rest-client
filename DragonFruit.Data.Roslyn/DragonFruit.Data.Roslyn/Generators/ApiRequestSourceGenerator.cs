@@ -144,6 +144,7 @@ namespace DragonFruit.Data.Roslyn.Generators
             var apiRequestBaseType = compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
 
             // track properties already visited
+            var depth = 0;
             var currentSymbol = symbol;
             var consumedProperties = new HashSet<string>();
 
@@ -207,9 +208,9 @@ namespace DragonFruit.Data.Roslyn.Generators
                         };
                     }
 
+                    metadata.Depth = depth;
                     metadata.Symbol = candidate;
                     metadata.Name = parameterName;
-                    metadata.Accessor = candidate is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{candidate.Name}()";
                     metadata.Nullable = returnType.IsReferenceType || (returnType.IsValueType && returnType.NullableAnnotation == NullableAnnotation.Annotated);
 
                     symbols[parameterType].Add(metadata);
@@ -217,6 +218,7 @@ namespace DragonFruit.Data.Roslyn.Generators
 
                 // get derived class from currentSymbol
                 currentSymbol = currentSymbol.BaseType;
+                depth++;
             } while (currentSymbol?.Equals(apiRequestBaseType, SymbolEqualityComparer.Default) == false);
 
             return symbols;
