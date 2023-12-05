@@ -10,6 +10,7 @@ namespace DragonFruit.Data.Roslyn.Generators.Metadata
     {
         public int Depth { get; set; }
 
+        public bool IsString { get; set; }
         public bool Nullable { get; set; }
 
         public string Name { get; set; }
