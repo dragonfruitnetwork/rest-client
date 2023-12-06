@@ -188,21 +188,23 @@ namespace DragonFruit.Data.Roslyn
                     if (returnType.TypeKind == TypeKind.Enum)
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
+                        var enumType = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None;
 
                         metadata = new EnumRequestSymbolMetadata
                         {
-                            EnumOption = ((EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None).ToString()
+                            EnumOption = enumType.ToString()
                         };
                     }
                     // handle arrays/IEnumerable
                     else if (SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.FindImplementationForInterfaceMember(enumerableTypeSymbol) != null)
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
+                        var enumerableType = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated;
 
                         metadata = new EnumerableRequestSymbolMetadata
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
-                            EnumerableOption = ((EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated).ToString()
+                            EnumerableOption = enumerableType.ToString()
                         };
                     }
                     else
