@@ -103,6 +103,12 @@ namespace DragonFruit.Data.Roslyn
                 return null;
             }
 
+            // don't allow processing nested classes
+            if (classSymbol.ContainingType != null)
+            {
+                return null;
+            }
+
             while (classSymbol != null)
             {
                 if (classSymbol.Equals(apiRequestSymbol, SymbolEqualityComparer.Default))
