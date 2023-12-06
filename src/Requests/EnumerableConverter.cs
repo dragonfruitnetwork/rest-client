@@ -23,14 +23,17 @@ namespace DragonFruit.Data.Requests
             switch (mode)
             {
                 case EnumerableOption.Recursive:
+                {
                     foreach (var item in source)
                     {
                         destination.Append($"{propertyName}={Uri.EscapeDataString(item.ToString())}&");
                     }
 
                     break;
+                }
 
                 case EnumerableOption.Indexed:
+                {
                     var counter = 0;
 
                     foreach (var item in source)
@@ -39,18 +42,23 @@ namespace DragonFruit.Data.Requests
                     }
 
                     break;
+                }
 
                 case EnumerableOption.Unordered:
+                {
                     foreach (var item in source)
                     {
                         destination.AppendFormat("{0}[]={1}&", propertyName, Uri.EscapeDataString(item.ToString()));
                     }
 
                     break;
+                }
 
                 default:
+                {
                     destination.AppendFormat("{0}={1}&", propertyName, string.Join(separator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
                     break;
+                }
             }
         }
     }
