@@ -8,7 +8,7 @@ namespace DragonFruit.Data.Roslyn
 {
     internal class RequestSymbolMetadata
     {
-        public virtual RequestSymbolType Type => RequestSymbolType.Standard;
+        public virtual int Type => (int)RequestSymbolType.Standard;
 
         public int Depth { get; set; }
 
@@ -23,14 +23,14 @@ namespace DragonFruit.Data.Roslyn
 
     internal class EnumRequestSymbolMetadata : RequestSymbolMetadata
     {
-        public override RequestSymbolType Type => RequestSymbolType.Enum;
+        public override int Type => (int)RequestSymbolType.Enum;
 
         public string EnumOption { get; set; }
     }
 
     internal class EnumerableRequestSymbolMetadata : RequestSymbolMetadata
     {
-        public override RequestSymbolType Type => RequestSymbolType.Enumerable;
+        public override int Type => (int)RequestSymbolType.Enumerable;
 
         public string Separator { get; set; }
         public string EnumerableOption { get; set; }
