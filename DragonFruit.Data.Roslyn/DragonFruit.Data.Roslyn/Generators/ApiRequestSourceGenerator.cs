@@ -167,7 +167,7 @@ namespace DragonFruit.Data.Roslyn.Generators
 
                         metadata = new EnumRequestSymbolMetadata
                         {
-                            Options = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None
+                            EnumOption = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None
                         };
                     }
                     // handle arrays/IEnumerable
@@ -178,7 +178,7 @@ namespace DragonFruit.Data.Roslyn.Generators
                         metadata = new EnumerableRequestSymbolMetadata
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
-                            Options = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated
+                            EnumerableOption = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated
                         };
                     }
                     else
