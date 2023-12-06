@@ -7,8 +7,6 @@ namespace DragonFruit.Data.Roslyn.Entities
 {
     internal class SymbolMetadata
     {
-        protected readonly ITypeSymbol ReturnType;
-
         public SymbolMetadata(ISymbol symbol, ITypeSymbol returnType)
         {
             ReturnType = returnType;
@@ -18,6 +16,7 @@ namespace DragonFruit.Data.Roslyn.Entities
         public int Depth { get; set; }
 
         public ISymbol Symbol { get; }
+        public ITypeSymbol ReturnType { get; }
 
         public string Accessor => Symbol is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{Symbol.Name}()";
         public bool Nullable => ReturnType.IsReferenceType || (ReturnType.IsValueType && ReturnType.NullableAnnotation == NullableAnnotation.Annotated);
