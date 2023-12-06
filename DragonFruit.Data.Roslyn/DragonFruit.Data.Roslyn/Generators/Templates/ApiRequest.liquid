@@ -15,7 +15,12 @@ namespace {{ Namespace }}
             
             {%- for query in query_parameters -%}
                 {% capture query_append %}
-                    builder.Append($"{{ query.parameter_name }}={global::System.Uri.EscapeDataString({{ query.accessor }}.ToString())}&");
+                    {% case query.type %}
+                        {% when 1 %}
+                            global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.options }}, "{{ query.parameter_name }}", "{{ query.separator }}");
+                        {% else %}
+                            builder.Append($"{{ query.parameter_name }}={global::System.Uri.EscapeDataString({{ query.accessor }}.ToString())}&");
+                    {% endcase %}
                 {% endcapture %}
 
                 {% if query.nullable %}
@@ -34,7 +39,7 @@ namespace {{ Namespace }}
                 uriBuilder.Query = queryBuilder.ToString();
             }
 
-            global::System.Net.Http.HttpRequestMessage request = new global::System.Net.Http.HttpRequestMessage(RequestMethod, uriBuilder.Uri);
+            global::System.Net.Http.HttpRequestMessage request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, uriBuilder.Uri);
 
             {%- for header in header_parameters -%}
                 {% capture header_append %}
