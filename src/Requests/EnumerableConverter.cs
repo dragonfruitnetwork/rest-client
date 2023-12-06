@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -57,6 +58,58 @@ namespace DragonFruit.Data.Requests
                 default:
                 {
                     destination.AppendFormat("{0}={1}&", propertyName, string.Join(separator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Produces a collection of <see cref="KeyValuePair{TKey,TValue}"/> from the provided <see cref="IEnumerable"/> using the specified <see cref="EnumerableOption"/>
+        /// </summary>
+        /// <param name="source">The <see cref="IEnumerable"/> to derive pairs from</param>
+        /// <param name="mode">The <see cref="EnumerableOption"/> to use</param>
+        /// <param name="propertyName">The name of the property to use</param>
+        /// <param name="separator">The separator to use, if <see cref="mode"/> is set to Concatenated</param>
+        public static IEnumerable<KeyValuePair<string, string>> GetPairs(IEnumerable source, EnumerableOption mode, string propertyName, string separator)
+        {
+            switch (mode)
+            {
+                case EnumerableOption.Recursive:
+                {
+                    foreach (var item in source)
+                    {
+                        yield return new KeyValuePair<string, string>(propertyName, Uri.EscapeDataString(item.ToString()));
+                    }
+
+                    break;
+                }
+
+                case EnumerableOption.Indexed:
+                {
+                    var counter = 0;
+
+                    foreach (var item in source)
+                    {
+                        yield return new KeyValuePair<string, string>($"{propertyName}[{counter++}]", Uri.EscapeDataString(item.ToString()));
+                    }
+
+                    break;
+                }
+
+                case EnumerableOption.Unordered:
+                {
+                    foreach (var item in source)
+                    {
+                        yield return new KeyValuePair<string, string>($"{propertyName}[]", Uri.EscapeDataString(item.ToString()));
+                    }
+
+                    break;
+                }
+
+                default:
+                {
+                    yield return new KeyValuePair<string, string>(propertyName, string.Join(separator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
+
                     break;
                 }
             }
