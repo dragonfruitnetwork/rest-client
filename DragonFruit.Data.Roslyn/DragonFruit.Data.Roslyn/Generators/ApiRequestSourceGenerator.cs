@@ -60,6 +60,7 @@ namespace DragonFruit.Data.Roslyn.Generators
             var model = context.SemanticModel;
             var classDeclaration = (ClassDeclarationSyntax)context.Node;
 
+            var apiRequestSymbol = context.SemanticModel.Compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
             var classSymbol = ModelExtensions.GetDeclaredSymbol(model, classDeclaration) as INamedTypeSymbol;
 
             // ensure the class isn't abstract
@@ -70,7 +71,7 @@ namespace DragonFruit.Data.Roslyn.Generators
 
             while (classSymbol != null)
             {
-                if (classSymbol.ToString() == "DragonFruit.Data.ApiRequest")
+                if (classSymbol.Equals(apiRequestSymbol, SymbolEqualityComparer.Default))
                 {
                     return classDeclaration;
                 }
@@ -141,6 +142,13 @@ namespace DragonFruit.Data.Roslyn.Generators
                         continue;
                     }
 
+                    // only allow public, protected and protected internal properties
+                    if (candidate.DeclaredAccessibility is Accessibility.Private or Accessibility.Internal)
+                    {
+                        // todo diagnostic warning
+                        continue;
+                    }
+
                     var returnType = candidate switch
                     {
                         IPropertySymbol propertySymbol => propertySymbol.Type,
@@ -149,6 +157,7 @@ namespace DragonFruit.Data.Roslyn.Generators
                         _ => throw new NotSupportedException()
                     };
 
+                    // if a method is declared, ensure it's not void
                     if (returnType.SpecialType == SpecialType.System_Void)
                     {
                         // todo return diagnostic warning
