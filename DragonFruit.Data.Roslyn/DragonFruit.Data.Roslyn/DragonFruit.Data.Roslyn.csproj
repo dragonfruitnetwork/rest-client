@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Generators\Templates\*.liquid" />
+        <EmbeddedResource Include="Templates\ApiRequest.liquid" />
     </ItemGroup>
 
     <ItemGroup>

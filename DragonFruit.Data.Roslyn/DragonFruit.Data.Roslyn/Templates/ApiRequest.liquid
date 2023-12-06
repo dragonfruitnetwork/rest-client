@@ -17,9 +17,9 @@ namespace {{ namespace }}
                 {% capture query_append %}
                     {% case query.type %}
                         {% when 1 %}
-                            global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.options }}, "{{ query.parameter_name }}", "{{ query.separator }}");
+                            global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.enum_option }}, "{{ query.parameter_name }}", "{{ query.separator }}");
                         {% when 2 %}
-                            global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.options }}, "{{ query.parameter_name }}");
+                            global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enumerable_option }}, "{{ query.parameter_name }}");
                         {% else %}
                             builder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString());
                     {% endcase %}

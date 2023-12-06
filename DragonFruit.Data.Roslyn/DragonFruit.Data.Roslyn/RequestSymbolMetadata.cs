@@ -1,13 +1,15 @@
 // DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using DragonFruit.Data.Requests;
+using DragonFruit.Data.Roslyn.Enums;
 using Microsoft.CodeAnalysis;
 
-namespace DragonFruit.Data.Roslyn.Generators
+namespace DragonFruit.Data.Roslyn
 {
     internal class RequestSymbolMetadata
     {
+        public virtual RequestSymbolType Type => RequestSymbolType.Standard;
+
         public int Depth { get; set; }
 
         public bool IsString { get; set; }
@@ -16,7 +18,6 @@ namespace DragonFruit.Data.Roslyn.Generators
         public ISymbol Symbol { get; set; }
         public string ParameterName { get; set; }
 
-        public virtual RequestSymbolType Type => RequestSymbolType.Standard;
         public string Accessor => Symbol is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{Symbol.Name}()";
     }
 
@@ -24,7 +25,7 @@ namespace DragonFruit.Data.Roslyn.Generators
     {
         public override RequestSymbolType Type => RequestSymbolType.Enum;
 
-        public EnumOption EnumOption { get; set; }
+        public string EnumOption { get; set; }
     }
 
     internal class EnumerableRequestSymbolMetadata : RequestSymbolMetadata
@@ -32,13 +33,6 @@ namespace DragonFruit.Data.Roslyn.Generators
         public override RequestSymbolType Type => RequestSymbolType.Enumerable;
 
         public string Separator { get; set; }
-        public EnumerableOption EnumerableOption { get; set; }
-    }
-
-    internal enum RequestSymbolType
-    {
-        Standard = 0,
-        Enumerable = 1,
-        Enum = 2,
+        public string EnumerableOption { get; set; }
     }
 }
