@@ -43,6 +43,11 @@ namespace {{ namespace }}
 
             global::System.Net.Http.HttpRequestMessage request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, uriBuilder.Uri);
 
+            {% case request_body_type %}
+                {% when 3 %}
+                    request.Content = {{ request_body_symbol.accessor }};
+            {% endcase %}
+
             {%- for header in header_parameters -%}
                 {% capture header_append %}
                     {% case header.type %}
