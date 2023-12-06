@@ -151,7 +151,7 @@ namespace DragonFruit.Data.Roslyn
                 {
                     var requestAttribute = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(requestParameterAttribute, SymbolEqualityComparer.Default) == true);
 
-                    // ensure that properties ovewritten using "new" are not processed twice
+                    // ensure properties overwritten using "new" are not processed twice
                     if (requestAttribute == null || !consumedProperties.Add(candidate.MetadataName))
                     {
                         continue;
