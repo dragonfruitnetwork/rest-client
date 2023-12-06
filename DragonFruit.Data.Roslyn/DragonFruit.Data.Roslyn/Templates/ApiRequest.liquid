@@ -45,7 +45,11 @@ namespace {{ namespace }}
 
             {%- for header in header_parameters -%}
                 {% capture header_append %}
-                    request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
+                    {% case header.type %}
+                        {% when 1 %}
+                        {% else %}
+                            request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
+                    {% endcase %}
                 {% endcapture %}
                 
                 {% if header.nullable %}
