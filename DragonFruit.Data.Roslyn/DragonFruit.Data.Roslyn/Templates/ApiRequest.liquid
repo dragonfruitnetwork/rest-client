@@ -47,6 +47,12 @@ namespace {{ namespace }}
                 {% capture header_append %}
                     {% case header.type %}
                         {% when 1 %}
+                            foreach (var kvp in global::DragonFruit.Data.Requests.EnumerableConverter.GetPairs({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ header.enumumerable_option }}))
+                            {
+                                request.Headers.Add(kvp.Key, kvp.Value);
+                            }
+                        {% when 2 %}
+                            request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Requests.EnumConverter.GetString({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
                         {% else %}
                             request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
                     {% endcase %}
