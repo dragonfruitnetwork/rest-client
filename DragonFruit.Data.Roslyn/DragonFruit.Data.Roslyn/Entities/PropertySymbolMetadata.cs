@@ -17,5 +17,6 @@ namespace DragonFruit.Data.Roslyn.Entities
         }
 
         public string ParameterName { get; }
+        public SpecialRequestParameter? SpecialRequestParameter { get; set; }
     }
 }

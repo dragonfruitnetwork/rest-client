@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -82,13 +83,9 @@ namespace DragonFruit.Data.Roslyn
                 {
                     requestBodyType = DerivesFrom(metadata.BodyProperty.ReturnType, httpContentSymbol) ? RequestBodyType.CustomBodyDirect : RequestBodyType.CustomBodySerialized;
                 }
-                else if (metadata.FormBodyType == FormBodyType.UriEncoded)
+                else if (metadata.Properties[ParameterType.Form].Any())
                 {
-                    requestBodyType = RequestBodyType.FormUriEncoded;
-                }
-                else if (metadata.FormBodyType == FormBodyType.MultipartForm)
-                {
-                    requestBodyType = RequestBodyType.FormMultipart;
+                    requestBodyType = metadata.FormBodyType == FormBodyType.MultipartForm ? RequestBodyType.FormMultipart : RequestBodyType.FormUriEncoded;
                 }
 
                 var parameterInfo = new
@@ -159,6 +156,7 @@ namespace DragonFruit.Data.Roslyn
 
             var enumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable).FullName);
             var apiRequestBaseType = compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
+            var streamTypeSymbol = compilation.GetTypeByMetadataName(typeof(Stream).FullName);
 
             // track properties already visited
             var depth = 0;
@@ -244,7 +242,18 @@ namespace DragonFruit.Data.Roslyn
                     }
                     else
                     {
-                        symbolMetadata = new PropertySymbolMetadata(symbol, returnType, parameterName);
+                        var psm = new PropertySymbolMetadata(symbol, returnType, parameterName);
+
+                        if (DerivesFrom(returnType, streamTypeSymbol))
+                        {
+                            psm.SpecialRequestParameter = SpecialRequestParameter.Stream;
+                        }
+                        else if (returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte })
+                        {
+                            psm.SpecialRequestParameter = SpecialRequestParameter.ByteArray;
+                        }
+
+                        symbolMetadata = psm;
                     }
 
                     symbolMetadata.Depth = depth;
