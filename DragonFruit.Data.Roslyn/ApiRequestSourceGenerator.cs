@@ -23,7 +23,9 @@ namespace DragonFruit.Data.Roslyn
     [Generator(LanguageNames.CSharp)]
     public class ApiRequestSourceGenerator : IIncrementalGenerator
     {
-        private static readonly Template RequestTemplate;
+        public static readonly string TemplateName = "DragonFruit.Data.Roslyn.Templates.ApiRequest.liquid";
+
+        private static readonly Template PartialRequestTemplate;
 
         private static readonly HashSet<SpecialType> SupportedCollectionTypes = new(new[]
         {
@@ -33,33 +35,33 @@ namespace DragonFruit.Data.Roslyn
             SpecialType.System_Collections_Generic_ICollection_T,
             SpecialType.System_Collections_Generic_IEnumerable_T,
             SpecialType.System_Collections_Generic_IReadOnlyList_T,
-            SpecialType.System_Collections_Generic_IReadOnlyCollection_T,
+            SpecialType.System_Collections_Generic_IReadOnlyCollection_T
         });
 
         static ApiRequestSourceGenerator()
         {
-            using var templateStream = typeof(ApiRequestSourceGenerator).Assembly.GetManifestResourceStream("DragonFruit.Data.Roslyn.Templates.ApiRequest.liquid");
+            using var templateStream = typeof(ApiRequestSourceGenerator).Assembly.GetManifestResourceStream(TemplateName);
 
             if (templateStream == null)
             {
                 throw new NullReferenceException("Could not find template");
             }
 
-            using var reader = new System.IO.StreamReader(templateStream);
-            RequestTemplate = Template.ParseLiquid(reader.ReadToEnd());
+            using var reader = new StreamReader(templateStream);
+            PartialRequestTemplate = Template.ParseLiquid(reader.ReadToEnd());
         }
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(
-                predicate: (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax classDecl && classDecl.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)),
-                transform: (generatorSyntaxContext, _) => GetSemanticTarget(generatorSyntaxContext));
-
-            IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Collect());
-            context.RegisterSourceOutput(targets, static (spc, source) => Execute(source.Item1, source.Item2, spc));
+            // var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(
+            //     predicate: (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax classDecl && classDecl.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)),
+            //     transform: (generatorSyntaxContext, _) => GetSemanticTarget(generatorSyntaxContext));
+            //
+            // IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Collect());
+            // context.RegisterSourceOutput(targets, (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        private static void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> requestClasses, SourceProductionContext context)
+        private void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> requestClasses, SourceProductionContext context)
         {
             if (requestClasses.IsDefaultOrEmpty)
             {
@@ -102,7 +104,7 @@ namespace DragonFruit.Data.Roslyn
                 };
 
                 sourceBuilder.Append("\n\n");
-                sourceBuilder.Append(RequestTemplate.Render(parameterInfo));
+                sourceBuilder.Append(PartialRequestTemplate.Render(parameterInfo));
                 context.AddSource($"{classSymbol.Name}.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
             }
         }

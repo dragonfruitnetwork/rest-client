@@ -15,7 +15,7 @@ namespace {{ namespace }}
             {% comment %} Process Query Parameters {% endcomment %}
             {% if query_parameters.size > 0 %}
                 global::System.Text.StringBuilder queryBuilder = new global::System.Text.StringBuilder();
-                
+
                 {% for query in query_parameters %}
                     {% capture query_append %}
                         {% case query.type %}
@@ -27,7 +27,7 @@ namespace {{ namespace }}
                                 builder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
                         {% endcase %}
                     {% endcapture %}
-    
+
                     {% if query.nullable %}
                         if ({{ query.accessor }} != null)
                         {
@@ -37,10 +37,11 @@ namespace {{ namespace }}
                         {{ query_append }}
                     {% endif %}
                 {% endfor %}
-    
+
+                {% comment %} remove trailing & {% endcomment %}
                 if (queryBuilder.Length > 0)
                 {
-                    queryBuilder.Length--; // remove trailing &
+                    queryBuilder.Length--;
                     uriBuilder.Query = queryBuilder.ToString();
                 }
             {% endif %}
@@ -51,7 +52,7 @@ namespace {{ namespace }}
                 {% comment %} 1 - Multipart {% endcomment %}
                 {% when 1 %}
                     global::System.Net.Http.MultipartContent content = new global::System.Net.Http.MultipartContent();
-                    
+
                     {% for multipart in form_body_parameters %}
                         {% capture multipart_append %}
                             {% case multipart.type %}
@@ -76,7 +77,7 @@ namespace {{ namespace }}
                                     {% endcase %}
                              {% endcase %}
                         {% endcapture %}
-                        
+
                         {% if multipart.nullable %}
                             if ({{ multipart.accessor }} != null)
                             {
@@ -86,13 +87,13 @@ namespace {{ namespace }}
                             {{ multipart_append }}
                         {% endif %}
                     {% endfor %}
-                    
+
                     request.Content = content;
 
                 {% comment %} 2 - UriEncoded {% endcomment %}
                 {% when 2 %}
                     global::System.Text.StringBuilder formBuilder = new global::System.Text.StringBuilder();
-                
+
                     {% for uriparam in form_body_parameters %}
                         {% capture uriparam_append %}
                             {% case uriparam.type %}
@@ -104,7 +105,7 @@ namespace {{ namespace }}
                                     formBuilder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
                             {% endcase %}
                         {% endcapture %}
-                        
+
                         {% if uriparam.nullable %}
                             if ({{ uriparam.accessor }} != null)
                             {
@@ -114,7 +115,7 @@ namespace {{ namespace }}
                             {{ uriparam_append }}
                         {% endif %}
                     {% endfor %}
-                    
+
                     request.Content = new global::System.Net.Http.StringContent(formBuilder.ToString(), global::System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
 
                 {% comment %} 3 - Custom Body (HttpContent) {% endcomment %}
@@ -139,7 +140,7 @@ namespace {{ namespace }}
                             request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
                     {% endcase %}
                 {% endcapture %}
-                
+
                 {% if header.nullable %}
                     if ({{ header.accessor }} != null)
                     {

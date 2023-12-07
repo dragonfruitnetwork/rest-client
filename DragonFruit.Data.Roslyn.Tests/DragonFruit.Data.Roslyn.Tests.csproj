@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
@@ -19,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.csproj"/>
+        <ProjectReference Include="..\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.csproj" OutputItemType="Analyzer"/>
     </ItemGroup>
 
 </Project>

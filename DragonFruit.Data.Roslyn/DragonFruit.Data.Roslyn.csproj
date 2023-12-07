@@ -20,20 +20,16 @@
         </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0"/>
-        <PackageReference Include="Scriban" Version="5.9.0" />
+        <PackageReference Include="Scriban" Version="5.9.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Generators\Templates\*.liquid" />
-        <EmbeddedResource Include="Templates\ApiRequest.liquid" />
+        <EmbeddedResource Include="Templates\*.liquid"/>
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\DragonFruit.Data.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
 </Project>
