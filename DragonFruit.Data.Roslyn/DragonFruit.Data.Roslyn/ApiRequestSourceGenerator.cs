@@ -127,6 +127,7 @@ namespace DragonFruit.Data.Roslyn
                 return null;
             }
 
+            // check if class is derived from ApiRequest
             while (classSymbol != null)
             {
                 if (classSymbol.Equals(apiRequestSymbol, SymbolEqualityComparer.Default))
