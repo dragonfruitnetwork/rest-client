@@ -217,7 +217,7 @@ namespace DragonFruit.Data.Roslyn
                     // check if value is decorated with RequestBodyAttribute
                     if (metadata.BodyProperty != null && candidate.GetAttributes().Any(x => x.AttributeClass?.Equals(requestBodyAttribute, SymbolEqualityComparer.Default) == true))
                     {
-                        metadata.BodyProperty = new SymbolMetadata(symbol, returnType);
+                        metadata.BodyProperty = new SymbolMetadata(candidate, returnType);
                     }
 
                     var parameterType = (ParameterType)requestAttribute.ConstructorArguments[0].Value!;
@@ -231,7 +231,7 @@ namespace DragonFruit.Data.Roslyn
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
                         var enumType = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None;
 
-                        symbolMetadata = new EnumSymbolMetadata(symbol, returnType, parameterName)
+                        symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
                         {
                             EnumOption = enumType.ToString()
                         };
@@ -242,7 +242,7 @@ namespace DragonFruit.Data.Roslyn
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
                         var enumerableType = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated;
 
-                        symbolMetadata = new EnumerableSymbolMetadata(symbol, returnType, parameterName)
+                        symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
                             EnumerableOption = enumerableType.ToString()
@@ -250,7 +250,7 @@ namespace DragonFruit.Data.Roslyn
                     }
                     else
                     {
-                        var psm = new PropertySymbolMetadata(symbol, returnType, parameterName);
+                        var psm = new PropertySymbolMetadata(candidate, returnType, parameterName);
 
                         if (DerivesFrom(returnType, streamTypeSymbol))
                         {
