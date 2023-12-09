@@ -25,9 +25,8 @@ namespace {{ namespace }}
                                 global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enum_option }}, "{{ query.parameter_name }}");
                             {% else %}
                                 queryBuilder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
-                        {% endcase %}
-                    {% endcapture %}
-
+                        {% endcase -%}
+                    {% endcapture -%}
                     {% if query.nullable %}
                         if ({{ query.accessor }} != null)
                         {
@@ -35,8 +34,8 @@ namespace {{ namespace }}
                         }
                     {% else %}
                         {{ query_append }}
-                    {% endif %}
-                {% endfor %}
+                    {% endif -%}
+                {% endfor -%}
 
                 {% comment %} remove trailing & {% endcomment %}
                 if (queryBuilder.Length > 0)
@@ -44,7 +43,7 @@ namespace {{ namespace }}
                     queryBuilder.Length--;
                     uriBuilder.Query = queryBuilder.ToString();
                 }
-            {% endif %}
+            {% endif -%}
 
             global::System.Net.Http.HttpRequestMessage request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, uriBuilder.Uri);
 
@@ -74,9 +73,9 @@ namespace {{ namespace }}
                                         {% comment %} Handle other types using ToString {% endcomment %}
                                         {% else %}
                                             content.Add(new global::System.Net.Http.StringContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
-                                    {% endcase %}
-                             {% endcase %}
-                        {% endcapture %}
+                                    {% endcase -%}
+                             {% endcase -%}
+                        {% endcapture -%}
 
                         {% if multipart.nullable %}
                             if ({{ multipart.accessor }} != null)
@@ -85,8 +84,8 @@ namespace {{ namespace }}
                             }
                         {% else %}
                             {{ multipart_append }}
-                        {% endif %}
-                    {% endfor %}
+                        {% endif -%}
+                    {% endfor -%}
 
                     request.Content = content;
 
@@ -98,13 +97,13 @@ namespace {{ namespace }}
                         {% capture uriparam_append %}
                             {% case uriparam.type %}
                                 {% when 1 %}
-                                    global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(formBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.enumerable_option }}, "{{ query.parameter_name }}", "{{ query.separator }}");
+                                    global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ uriparam.enumerable_option }}, "{{ uriparam.parameter_name }}", "{{ uriparam.separator }}");
                                 {% when 2 %}
-                                    global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(formBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enum_option }}, "{{ query.parameter_name }}");
+                                    global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ uriparam.enum_option }}, "{{ uriparam.parameter_name }}");
                                 {% else %}
-                                    formBuilder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
-                            {% endcase %}
-                        {% endcapture %}
+                                    formBuilder.AppendFormat("{0}={1}&", "{{ uriparam.parameter_name }}", global::System.Uri.EscapeDataString({{ uriparam.accessor }}.ToString()));
+                            {% endcase -%}
+                        {% endcapture -%}
 
                         {% if uriparam.nullable %}
                             if ({{ uriparam.accessor }} != null)
@@ -113,8 +112,8 @@ namespace {{ namespace }}
                             }
                         {% else %}
                             {{ uriparam_append }}
-                        {% endif %}
-                    {% endfor %}
+                        {% endif -%}
+                    {% endfor -%}
 
                     request.Content = new global::System.Net.Http.StringContent(formBuilder.ToString(), global::System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
 
@@ -138,8 +137,8 @@ namespace {{ namespace }}
                             request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Requests.EnumConverter.GetString({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
                         {% else %}
                             request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
-                    {% endcase %}
-                {% endcapture %}
+                    {% endcase -%}
+                {% endcapture -%}
 
                 {% if header.nullable %}
                     if ({{ header.accessor }} != null)
@@ -148,8 +147,8 @@ namespace {{ namespace }}
                     }
                 {% else %}
                     {{ header_append }}
-                {% endif %}
-            {% endfor %}
+                {% endif -%}
+            {% endfor -%}
 
             return request;
         }
