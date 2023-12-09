@@ -19,7 +19,7 @@ public class ApiRequestTemplateTests
         Assert.NotNull(template);
 
         using var templateReader = new StreamReader(template);
-        var templateText = await templateReader.ReadToEndAsync().ConfigureAwait(false);
+        var templateText = await templateReader.ReadToEndAsync();
 
         Assert.True(templateText.Length > 0);
 
