@@ -23,6 +23,7 @@ public static class ExternalDependencyLoader
         AppDomain.CurrentDomain.AssemblyResolve += HandleAssemblyResolve;
     }
 
+    // derived from https://stackoverflow.com/a/67074009
     private static Assembly HandleAssemblyResolve(object _, ResolveEventArgs args)
     {
         var name = new AssemblyName(args.Name);
