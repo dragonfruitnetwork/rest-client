@@ -10,7 +10,7 @@ namespace {{ namespace }}
     {
         public global::System.Net.Http.HttpRequestMessage BuildRequest()
         {
-            global::System.UriBuilder uriBuilder = new global::System.UriBuilder(RequestPath);
+            global::System.UriBuilder uriBuilder = new global::System.UriBuilder(this.RequestPath);
 
             {% comment %} Process Query Parameters {% endcomment %}
             {% if query_parameters.size > 0 %}

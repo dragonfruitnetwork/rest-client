@@ -25,20 +25,28 @@ namespace DragonFruit.Data.Roslyn
     {
         public static readonly string TemplateName = "DragonFruit.Data.Roslyn.Templates.ApiRequest.liquid";
 
-        private static readonly Template PartialRequestTemplate;
+        private static readonly HashSet<SpecialType> SupportedCollectionTypes =
+        [
+            ..new[]
+            {
+                SpecialType.System_Array,
+                SpecialType.System_Collections_IEnumerable,
+                SpecialType.System_Collections_Generic_IList_T,
+                SpecialType.System_Collections_Generic_ICollection_T,
+                SpecialType.System_Collections_Generic_IEnumerable_T,
+                SpecialType.System_Collections_Generic_IReadOnlyList_T,
+                SpecialType.System_Collections_Generic_IReadOnlyCollection_T
+            }
+        ];
 
-        private static readonly HashSet<SpecialType> SupportedCollectionTypes = new(new[]
-        {
-            SpecialType.System_Array,
-            SpecialType.System_Collections_IEnumerable,
-            SpecialType.System_Collections_Generic_IList_T,
-            SpecialType.System_Collections_Generic_ICollection_T,
-            SpecialType.System_Collections_Generic_IEnumerable_T,
-            SpecialType.System_Collections_Generic_IReadOnlyList_T,
-            SpecialType.System_Collections_Generic_IReadOnlyCollection_T
-        });
+        private Template _partialRequestTemplate;
 
         static ApiRequestSourceGenerator()
+        {
+            ExternalDependencyLoader.RegisterDependencyLoader();
+        }
+
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             using var templateStream = typeof(ApiRequestSourceGenerator).Assembly.GetManifestResourceStream(TemplateName);
 
@@ -48,17 +56,14 @@ namespace DragonFruit.Data.Roslyn
             }
 
             using var reader = new StreamReader(templateStream);
-            PartialRequestTemplate = Template.ParseLiquid(reader.ReadToEnd());
-        }
+            _partialRequestTemplate = Template.ParseLiquid(reader.ReadToEnd());
 
-        public void Initialize(IncrementalGeneratorInitializationContext context)
-        {
-            // var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(
-            //     predicate: (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax classDecl && classDecl.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)),
-            //     transform: (generatorSyntaxContext, _) => GetSemanticTarget(generatorSyntaxContext));
-            //
-            // IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Collect());
-            // context.RegisterSourceOutput(targets, (spc, source) => Execute(source.Item1, source.Item2, spc));
+            var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax classDecl && classDecl.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)),
+                transform: (generatorSyntaxContext, _) => GetSemanticTarget(generatorSyntaxContext));
+
+            IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Collect());
+            context.RegisterSourceOutput(targets, (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
         private void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> requestClasses, SourceProductionContext context)
@@ -104,7 +109,7 @@ namespace DragonFruit.Data.Roslyn
                 };
 
                 sourceBuilder.Append("\n\n");
-                sourceBuilder.Append(PartialRequestTemplate.Render(parameterInfo));
+                sourceBuilder.Append(_partialRequestTemplate.Render(parameterInfo));
                 context.AddSource($"{classSymbol.Name}.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
             }
         }
