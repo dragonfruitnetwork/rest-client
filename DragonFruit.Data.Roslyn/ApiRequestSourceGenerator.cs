@@ -98,7 +98,7 @@ namespace DragonFruit.Data.Roslyn
                 var parameterInfo = new
                 {
                     ClassName = classSymbol.Name,
-                    Namespace = classSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
 
                     RequestBodyType = requestBodyType,
                     RequestBodySymbol = metadata.BodyProperty,
