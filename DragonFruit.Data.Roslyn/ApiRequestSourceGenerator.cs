@@ -298,7 +298,7 @@ namespace DragonFruit.Data.Roslyn
             return metadata;
         }
 
-        private static bool DerivesFrom(ITypeSymbol type, ITypeSymbol baseType)
+        internal static bool DerivesFrom(ITypeSymbol type, ITypeSymbol baseType)
         {
             var classSymbol = type;
 

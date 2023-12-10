@@ -35,7 +35,7 @@ namespace DragonFruit.Data.Roslyn.Analyzers
             var apiRequestType = context.Compilation.GetTypeByMetadataName("DragonFruit.Data.ApiRequest");
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclarationNode);
 
-            if (apiRequestType == null || classSymbol == null || !InheritsFrom(classSymbol, apiRequestType))
+            if (apiRequestType == null || classSymbol == null || !ApiRequestSourceGenerator.DerivesFrom(classSymbol, apiRequestType))
             {
                 return;
             }
@@ -48,23 +48,6 @@ namespace DragonFruit.Data.Roslyn.Analyzers
 
             var diagnostic = Diagnostic.Create(Rule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text);
             context.ReportDiagnostic(diagnostic);
-        }
-
-        private static bool InheritsFrom(INamedTypeSymbol symbol, ITypeSymbol type)
-        {
-            var baseType = symbol.BaseType;
-
-            while (baseType != null)
-            {
-                if (type.Equals(baseType, SymbolEqualityComparer.Default))
-                {
-                    return true;
-                }
-
-                baseType = baseType.BaseType;
-            }
-
-            return false;
         }
     }
 }
