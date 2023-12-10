@@ -214,6 +214,28 @@ namespace DragonFruit.Data.Roslyn
                         continue;
                     }
 
+                    // check if property and has a getter
+                    var candidateMethod = candidate switch
+                    {
+                        IPropertySymbol propertySymbol => propertySymbol.GetMethod,
+                        IMethodSymbol methodSymbol => methodSymbol,
+
+                        _ => throw new NotSupportedException()
+                    };
+
+                    if (candidateMethod == null)
+                    {
+                        // todo return diagnostic warning (no getter)
+                        continue;
+                    }
+
+                    // inherited properties that are private or internal are ignored
+                    if (depth > 0 && candidateMethod.DeclaredAccessibility is Accessibility.Private or Accessibility.Internal)
+                    {
+                        // todo return diagnostic warning (getter not accessible)
+                        continue;
+                    }
+
                     // check if value is decorated with RequestBodyAttribute
                     if (metadata.BodyProperty != null && candidate.GetAttributes().Any(x => x.AttributeClass?.Equals(requestBodyAttribute, SymbolEqualityComparer.Default) == true))
                     {
@@ -265,7 +287,6 @@ namespace DragonFruit.Data.Roslyn
                     }
 
                     symbolMetadata.Depth = depth;
-
                     metadata.Properties[parameterType].Add(symbolMetadata);
                 }
 
