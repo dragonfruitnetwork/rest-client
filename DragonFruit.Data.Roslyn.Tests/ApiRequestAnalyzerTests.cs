@@ -33,6 +33,8 @@ public class ApiRequestAnalyzerTests
     private async Task PerformTest(AnalyzerTest<DefaultVerifier> test)
     {
         var content = ("Common.cs", await File.ReadAllTextAsync(Path.Combine(_testDataPath, "Common.cs")));
+
+        // add common.cs to test sources
         test.TestState.Sources.Add(content);
 
         if (test is CodeFixTest<DefaultVerifier> verifier)
