@@ -11,14 +11,15 @@ namespace DragonFruit.Data.Roslyn
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ApiRequestAnalyzer : DiagnosticAnalyzer
     {
-        internal static readonly DiagnosticDescriptor PartialClassRule = new("DA0001", "Partial class expected", "Class '{0}' should be marked as partial", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor PartialClassRule = new("DA0001", "Partial class expected", "Class '{0}' should be marked as partial", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor NestedClassRule = new("DA0002", "Nested class not allowed", "Class '{0}' should not be nested", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
-        internal static readonly DiagnosticDescriptor PropertyNoGetterRule = new("DA0002", "Property has no getter", "Property '{0}' has no accessible getter", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
-        internal static readonly DiagnosticDescriptor PropertyOrMethodNotInApiRequestRule = new("DA0003", "Property or Method not in ApiRequest", "'{0}' is not in an ApiRequest class", "Usage", DiagnosticSeverity.Warning, isEnabledByDefault: true);
-        internal static readonly DiagnosticDescriptor PropertyOrMethodInaccessibleRule = new("DA0004", "Property or Method is inaccessible", "'{0}' is inaccessible. Properties should either be public, protected or protected internal.", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor PropertyNoGetterRule = new("DA0003", "Property has no getter", "Property '{0}' has no accessible getter", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor PropertyOrMethodNotInApiRequestRule = new("DA0004", "Property or Method not in ApiRequest", "'{0}' is not in an ApiRequest class", "Usage", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor PropertyOrMethodInaccessibleRule = new("DA0005", "Property or Method is inaccessible", "'{0}' is inaccessible. Properties should either be public, protected or protected internal.", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
 
-        internal static readonly DiagnosticDescriptor MethodReturnsVoidRule = new("DA0005", "Method returns void", "Method '{0}' used to provide request values returns void", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
-        internal static readonly DiagnosticDescriptor MethodHasParametersRule = new("DA0006", "Method has parameters", "Method '{0}' used to provide request values takes arguments", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor MethodReturnsVoidRule = new("DA0006", "Method returns void", "Method '{0}' used to provide request values returns void", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor MethodHasParametersRule = new("DA0007", "Method has parameters", "Method '{0}' used to provide request values takes arguments", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(PartialClassRule,
             PropertyNoGetterRule, PropertyOrMethodNotInApiRequestRule, PropertyOrMethodInaccessibleRule,
@@ -55,6 +56,12 @@ namespace DragonFruit.Data.Roslyn
             {
                 context.ReportDiagnostic(Diagnostic.Create(PartialClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
             }
+
+            // check if class is nested
+            if (classDeclarationNode.Parent is not NamespaceDeclarationSyntax)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(NestedClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
+            }
         }
 
         private void AnalyzeMethodDecl(SyntaxNodeAnalysisContext context)
@@ -65,8 +72,11 @@ namespace DragonFruit.Data.Roslyn
             }
 
             var symbol = context.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
+            var bodyAttributeSymbol = context.Compilation.GetTypeByMetadataName(typeof(RequestBodyAttribute).FullName);
+            var parameterAttributeSymbol = context.Compilation.GetTypeByMetadataName(typeof(RequestParameterAttribute).FullName);
 
-            if (symbol?.GetAttributes().Any(a => a.AttributeClass?.Name is nameof(RequestParameterAttribute) or nameof(RequestBodyAttribute)) != true)
+            // check if symbol attributes are either body or parameter
+            if (symbol?.GetAttributes().Where(x => x.AttributeClass != null).Any(a => a.AttributeClass.Equals(bodyAttributeSymbol, SymbolEqualityComparer.Default) || a.AttributeClass.Equals(parameterAttributeSymbol, SymbolEqualityComparer.Default)) != true)
             {
                 return;
             }
@@ -105,8 +115,10 @@ namespace DragonFruit.Data.Roslyn
             }
 
             var symbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
+            var bodyAttributeSymbol = context.Compilation.GetTypeByMetadataName(typeof(RequestBodyAttribute).FullName);
+            var parameterAttributeSymbol = context.Compilation.GetTypeByMetadataName(typeof(RequestParameterAttribute).FullName);
 
-            if (symbol?.GetAttributes().Any(a => a.AttributeClass?.Name is nameof(RequestParameterAttribute) or nameof(RequestBodyAttribute)) != true)
+            if (symbol?.GetAttributes().Any(a => a.AttributeClass.Equals(bodyAttributeSymbol, SymbolEqualityComparer.Default) || a.AttributeClass.Equals(parameterAttributeSymbol, SymbolEqualityComparer.Default)) != true)
             {
                 return;
             }
