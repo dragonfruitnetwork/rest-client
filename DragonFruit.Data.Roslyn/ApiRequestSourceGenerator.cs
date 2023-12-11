@@ -274,7 +274,7 @@ namespace DragonFruit.Data.Roslyn
                     {
                         var psm = new PropertySymbolMetadata(candidate, returnType, parameterName);
 
-                        if (DerivesFrom(returnType, streamTypeSymbol))
+                        if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol))
                         {
                             psm.SpecialRequestParameter = SpecialRequestParameter.Stream;
                         }
@@ -300,7 +300,7 @@ namespace DragonFruit.Data.Roslyn
 
         internal static bool DerivesFrom(ITypeSymbol type, ITypeSymbol baseType)
         {
-            var classSymbol = type;
+            var classSymbol = type.BaseType;
 
             while (classSymbol != null)
             {
