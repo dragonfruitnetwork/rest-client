@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<DragonFruit.Data.Roslyn.Analyzers.ApiRequestClassAnalyzer, DragonFruit.Data.Roslyn.Analyzers.ApiRequestClassFixProvider>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<DragonFruit.Data.Roslyn.Analyzers.ApiRequestAnalyzer, DragonFruit.Data.Roslyn.Analyzers.ApiRequestClassFixProvider>;
 
 namespace DragonFruit.Data.Roslyn.Tests;
 

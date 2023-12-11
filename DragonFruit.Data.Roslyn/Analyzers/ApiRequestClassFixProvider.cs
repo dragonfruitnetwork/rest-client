@@ -15,7 +15,7 @@ namespace DragonFruit.Data.Roslyn.Analyzers
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApiRequestClassFixProvider)), Shared]
     public class ApiRequestClassFixProvider : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ApiRequestClassAnalyzer.DiagnosticId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ApiRequestAnalyzer.PartialClassRule.Id);
 
         public override FixAllProvider GetFixAllProvider() => null;
 
