@@ -4,18 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
-    
-    <PropertyGroup>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>generated</CompilerGeneratedFilesOutputPath>
-    </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Build" Version="17.8.3" />
-        <PackageReference Include="Microsoft.Build.Framework" Version="17.8.3" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.1"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.1"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.8.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
         <PackageReference Include="Scriban" Version="5.9.0" />
         <PackageReference Include="xunit" Version="2.6.3" />
@@ -26,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="_TestData/**"/>
+        <Compile Remove="_TestData\**"/>
         <None Remove="_TestData\**" />
     </ItemGroup>
     

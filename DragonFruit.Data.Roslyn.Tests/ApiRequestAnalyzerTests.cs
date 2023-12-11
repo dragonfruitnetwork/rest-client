@@ -1,35 +1,57 @@
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using DragonFruit.Data.Roslyn.Fixes;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<DragonFruit.Data.Roslyn.Analyzers.ApiRequestAnalyzer, DragonFruit.Data.Roslyn.Analyzers.ApiRequestClassFixProvider>;
 
 namespace DragonFruit.Data.Roslyn.Tests;
 
 public class ApiRequestAnalyzerTests
 {
+    private readonly string _testDataPath;
+
+    public ApiRequestAnalyzerTests()
+    {
+        _testDataPath = Path.Combine(GetSolutionRoot(), "DragonFruit.Data.Roslyn.Tests", "_TestData");
+    }
+
     [Fact]
     public async Task TestNonPartialClassDetectionAndFix()
     {
-        const string text = @"
-namespace DragonFruit.Data;
+        var test = new CSharpCodeFixTest<ApiRequestAnalyzer, ApiRequestClassFixProvider, DefaultVerifier>
+        {
+            TestCode = await File.ReadAllTextAsync(Path.Combine(_testDataPath, "DA0001.cs")),
+            FixedCode = await File.ReadAllTextAsync(Path.Combine(_testDataPath, "DA0001.Fix.cs")),
+            ExpectedDiagnostics = { DiagnosticResult.CompilerError(ApiRequestAnalyzer.PartialClassRule.Id).WithSpan(8, 18, 8, 24).WithArguments("DA0001") }
+        };
 
-public class ApiRequest { }
-public class TestRequest : ApiRequest
-{
-    public string RequestPath => ""https://google.com"";
-}
-";
+        await PerformTest(test);
+    }
 
-        const string newText = @"
-namespace DragonFruit.Data;
+    private async Task PerformTest(AnalyzerTest<DefaultVerifier> test)
+    {
+        var content = ("Common.cs", await File.ReadAllTextAsync(Path.Combine(_testDataPath, "Common.cs")));
+        test.TestState.Sources.Add(content);
 
-public class ApiRequest { }
-public partial class TestRequest : ApiRequest
-{
-    public string RequestPath => ""https://google.com"";
-}
-";
+        if (test is CodeFixTest<DefaultVerifier> verifier)
+        {
+            verifier.FixedState.Sources.Add(content);
+        }
 
-        var expectedDiagnostic = Verifier.Diagnostic().WithSpan(5, 14, 5, 25).WithArguments("TestRequest");
-        await Verifier.VerifyCodeFixAsync(text, expectedDiagnostic, newText).ConfigureAwait(false);
+        await test.RunAsync();
+    }
+
+    private string GetSolutionRoot()
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+
+        while (Directory.EnumerateFiles(currentDirectory).All(x => Path.GetFileName(x) != "DragonFruit.Data.sln"))
+        {
+            currentDirectory = Path.Combine(currentDirectory, "..");
+        }
+
+        return Path.GetFullPath(currentDirectory);
     }
 }
