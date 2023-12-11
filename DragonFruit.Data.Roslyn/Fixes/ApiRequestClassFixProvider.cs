@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SyntaxFactory = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using SyntaxKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 
-namespace DragonFruit.Data.Roslyn.Analyzers
+namespace DragonFruit.Data.Roslyn.Fixes
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ApiRequestClassFixProvider)), Shared]
     public class ApiRequestClassFixProvider : CodeFixProvider

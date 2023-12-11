@@ -6,22 +6,22 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace DragonFruit.Data.Roslyn.Analyzers
+namespace DragonFruit.Data.Roslyn
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ApiRequestAnalyzer : DiagnosticAnalyzer
     {
         internal static readonly DiagnosticDescriptor PartialClassRule = new("DA0001", "Partial class expected", "Class '{0}' should be marked as partial", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
-        internal static readonly DiagnosticDescriptor PropertyNoGetterRule = new("DA0002", "Property has no getter", "Property '{0}' has no accessible getter", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
-        internal static readonly DiagnosticDescriptor PropertyNotInApiRequestRule = new("DA0003", "Property not in ApiRequest", "'{0}' is not in an ApiRequest class", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        internal static readonly DiagnosticDescriptor PropertyNoGetterRule = new("DA0002", "Property has no getter", "Property '{0}' has no accessible getter", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        internal static readonly DiagnosticDescriptor PropertyOrMethodNotInApiRequestRule = new("DA0003", "Property or Method not in ApiRequest", "'{0}' is not in an ApiRequest class", "Usage", DiagnosticSeverity.Warning, isEnabledByDefault: true);
         internal static readonly DiagnosticDescriptor PropertyOrMethodInaccessibleRule = new("DA0004", "Property or Method is inaccessible", "'{0}' is inaccessible. Properties should either be public, protected or protected internal.", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
 
         internal static readonly DiagnosticDescriptor MethodReturnsVoidRule = new("DA0005", "Method returns void", "Method '{0}' used to provide request values returns void", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
         internal static readonly DiagnosticDescriptor MethodHasParametersRule = new("DA0006", "Method has parameters", "Method '{0}' used to provide request values takes arguments", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(PartialClassRule,
-            PropertyNoGetterRule, PropertyNotInApiRequestRule, PropertyOrMethodInaccessibleRule,
+            PropertyNoGetterRule, PropertyOrMethodNotInApiRequestRule, PropertyOrMethodInaccessibleRule,
             MethodReturnsVoidRule, MethodHasParametersRule);
 
         public override void Initialize(AnalysisContext context)
@@ -74,7 +74,7 @@ namespace DragonFruit.Data.Roslyn.Analyzers
             // check for attributes (and null check symbol)
             if (!ApiRequestSourceGenerator.DerivesFrom(symbol.ContainingType, context.Compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName)))
             {
-                context.ReportDiagnostic(Diagnostic.Create(PropertyNotInApiRequestRule, methodDeclarationSyntax.Identifier.GetLocation(), methodDeclarationSyntax.Identifier.Text));
+                context.ReportDiagnostic(Diagnostic.Create(PropertyOrMethodNotInApiRequestRule, methodDeclarationSyntax.Identifier.GetLocation(), methodDeclarationSyntax.Identifier.Text));
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace DragonFruit.Data.Roslyn.Analyzers
 
             if (!ApiRequestSourceGenerator.DerivesFrom(symbol.ContainingType, context.Compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName)))
             {
-                context.ReportDiagnostic(Diagnostic.Create(PropertyNotInApiRequestRule, propertyDeclarationSyntax.Identifier.GetLocation(), propertyDeclarationSyntax.Identifier.Text));
+                context.ReportDiagnostic(Diagnostic.Create(PropertyOrMethodNotInApiRequestRule, propertyDeclarationSyntax.Identifier.GetLocation(), propertyDeclarationSyntax.Identifier.Text));
                 return;
             }
 
