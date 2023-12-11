@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <Compile Remove="*.Fix.cs" />
+      <None Include="*.Fix.cs" />
+    </ItemGroup>
+    
+</Project>
