@@ -121,7 +121,7 @@ namespace DragonFruit.Data
         /// </remarks>
         public async Task<T> PerformAsync<T>(ApiRequest request, CancellationToken cancellationToken = default) where T : class
         {
-            using var requestMessage = await BuildRequest(request).ConfigureAwait(false);
+            using var requestMessage = await BuildRequest(request, Serializers.Resolve<T>(DataDirection.In).ContentType).ConfigureAwait(false);
             using var responseMessage = await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
             return await ValidateAndProcess<T>(responseMessage, cancellationToken).ConfigureAwait(false);
@@ -132,7 +132,7 @@ namespace DragonFruit.Data
         /// </summary>
         public async Task<HttpResponseMessage> PerformAsync(ApiRequest request, CancellationToken cancellationToken = default)
         {
-            using var requestMessage = await BuildRequest(request).ConfigureAwait(false);
+            using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
             return await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
 
@@ -140,8 +140,9 @@ namespace DragonFruit.Data
         /// Overridable method used to build a <see cref="HttpRequestMessage"/> from an <see cref="ApiRequest"/>
         /// </summary>
         /// <param name="request">The request to build a <see cref="HttpRequestMessage"/> for</param>
+        /// <param name="expectedContentType">The Content-Type expected to be returned</param>
         /// <returns>The <see cref="HttpRequestMessage"/> to send</returns>
-        protected virtual async ValueTask<HttpRequestMessage> BuildRequest(ApiRequest request)
+        protected virtual async ValueTask<HttpRequestMessage> BuildRequest(ApiRequest request, string expectedContentType)
         {
             if (request is IRequestExecutingCallback callback)
             {
@@ -153,7 +154,12 @@ namespace DragonFruit.Data
                 await asyncCallback.OnRequestExecuting(this);
             }
 
-            return request is IRequestBuilder rb ? rb.BuildRequest(Serializers) : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, this);
+            var requestMessage = request is IRequestBuilder rb
+                ? rb.BuildRequest(Serializers)
+                : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, this);
+
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(expectedContentType));
+            return requestMessage;
         }
 
         private HttpMessageHandler CreateDefaultHandler()
