@@ -1,7 +1,6 @@
 // DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,11 +14,7 @@ namespace DragonFruit.Data.Serializers
     {
         public override string ContentType => "application/json";
 
-        public override Encoding Encoding
-        {
-            get => Encoding.UTF8;
-            set => throw new InvalidOperationException("System.Text.Json Serializer does not support custom encodings");
-        }
+        public override Encoding Encoding => Encoding.UTF8;
 
         /// <summary>
         /// Gets or sets the current <see cref="JsonSerializerOptions"/> used.
@@ -28,7 +23,7 @@ namespace DragonFruit.Data.Serializers
 
         public override HttpContent Serialize<T>(T input)
         {
-            var utf8Bytes = JsonSerializer.SerializeToUtf8Bytes(input, typeof(T));
+            var utf8Bytes = JsonSerializer.SerializeToUtf8Bytes(input, typeof(T), SerializerOptions);
             var httpContent = new ByteArrayContent(utf8Bytes);
 
             httpContent.Headers.ContentType = new MediaTypeHeaderValue(ContentType)
