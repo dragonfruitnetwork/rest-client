@@ -8,7 +8,7 @@ namespace {{ namespace }}
 {
     partial class {{ class_name }} : global::DragonFruit.Data.Requests.IRequestBuilder
     {
-        public global::System.Net.Http.HttpRequestMessage BuildRequest()
+        public global::System.Net.Http.HttpRequestMessage BuildRequest(global::DragonFruit.Data.Serializers.SerializerResolver serializerResolver)
         {
             global::System.UriBuilder uriBuilder = new global::System.UriBuilder(this.RequestPath);
 
@@ -121,7 +121,9 @@ namespace {{ namespace }}
                 {% when 3 -%}
                     request.Content = {{ request_body_symbol.accessor }};
                 
-                {% comment %} 4 - todo Custom Body (Serialized) {% endcomment %}
+                {% comment %} 4 - Custom Body (Serialized) {% endcomment %}
+                {% when 4 -%}
+                    request.Content = serializerResolver.Resolve({{ request_body_symbol.accessor }}.GetType(), global::DragonFruit.Data.Serializers.DataDirection.Out).Serialize({{ request_body_symbol.accessor }});
             {% endcase -%}
 
             {% comment %} Process Headers {% endcomment %}
