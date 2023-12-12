@@ -58,7 +58,7 @@ namespace DragonFruit.Data.Roslyn
             }
 
             // check if class is nested
-            if (classDeclarationNode.Parent is not NamespaceDeclarationSyntax)
+            if (classDeclarationNode.Parent is ClassDeclarationSyntax)
             {
                 context.ReportDiagnostic(Diagnostic.Create(NestedClassNotAllowedRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
             }
