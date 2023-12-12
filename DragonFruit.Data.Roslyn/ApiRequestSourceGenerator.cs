@@ -184,10 +184,11 @@ namespace DragonFruit.Data.Roslyn
                 // locate and add symbol metadata
                 foreach (var candidate in currentSymbol.GetMembers().Where(x => x is IPropertySymbol or IMethodSymbol { Parameters.Length: 0 }))
                 {
-                    var requestAttribute = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(requestParameterAttribute, SymbolEqualityComparer.Default) == true);
+                    var parameterAttribute = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(requestParameterAttribute, SymbolEqualityComparer.Default) == true);
+                    var bodyAttribute = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(requestBodyAttribute, SymbolEqualityComparer.Default) == true);
 
                     // ensure properties overwritten using "new" are not processed twice
-                    if (requestAttribute == null || !consumedProperties.Add(candidate.MetadataName))
+                    if ((parameterAttribute == null && bodyAttribute == null) || !consumedProperties.Add(candidate.MetadataName))
                     {
                         continue;
                     }
@@ -237,13 +238,14 @@ namespace DragonFruit.Data.Roslyn
                     }
 
                     // check if value is decorated with RequestBodyAttribute
-                    if (metadata.BodyProperty != null && candidate.GetAttributes().Any(x => x.AttributeClass?.Equals(requestBodyAttribute, SymbolEqualityComparer.Default) == true))
+                    if (bodyAttribute != null && metadata.BodyProperty == null)
                     {
                         metadata.BodyProperty = new SymbolMetadata(candidate, returnType);
+                        continue;
                     }
 
-                    var parameterType = (ParameterType)requestAttribute.ConstructorArguments[0].Value!;
-                    var parameterName = (string)requestAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
+                    var parameterType = (ParameterType)parameterAttribute.ConstructorArguments[0].Value!;
+                    var parameterName = (string)parameterAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
 
                     SymbolMetadata symbolMetadata;
 
