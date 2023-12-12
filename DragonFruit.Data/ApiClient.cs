@@ -49,38 +49,19 @@ namespace DragonFruit.Data
         public SerializerResolver Serializers { get; }
 
         /// <summary>
-        /// Gets the header container for the underlying <see cref="HttpClient"/>
-        /// </summary>
-        public HttpRequestHeaders Headers => Client.DefaultRequestHeaders;
-
-        /// <summary>
         /// User-Controlled method to create a <see cref="HttpClientHandler"/>
         /// </summary>
         public Func<HttpClientHandler> Handler { get; set; }
 
         /// <summary>
+        /// Gets the header container for the underlying <see cref="HttpClient"/>
+        /// </summary>
+        public HttpRequestHeaders Headers => Client.DefaultRequestHeaders;
+
+        /// <summary>
         /// Gets the <see cref="HttpClient"/> used across all requests.
         /// </summary>
-        private HttpClient Client
-        {
-            get
-            {
-                if (_client != null)
-                {
-                    return _client;
-                }
-
-                _client = new HttpClient(CreateHandler(), true);
-
-#if !NETSTANDARD2_0
-                // on newer platforms, enable HTTP/2 (and HTTP/3)
-                _client.DefaultRequestVersion = HttpVersion.Version11;
-                _client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-#endif
-
-                return _client;
-            }
-        }
+        protected HttpClient Client => _client ??= CreateClient();
 
         /// <summary>
         /// Overridable method used to control creation of a <see cref="HttpMessageHandler"/> used by the internal HTTP client.
@@ -89,29 +70,6 @@ namespace DragonFruit.Data
         /// This is designed to be used by libraries requiring overall control of handlers (i.e. wrap the user-selected handler to provide additional functionality)
         /// </remarks>
         protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? CreateDefaultHandler();
-
-        /// <summary>
-        /// Overridable handler for validating and processing a <see cref="HttpResponseMessage"/>
-        /// </summary>
-        protected virtual async Task<T> ValidateAndProcess<T>(HttpResponseMessage response, CancellationToken cancellationToken) where T : class
-        {
-            response.EnsureSuccessStatusCode();
-
-#if NETSTANDARD2_0
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
-
-            var serializer = Serializers.Resolve<T>(DataDirection.In);
-
-            if (serializer is IAsyncSerializer asyncSerializer)
-            {
-                return await asyncSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
-            }
-
-            return serializer.Deserialize<T>(stream);
-        }
 
         /// <summary>
         /// Performs a request, deserializing the results into the specified type.
@@ -134,6 +92,45 @@ namespace DragonFruit.Data
         {
             using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
             return await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Overridable method used to control creation of a <see cref="HttpClient"/> used by the internal HTTP client.
+        /// </summary>
+        protected virtual HttpClient CreateClient()
+        {
+            var client = new HttpClient(CreateHandler(), true);
+
+#if !NETSTANDARD2_0
+            // on newer platforms, enable HTTP/2 (and HTTP/3)
+            client.DefaultRequestVersion = HttpVersion.Version11;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+#endif
+
+            return client;
+        }
+
+        /// <summary>
+        /// Overridable handler for validating and processing a <see cref="HttpResponseMessage"/>
+        /// </summary>
+        protected virtual async Task<T> ValidateAndProcess<T>(HttpResponseMessage response, CancellationToken cancellationToken) where T : class
+        {
+            response.EnsureSuccessStatusCode();
+
+#if NETSTANDARD2_0
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+
+            var serializer = Serializers.Resolve<T>(DataDirection.In);
+
+            if (serializer is IAsyncSerializer asyncSerializer)
+            {
+                return await asyncSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
+            }
+
+            return serializer.Deserialize<T>(stream);
         }
 
         /// <summary>
