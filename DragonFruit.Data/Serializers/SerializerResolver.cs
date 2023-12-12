@@ -17,7 +17,7 @@ namespace DragonFruit.Data.Serializers
         /// <summary>
         /// Initialises a new instance of <see cref="SerializerResolver"/>, providing a default <see cref="ApiSerializer"/>
         /// </summary>
-        internal SerializerResolver(ApiSerializer @default)
+        public SerializerResolver(ApiSerializer @default)
         {
             Default = @default;
         }
