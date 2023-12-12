@@ -2,6 +2,8 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Buffers;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -64,14 +66,6 @@ namespace DragonFruit.Data
         protected HttpClient Client => _client ??= CreateClient();
 
         /// <summary>
-        /// Overridable method used to control creation of a <see cref="HttpMessageHandler"/> used by the internal HTTP client.
-        /// </summary>
-        /// <remarks>
-        /// This is designed to be used by libraries requiring overall control of handlers (i.e. wrap the user-selected handler to provide additional functionality)
-        /// </remarks>
-        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? CreateDefaultHandler();
-
-        /// <summary>
         /// Performs a request, deserializing the results into the specified type.
         /// </summary>
         /// <remarks>
@@ -93,6 +87,158 @@ namespace DragonFruit.Data
             using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
             return await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Performs a request, writing the response to the specified <see cref="Stream"/>
+        /// </summary>
+        /// <remarks>
+        /// This method does *not* seek or modify the position of the stream, nor will it dispose of the <see cref="destination"/> stream.
+        /// </remarks>
+        /// <param name="request">The <see cref="ApiRequest"/> to make</param>
+        /// <param name="destination">A <see cref="Stream"/> to write to.</param>
+        /// <param name="progress">(Optional) progress callback</param>
+        /// <param name="truncate">(Optional) whether to truncate the destination stream, if content is written. Defaults to true</param>
+        /// <param name="safe">(Optional) whether to copy to a temporary buffer before writing to destination. When enabled provides greater redundancy from network failure. Defaults to false</param>
+        /// <param name="cancellationToken">(Optional) cancellation request</param>
+        public async Task<HttpStatusCode> PerformDownload(ApiRequest request, Stream destination, IProgress<(long, long?)> progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
+        {
+            using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
+            return await PerformDownload(requestMessage, destination, progress, truncate, safe, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Performs a request, writing the response to the specified <see cref="Stream"/>
+        /// </summary>
+        /// <remarks>
+        /// This method does *not* seek or modify the position of the stream, nor will it dispose of the <see cref="destination"/> stream.
+        /// </remarks>
+        /// <param name="request">The <see cref="HttpRequestMessage"/> to make</param>
+        /// <param name="destination">A <see cref="Stream"/> to write to.</param>
+        /// <param name="progress">(Optional) progress callback</param>
+        /// <param name="truncate">(Optional) whether to truncate the destination stream, if content is written. Defaults to true</param>
+        /// <param name="safe">(Optional) whether to copy to a temporary buffer before writing to destination. When enabled provides greater redundancy from network failure. Defaults to false</param>
+        /// <param name="cancellationToken">(Optional) cancellation request</param>
+        public async Task<HttpStatusCode> PerformDownload(HttpRequestMessage request, Stream destination, IProgress<(long, long?)> progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
+        {
+            using var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+
+            if (responseMessage.StatusCode != HttpStatusCode.OK)
+            {
+                return responseMessage.StatusCode;
+            }
+
+            if (!destination.CanWrite)
+            {
+                throw new ArgumentException("Destination Stream must be writable.", nameof(destination));
+            }
+
+            if (!destination.CanSeek && truncate)
+            {
+                throw new ArgumentException("Destination Stream must be seekable to use truncate.", nameof(destination));
+            }
+
+            var buffer = ArrayPool<byte>.Shared.Rent(4096);
+            var totalLength = responseMessage.Content.Headers.ContentLength;
+            var destinationStream = safe switch
+            {
+                // when less than 80kb is copied, use a memory stream
+                true when totalLength < 80000 => new MemoryStream(),
+
+                // file stream for unknown or large files
+                true => new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose),
+
+                // write directly when not using safe mode
+                _ => destination
+            };
+
+            try
+            {
+                int read;
+
+                var loopCount = 0;
+                var totalRead = 0L;
+
+                // 0.5% of the total length or 250kb progress increments
+                // get the number of read/write cycles to do before reporting progress
+                var copies = (int)Math.Ceiling((totalLength / 200 ?? 2.5e+5) / buffer.Length);
+
+                void UpdateProgress()
+                {
+                    totalRead += read;
+
+                    if (++loopCount % copies != 0)
+                    {
+                        return;
+                    }
+
+                    progress?.Report((totalRead, totalLength));
+                    loopCount = 0;
+                }
+
+#if NETSTANDARD2_0
+                using var stream = await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    await destinationStream.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+                    UpdateProgress();
+                }
+#else
+                using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                var memory = buffer.AsMemory();
+
+                while ((read = await stream.ReadAsync(memory, cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    await destinationStream.WriteAsync(memory[..read], cancellationToken).ConfigureAwait(false);
+                    UpdateProgress();
+                }
+#endif
+
+                // flush stream contents before truncating or copying
+                await destinationStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+                if (safe)
+                {
+                    // safe mode: copy temp file contents to destination
+                    destinationStream.Seek(0, SeekOrigin.Begin);
+
+#if NETSTANDARD2_0
+                    await destinationStream.CopyToAsync(destination).ConfigureAwait(false);
+#else
+                    await destinationStream.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+#endif
+                }
+
+                // perform final truncate (if needed)
+                if (truncate && destination.Length > destination.Position)
+                {
+                    destination.SetLength(destination.Position);
+                }
+
+                return HttpStatusCode.OK;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+
+                if (safe)
+                {
+#if NETSTANDARD2_0
+                    destinationStream.Dispose();
+#else
+                    await destinationStream.DisposeAsync().ConfigureAwait(false);
+#endif
+                }
+            }
+        }
+
+        /// <summary>
+        /// Overridable method used to control creation of a <see cref="HttpMessageHandler"/> used by the internal HTTP client.
+        /// </summary>
+        /// <remarks>
+        /// This is designed to be used by libraries requiring overall control of handlers (i.e. wrap the user-selected handler to provide additional functionality)
+        /// </remarks>
+        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? CreateDefaultHandler();
 
         /// <summary>
         /// Overridable method used to control creation of a <see cref="HttpClient"/> used by the internal HTTP client.
