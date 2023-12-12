@@ -12,7 +12,7 @@ namespace DragonFruit.Data.Roslyn
     public class ApiRequestAnalyzer : DiagnosticAnalyzer
     {
         public static readonly DiagnosticDescriptor PartialClassRule = new("DA0001", "Partial class expected", "Class '{0}' should be marked as partial", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
-        public static readonly DiagnosticDescriptor NestedClassRule = new("DA0002", "Nested class not allowed", "Class '{0}' should not be nested", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        public static readonly DiagnosticDescriptor NestedClassNotAllowedRule = new("DA0002", "Nested class not allowed", "Class '{0}' should not be nested", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
         public static readonly DiagnosticDescriptor PropertyNoGetterRule = new("DA0003", "Property has no getter", "Property '{0}' has no accessible getter", "Design", DiagnosticSeverity.Warning, isEnabledByDefault: true);
         public static readonly DiagnosticDescriptor PropertyOrMethodNotInApiRequestRule = new("DA0004", "Property or Method not in ApiRequest", "'{0}' is not in an ApiRequest class", "Usage", DiagnosticSeverity.Warning, isEnabledByDefault: true);
@@ -21,7 +21,7 @@ namespace DragonFruit.Data.Roslyn
         public static readonly DiagnosticDescriptor MethodReturnsVoidRule = new("DA0006", "Method returns void", "Method '{0}' used to provide request values returns void", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
         public static readonly DiagnosticDescriptor MethodHasParametersRule = new("DA0007", "Method has parameters", "Method '{0}' used to provide request values takes arguments", "Design", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(PartialClassRule,
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(PartialClassRule, NestedClassNotAllowedRule,
             PropertyNoGetterRule, PropertyOrMethodNotInApiRequestRule, PropertyOrMethodInaccessibleRule,
             MethodReturnsVoidRule, MethodHasParametersRule);
 
@@ -60,7 +60,7 @@ namespace DragonFruit.Data.Roslyn
             // check if class is nested
             if (classDeclarationNode.Parent is not NamespaceDeclarationSyntax)
             {
-                context.ReportDiagnostic(Diagnostic.Create(NestedClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
+                context.ReportDiagnostic(Diagnostic.Create(NestedClassNotAllowedRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
             }
         }
 
