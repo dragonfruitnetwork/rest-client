@@ -66,7 +66,7 @@ namespace DragonFruit.Data
         protected HttpClient Client => _client ??= CreateClient();
 
         /// <summary>
-        /// Performs a request, deserializing the results into the specified type.
+        /// Builds and performs an <see cref="ApiRequest"/>, deserializing the results into the specified type.
         /// </summary>
         /// <remarks>
         /// If source generation is enabled, the source generated method will be used to build the request, otherwise a legacy reflection handler will build the request.
@@ -74,8 +74,15 @@ namespace DragonFruit.Data
         public async Task<T> PerformAsync<T>(ApiRequest request, CancellationToken cancellationToken = default) where T : class
         {
             using var requestMessage = await BuildRequest(request, Serializers.Resolve<T>(DataDirection.In).ContentType).ConfigureAwait(false);
-            using var responseMessage = await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            return await PerformAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
+        }
 
+        /// <summary>
+        /// Performs a prebuilt <see cref="HttpRequestMessage"/>, deserializing the results into the specified type.
+        /// </summary>
+        public async Task<T> PerformAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default) where T : class
+        {
+            using var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             return await ValidateAndProcess<T>(responseMessage, cancellationToken).ConfigureAwait(false);
         }
 
