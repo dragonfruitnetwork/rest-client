@@ -6,25 +6,26 @@ using System.Threading.Tasks;
 using Scriban;
 using Xunit;
 
-namespace DragonFruit.Data.Roslyn.Tests;
-
-public class ApiRequestTemplateTests
+namespace DragonFruit.Data.Roslyn.Tests
 {
-    [Fact]
-    public async Task TestTemplateParse()
+    public class ApiRequestTemplateTests
     {
-        var assembly = typeof(ApiRequestSourceGenerator).Assembly;
-        using var template = assembly.GetManifestResourceStream(ApiRequestSourceGenerator.TemplateName);
+        [Fact]
+        public async Task TestTemplateParse()
+        {
+            var assembly = typeof(ApiRequestSourceGenerator).Assembly;
+            using var template = assembly.GetManifestResourceStream(ApiRequestSourceGenerator.TemplateName);
 
-        Assert.NotNull(template);
+            Assert.NotNull(template);
 
-        using var templateReader = new StreamReader(template);
-        var templateText = await templateReader.ReadToEndAsync();
+            using var templateReader = new StreamReader(template);
+            var templateText = await templateReader.ReadToEndAsync();
 
-        Assert.True(templateText.Length > 0);
+            Assert.True(templateText.Length > 0);
 
-        var templateAst = Template.ParseLiquid(templateText);
+            var templateAst = Template.ParseLiquid(templateText);
 
-        Assert.False(templateAst.HasErrors);
+            Assert.False(templateAst.HasErrors);
+        }
     }
 }

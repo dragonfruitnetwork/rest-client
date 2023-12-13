@@ -5,7 +5,7 @@ namespace DragonFruit.Data.Roslyn.Tests.TestData
     /// <summary>
     /// Parameters not in an ApiRequest (DA0004)
     /// </summary>
-    public class DA0004
+    public partial class DA0004
     {
         [RequestParameter]
         public string NotAParam { get; set; }

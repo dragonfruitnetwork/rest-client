@@ -51,16 +51,17 @@ namespace DragonFruit.Data.Roslyn
                 return;
             }
 
-            // check if class has partial keyword
-            if (!classDeclarationNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(PartialClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
-            }
-
             // check if class is nested
             if (classDeclarationNode.Parent is ClassDeclarationSyntax)
             {
                 context.ReportDiagnostic(Diagnostic.Create(NestedClassNotAllowedRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
+                return;
+            }
+
+            // check if class has partial keyword
+            if (!classDeclarationNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(PartialClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
             }
         }
 
