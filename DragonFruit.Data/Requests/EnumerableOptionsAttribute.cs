@@ -13,6 +13,13 @@ namespace DragonFruit.Data.Requests
             Options = options;
         }
 
-        public EnumerableOption Options { get; set; }
+        public EnumerableOptionsAttribute(EnumerableOption options, string separator)
+            : this(options)
+        {
+            Separator = separator;
+        }
+
+        public EnumerableOption Options { get; }
+        public string Separator { get; }
     }
 }
