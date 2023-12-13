@@ -24,7 +24,7 @@ namespace {{ namespace }}
                             {% when 2 -%}
                                 global::DragonFruit.Data.Converters.EnumConverter.WriteEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enum_option }}, "{{ query.parameter_name }}");
                             {% when 3 -%}
-                                global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePair(queryBuilder, {{ query.accessor }});
+                                global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePairs(queryBuilder, {{ query.accessor }});
                             {% else -%}
                                 queryBuilder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
                         {% endcase -%}
@@ -108,7 +108,7 @@ namespace {{ namespace }}
                                 {% when 2 -%}
                                     global::DragonFruit.Data.Converters.EnumConverter.WriteEnum(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ uriparam.enum_option }}, "{{ uriparam.parameter_name }}");
                                 {% when 3 -%}
-                                    global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePair(formBuilder, {{ uriparam.accessor }});
+                                    global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePairs(formBuilder, {{ uriparam.accessor }});
                                 {% else -%}
                                     formBuilder.AppendFormat("{0}={1}&", "{{ uriparam.parameter_name }}", global::System.Uri.EscapeDataString({{ uriparam.accessor }}.ToString()));
                             {% endcase -%}
