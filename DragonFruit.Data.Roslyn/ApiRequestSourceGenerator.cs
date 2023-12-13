@@ -162,10 +162,14 @@ namespace DragonFruit.Data.Roslyn
             var requestBodyAttribute = compilation.GetTypeByMetadataName(typeof(RequestBodyAttribute).FullName);
             var formBodyTypeAttribute = compilation.GetTypeByMetadataName(typeof(FormBodyTypeAttribute).FullName);
 
-            var keyValueEnumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable<KeyValuePair<string, string>>).FullName);
             var enumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable).FullName);
             var apiRequestBaseType = compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
             var streamTypeSymbol = compilation.GetTypeByMetadataName(typeof(Stream).FullName);
+
+            // create IEnumerable<KeyValuePair<string, string>> impl
+            var stringTypeSymbol = compilation.GetSpecialType(SpecialType.System_String);
+            var constructedKeyValuePairTypeSymbol = compilation.GetTypeByMetadataName(typeof(KeyValuePair<,>).FullName).Construct(stringTypeSymbol, stringTypeSymbol);
+            var keyValuePairEnumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable<>).FullName)!.Construct(constructedKeyValuePairTypeSymbol);
 
             // track properties already visited
             var depth = 0;
@@ -245,20 +249,20 @@ namespace DragonFruit.Data.Roslyn
                         continue;
                     }
 
+                    SymbolMetadata symbolMetadata;
+
                     var parameterType = (ParameterType)parameterAttribute.ConstructorArguments[0].Value!;
                     var parameterName = (string)parameterAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
 
-                    SymbolMetadata symbolMetadata;
+                    var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
 
                     // handle IEnumerable<KeyValuePair<string, string>>
-                    if (returnType.FindImplementationForInterfaceMember(keyValueEnumerableTypeSymbol) != null)
+                    if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default)))
                     {
-                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName)
-                        {
-                        };
+                        symbolMetadata = new KeyValuePairSymbolMetadata(candidate, returnType, parameterName);
                     }
-                    // handle IEnumerable/T[]
-                    else if (SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.FindImplementationForInterfaceMember(enumerableTypeSymbol) != null)
+                    // handle IEnumerable, Array[], etc.
+                    else if (isEnumerable)
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
                         var enumerableType = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated;
