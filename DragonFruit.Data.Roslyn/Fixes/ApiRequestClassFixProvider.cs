@@ -31,7 +31,11 @@ namespace DragonFruit.Data.Roslyn.Fixes
                 return;
             }
 
-            context.RegisterCodeFix(CodeAction.Create(title: "Make class partial", createChangedSolution: c => MakeClassPartial(context.Document, declaration, c)), diagnostic);
+            var fix = CodeAction.Create(title: "Make class partial",
+                equivalenceKey: "addPartialModifier",
+                createChangedSolution: c => MakeClassPartial(context.Document, declaration, c));
+
+            context.RegisterCodeFix(fix, diagnostic);
         }
 
         private async Task<Solution> MakeClassPartial(Document document, MemberDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
