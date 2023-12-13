@@ -6,44 +6,45 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace DragonFruit.Data.Roslyn;
-
-public static class ExternalDependencyLoader
+namespace DragonFruit.Data.Roslyn
 {
-    private static bool _loaded;
-
-    public static void RegisterDependencyLoader()
+    public static class ExternalDependencyLoader
     {
-        if (_loaded)
+        private static bool _loaded;
+
+        public static void RegisterDependencyLoader()
         {
-            return;
+            if (_loaded)
+            {
+                return;
+            }
+
+            _loaded = true;
+            AppDomain.CurrentDomain.AssemblyResolve += HandleAssemblyResolve;
         }
 
-        _loaded = true;
-        AppDomain.CurrentDomain.AssemblyResolve += HandleAssemblyResolve;
-    }
-
-    // derived from https://stackoverflow.com/a/67074009
-    private static Assembly HandleAssemblyResolve(object _, ResolveEventArgs args)
-    {
-        var name = new AssemblyName(args.Name);
-        var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == name.FullName);
-
-        if (loadedAssembly != null)
+        // derived from https://stackoverflow.com/a/67074009
+        private static Assembly HandleAssemblyResolve(object _, ResolveEventArgs args)
         {
-            return loadedAssembly;
+            var name = new AssemblyName(args.Name);
+            var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == name.FullName);
+
+            if (loadedAssembly != null)
+            {
+                return loadedAssembly;
+            }
+
+            using var resourceStream = typeof(ExternalDependencyLoader).Assembly.GetManifestResourceStream($"{typeof(ExternalDependencyLoader).Namespace}.{name.Name}.dll");
+
+            if (resourceStream == null)
+            {
+                return null;
+            }
+
+            using var memoryStream = new MemoryStream();
+            resourceStream.CopyTo(memoryStream);
+
+            return Assembly.Load(memoryStream.ToArray());
         }
-
-        using var resourceStream = typeof(ExternalDependencyLoader).Assembly.GetManifestResourceStream($"{typeof(ExternalDependencyLoader).Namespace}.{name.Name}.dll");
-
-        if (resourceStream == null)
-        {
-            return null;
-        }
-
-        using var memoryStream = new MemoryStream();
-        resourceStream.CopyTo(memoryStream);
-
-        return Assembly.Load(memoryStream.ToArray());
     }
 }
