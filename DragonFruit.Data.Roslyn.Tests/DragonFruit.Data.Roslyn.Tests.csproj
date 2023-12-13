@@ -18,16 +18,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="_TestData\**"/>
         <None Remove="_TestData\**" />
+        <Compile Remove="_TestData\**"/>
+        <EmbeddedResource Remove="_TestData\**" />
     </ItemGroup>
     
     <ItemGroup>
         <ProjectReference Include="..\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.csproj" OutputItemType="Analyzer"/>
-    </ItemGroup>
-    
-    <ItemGroup>
-      <EmbeddedResource Remove="_TestData\**" />
     </ItemGroup>
 
 </Project>
