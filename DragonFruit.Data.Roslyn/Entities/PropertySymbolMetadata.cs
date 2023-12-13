@@ -8,7 +8,7 @@ namespace DragonFruit.Data.Roslyn.Entities
 {
     internal class PropertySymbolMetadata : SymbolMetadata
     {
-        public virtual int Type => (int)RequestSymbolType.Standard;
+        public virtual RequestSymbolType Type => RequestSymbolType.Standard;
 
         public PropertySymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName)
             : base(symbol, returnType)

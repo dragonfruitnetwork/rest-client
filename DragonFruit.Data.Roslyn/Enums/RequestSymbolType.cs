@@ -8,5 +8,6 @@ namespace DragonFruit.Data.Roslyn.Enums
         Standard = 0,
         Enumerable = 1,
         Enum = 2,
+        KeyValuePair = 3,
     }
 }

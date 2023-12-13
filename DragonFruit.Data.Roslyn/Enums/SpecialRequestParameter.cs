@@ -5,7 +5,7 @@ namespace DragonFruit.Data.Roslyn.Enums
 {
     public enum SpecialRequestParameter
     {
-        ByteArray = 0,
-        Stream = 1
+        Stream = 0,
+        ByteArray = 1
     }
 }

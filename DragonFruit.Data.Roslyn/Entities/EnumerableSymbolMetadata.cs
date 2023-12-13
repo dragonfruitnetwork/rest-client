@@ -8,7 +8,7 @@ namespace DragonFruit.Data.Roslyn.Entities
 {
     internal class EnumerableSymbolMetadata : PropertySymbolMetadata
     {
-        public override int Type => (int)RequestSymbolType.Enumerable;
+        public override RequestSymbolType Type => RequestSymbolType.Enumerable;
 
         public EnumerableSymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName)
             : base(symbol, returnType, parameterName)
