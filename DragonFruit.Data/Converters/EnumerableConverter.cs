@@ -6,8 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DragonFruit.Data.Requests;
 
-namespace DragonFruit.Data.Requests
+namespace DragonFruit.Data.Converters
 {
     public static class EnumerableConverter
     {

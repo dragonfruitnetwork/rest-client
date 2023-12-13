@@ -4,12 +4,13 @@
 using System;
 using System.Globalization;
 using System.Text;
+using DragonFruit.Data.Requests;
 
-namespace DragonFruit.Data.Requests
+namespace DragonFruit.Data.Converters
 {
     public static class EnumConverter
     {
-        public static void AppendEnum<T>(StringBuilder destination, T value, EnumOption mode, string propertyName) where T : Enum
+        public static void WriteEnum<T>(StringBuilder destination, T value, EnumOption mode, string propertyName) where T : Enum
         {
             destination.AppendFormat("{0}={1}&", propertyName, GetEnumValue(value, mode));
         }
