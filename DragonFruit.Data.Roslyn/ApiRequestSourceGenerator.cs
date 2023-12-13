@@ -101,7 +101,7 @@ namespace DragonFruit.Data.Roslyn
                     Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
 
                     RequestBodyType = requestBodyType,
-                    RequestBodySymbol = metadata.BodyProperty,
+                    RequestBodySymbol = metadata.Properties[ParameterType.Form].Any() ? null : metadata.BodyProperty, // prefer using forms over body - this to match reflection-based behaviour
 
                     QueryParameters = metadata.Properties[ParameterType.Query],
                     HeaderParameters = metadata.Properties[ParameterType.Header],
@@ -168,7 +168,7 @@ namespace DragonFruit.Data.Roslyn
 
             // create IEnumerable<KeyValuePair<string, string>> impl
             var stringTypeSymbol = compilation.GetSpecialType(SpecialType.System_String);
-            var constructedKeyValuePairTypeSymbol = compilation.GetTypeByMetadataName(typeof(KeyValuePair<,>).FullName).Construct(stringTypeSymbol, stringTypeSymbol);
+            var constructedKeyValuePairTypeSymbol = compilation.GetTypeByMetadataName(typeof(KeyValuePair<,>).FullName)!.Construct(stringTypeSymbol, stringTypeSymbol);
             var keyValuePairEnumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable<>).FullName)!.Construct(constructedKeyValuePairTypeSymbol);
 
             // track properties already visited
