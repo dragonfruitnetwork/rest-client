@@ -2,7 +2,6 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System.Net.Http;
-using System.Threading.Tasks;
 using DragonFruit.Data.Requests;
 
 namespace DragonFruit.Data
@@ -22,11 +21,5 @@ namespace DragonFruit.Data
         /// The <see cref="HttpMethod"/> to use when making the request
         /// </summary>
         public virtual HttpMethod RequestMethod => HttpMethod.Get;
-
-        /// <summary>
-        /// Overridable method to be called when the request is about to be built.
-        /// This can be used to inject headers with data managed by the client, etc.
-        /// </summary>
-        protected virtual ValueTask RequestCreatingCallback() => default;
     }
 }
