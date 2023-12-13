@@ -162,6 +162,7 @@ namespace DragonFruit.Data.Roslyn
             var requestBodyAttribute = compilation.GetTypeByMetadataName(typeof(RequestBodyAttribute).FullName);
             var formBodyTypeAttribute = compilation.GetTypeByMetadataName(typeof(FormBodyTypeAttribute).FullName);
 
+            var keyValueEnumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable<KeyValuePair<string, string>>).FullName);
             var enumerableTypeSymbol = compilation.GetTypeByMetadataName(typeof(IEnumerable).FullName);
             var apiRequestBaseType = compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName);
             var streamTypeSymbol = compilation.GetTypeByMetadataName(typeof(Stream).FullName);
@@ -249,18 +250,14 @@ namespace DragonFruit.Data.Roslyn
 
                     SymbolMetadata symbolMetadata;
 
-                    // handle enums
-                    if (returnType.TypeKind == TypeKind.Enum)
+                    // handle IEnumerable<KeyValuePair<string, string>>
+                    if (returnType.FindImplementationForInterfaceMember(keyValueEnumerableTypeSymbol) != null)
                     {
-                        var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
-                        var enumType = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None;
-
-                        symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName)
                         {
-                            EnumOption = enumType.ToString()
                         };
                     }
-                    // handle arrays/IEnumerable
+                    // handle IEnumerable/T[]
                     else if (SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.FindImplementationForInterfaceMember(enumerableTypeSymbol) != null)
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
@@ -270,6 +267,17 @@ namespace DragonFruit.Data.Roslyn
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
                             EnumerableOption = enumerableType.ToString()
+                        };
+                    }
+                    // handle enums
+                    else if (returnType.TypeKind == TypeKind.Enum)
+                    {
+                        var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
+                        var enumType = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None;
+
+                        symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
+                        {
+                            EnumOption = enumType.ToString()
                         };
                     }
                     else

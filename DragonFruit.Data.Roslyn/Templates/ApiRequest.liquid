@@ -20,9 +20,11 @@ namespace {{ namespace }}
                     {% capture query_append -%}
                         {% case query.type -%}
                             {% when 1 -%}
-                                global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.enumerable_option }}, "{{ query.parameter_name }}", "{{ query.separator }}");
+                                global::DragonFruit.Data.Converters.EnumerableConverter.WriteEnumerable(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ query.enumerable_option }}, "{{ query.parameter_name }}", "{{ query.separator }}");
                             {% when 2 -%}
-                                global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enum_option }}, "{{ query.parameter_name }}");
+                                global::DragonFruit.Data.Converters.EnumConverter.WriteEnum(queryBuilder, {{ query.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ query.enum_option }}, "{{ query.parameter_name }}");
+                            {% when 3 -%}
+                                global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePair(queryBuilder, {{ query.accessor }});
                             {% else -%}
                                 queryBuilder.AppendFormat("{0}={1}&", "{{ query.parameter_name }}", global::System.Uri.EscapeDataString({{ query.accessor }}.ToString()));
                         {% endcase -%}
@@ -56,20 +58,25 @@ namespace {{ namespace }}
                         {% capture multipart_append -%}
                             {% case multipart.type -%}
                                 {% when 1 -%}
-                                    foreach (var kvp in global::DragonFruit.Data.Requests.EnumerableConverter.GetPairs({{ multipart.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ multipart.enumerable_option }}))
+                                    foreach (var kvp in global::DragonFruit.Data.Converters.EnumerableConverter.GetPairs({{ multipart.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ multipart.enumerable_option }}))
                                     {
                                         content.Add(new global::System.Net.Http.StringContent(kvp.Value), "{{ multipart.parameter_name }}");
                                     }
                                 {% when 2 -%}
-                                    content.Add(new global::System.Net.Http.StringContent(global::DragonFruit.Data.Requests.EnumConverter.GetString({{ multipart.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ multipart.enum_option }})), "{{ multipart.parameter_name }}");
+                                    content.Add(new global::System.Net.Http.StringContent(global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({{ multipart.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ multipart.enum_option }})), "{{ multipart.parameter_name }}");
+                                {% when 3 %}
+                                    foreach (var kvp in (global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, string>>){{ multipart.accessor }})
+                                    {
+                                        content.Add(new global::System.Net.Http.StringContent(kvp.Value), kvp.Key);
+                                    }
                                 {% else -%}
                                     {% case multipart.special_request_parameter -%}
-                                        {% comment %} 0 - ByteArray {% endcomment %}
+                                        {% comment %} 0 - Stream {% endcomment %}
                                         {% when 0 -%}
-                                            content.Add(new global::System.Net.Http.ByteArrayContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
-                                        {% comment %} 1 - Stream {% endcomment %}
-                                        {% when 1 -%}
                                             content.Add(new global::System.Net.Http.StreamContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
+                                        {% comment %} 1 - ByteArray {% endcomment %}
+                                        {% when 1 -%}
+                                            content.Add(new global::System.Net.Http.ByteArrayContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
                                         {% comment %} Handle other types using ToString {% endcomment %}
                                         {% else -%}
                                             content.Add(new global::System.Net.Http.StringContent({{ multipart.accessor }}.ToString()), "{{ multipart.parameter_name }}");
@@ -97,9 +104,11 @@ namespace {{ namespace }}
                         {% capture uriparam_append -%}
                             {% case uriparam.type -%}
                                 {% when 1 -%}
-                                    global::DragonFruit.Data.Requests.EnumerableConverter.AppendEnumerable(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ uriparam.enumerable_option }}, "{{ uriparam.parameter_name }}", "{{ uriparam.separator }}");
+                                    global::DragonFruit.Data.Converters.EnumerableConverter.AppendEnumerable(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ uriparam.enumerable_option }}, "{{ uriparam.parameter_name }}", "{{ uriparam.separator }}");
                                 {% when 2 -%}
-                                    global::DragonFruit.Data.Requests.EnumConverter.AppendEnum(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ uriparam.enum_option }}, "{{ uriparam.parameter_name }}");
+                                    global::DragonFruit.Data.Converters.EnumConverter.WriteEnum(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ uriparam.enum_option }}, "{{ uriparam.parameter_name }}");
+                                {% when 3 -%}
+                                    global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePair(formBuilder, {{ uriparam.accessor }});
                                 {% else -%}
                                     formBuilder.AppendFormat("{0}={1}&", "{{ uriparam.parameter_name }}", global::System.Uri.EscapeDataString({{ uriparam.accessor }}.ToString()));
                             {% endcase -%}
@@ -120,7 +129,7 @@ namespace {{ namespace }}
                 {% comment %} 3 - Custom Body (HttpContent) {% endcomment %}
                 {% when 3 -%}
                     request.Content = {{ request_body_symbol.accessor }};
-                
+
                 {% comment %} 4 - Custom Body (Serialized) {% endcomment %}
                 {% when 4 -%}
                     request.Content = serializerResolver.Resolve({{ request_body_symbol.accessor }}.GetType(), global::DragonFruit.Data.Serializers.DataDirection.Out).Serialize({{ request_body_symbol.accessor }});
@@ -131,12 +140,17 @@ namespace {{ namespace }}
                 {% capture header_append -%}
                     {% case header.type -%}
                         {% when 1 -%}
-                            foreach (var kvp in global::DragonFruit.Data.Requests.EnumerableConverter.GetPairs({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ header.enumumerable_option }}))
+                            foreach (var kvp in global::DragonFruit.Data.Converters.EnumerableConverter.GetPairs({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ header.enumumerable_option }}))
                             {
                                 request.Headers.Add(kvp.Key, kvp.Value);
                             }
                         {% when 2 -%}
-                            request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Requests.EnumConverter.GetString({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
+                            request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Converters.EnumConverter.GetString({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
+                        {% when 3 -%}
+                            foreach (var kvp in (global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, string>>){{ header.accessor }})
+                            {
+                                request.Headers.Add(kvp.Key, kvp.Value);
+                            }
                         {% else -%}
                             request.Headers.Add("{{ header.parameter_name }}", {{ header.accessor }}.ToString());
                     {% endcase -%}
