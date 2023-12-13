@@ -45,6 +45,12 @@ namespace DragonFruit.Data.Converters
 
             var requestMessage = new HttpRequestMessage(request.RequestMethod, requestUri.Uri);
 
+            // add headers
+            foreach (var headerParameter in requestParams[ParameterType.Header])
+            {
+                WriteHeaderProperty(requestMessage.Headers, headerParameter.PropertyName, headerParameter.Accessor);
+            }
+
             // check if there are any form params, if not, then check for a body property
             if (!requestParams[ParameterType.Form].Any())
             {
@@ -103,12 +109,6 @@ namespace DragonFruit.Data.Converters
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
-
-            // add headers
-            foreach (var headerParameter in requestParams[ParameterType.Header])
-            {
-                WriteHeaderProperty(requestMessage.Headers, headerParameter.PropertyName, headerParameter.Accessor);
             }
 
             return requestMessage;
@@ -241,12 +241,11 @@ namespace DragonFruit.Data.Converters
 
         private static (ParameterType PropertyType, string PropertyName, PropertyInfo Accessor)? GetPropertyInfo(PropertyInfo property)
         {
-            var name = property.Name;
             var attribute = property.GetCustomAttribute<RequestParameterAttribute>();
 
             if (attribute != null)
             {
-                return (attribute.ParameterType, attribute.Name ?? name, property);
+                return (attribute.ParameterType, attribute.Name ?? property.Name, property);
             }
 
             return null;
