@@ -12,6 +12,9 @@ namespace DragonFruit.Data.Converters
 {
     public static class EnumerableConverter
     {
+        private const EnumerableOption DefaultOption = EnumerableOption.Concatenated;
+        private const string DefaultSeparator = ",";
+
         /// <summary>
         /// Writes the provided <see cref="IEnumerable"/> to the <see cref="StringBuilder"/> using the specified <see cref="EnumerableOption"/>
         /// </summary>
@@ -20,9 +23,9 @@ namespace DragonFruit.Data.Converters
         /// <param name="mode">The <see cref="EnumerableOption"/> to use. If none provided, defaults to <see cref="EnumerableOption.Concatenated"/></param>
         /// <param name="propertyName">The name of the property to use when writing values to <see cref="destination"/></param>
         /// <param name="separator">The separator to use, if required.</param>
-        public static void WriteEnumerable(StringBuilder destination, IEnumerable source, EnumerableOption mode, string propertyName, string separator)
+        public static void WriteEnumerable(StringBuilder destination, IEnumerable source, EnumerableOption? mode, string propertyName, string separator)
         {
-            switch (mode)
+            switch (mode ?? DefaultOption)
             {
                 case EnumerableOption.Recursive:
                 {
@@ -58,7 +61,7 @@ namespace DragonFruit.Data.Converters
 
                 default:
                 {
-                    destination.AppendFormat("{0}={1}&", propertyName, string.Join(separator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
+                    destination.AppendFormat("{0}={1}&", propertyName, string.Join(separator ?? DefaultSeparator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
                     break;
                 }
             }
@@ -71,9 +74,9 @@ namespace DragonFruit.Data.Converters
         /// <param name="mode">The <see cref="EnumerableOption"/> to use</param>
         /// <param name="propertyName">The name of the property to use</param>
         /// <param name="separator">The separator to use, if <see cref="mode"/> is set to Concatenated</param>
-        public static IEnumerable<KeyValuePair<string, string>> GetPairs(IEnumerable source, EnumerableOption mode, string propertyName, string separator)
+        public static IEnumerable<KeyValuePair<string, string>> GetPairs(IEnumerable source, EnumerableOption? mode, string propertyName, string separator)
         {
-            switch (mode)
+            switch (mode ?? DefaultOption)
             {
                 case EnumerableOption.Recursive:
                 {
@@ -109,7 +112,7 @@ namespace DragonFruit.Data.Converters
 
                 default:
                 {
-                    yield return new KeyValuePair<string, string>(propertyName, string.Join(separator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
+                    yield return new KeyValuePair<string, string>(propertyName, string.Join(separator ?? DefaultSeparator, source.Cast<object>().Select(x => Uri.EscapeDataString(x.ToString()))));
 
                     break;
                 }
