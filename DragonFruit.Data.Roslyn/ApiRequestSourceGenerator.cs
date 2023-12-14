@@ -100,6 +100,8 @@ namespace DragonFruit.Data.Roslyn
                     ClassName = classSymbol.Name,
                     Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
 
+                    RequireNewKeyword = WillHideOtherMembers(classSymbol, compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName)),
+
                     RequestBodyType = requestBodyType,
                     RequestBodySymbol = metadata.Properties[ParameterType.Form].Any() ? null : metadata.BodyProperty, // prefer using forms over body - this to match reflection-based behaviour
 
@@ -148,11 +150,15 @@ namespace DragonFruit.Data.Roslyn
             return null;
         }
 
+        /// <summary>
+        /// Collects information from classes regarding properties and methods decorated with <see cref="RequestParameterAttribute"/> and <see cref="RequestBodyAttribute"/> to use in source generation.
+        /// Applies inheritance rules to ensure that candidates are not duplicated.
+        /// </summary>
         private static RequestSymbolMetadata GetRequestSymbolMetadata(Compilation compilation, INamedTypeSymbol symbol)
         {
             var metadata = new RequestSymbolMetadata
             {
-                Properties = Enum.GetValues(typeof(ParameterType)).Cast<ParameterType>().ToDictionary(x => x, _ => (IList<SymbolMetadata>)new List<SymbolMetadata>())
+                Properties = Enum.GetValues(typeof(ParameterType)).Cast<ParameterType>().ToDictionary(x => x, _ => new List<SymbolMetadata>())
             };
 
             // get types used in member processing
@@ -259,26 +265,32 @@ namespace DragonFruit.Data.Roslyn
                     if (returnType.TypeKind == TypeKind.Enum) // handle enums
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
+
                         symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
                         {
                             EnumOption = enumOptions != null ? (EnumOption)enumOptions.ConstructorArguments.ElementAt(0).Value : EnumOption.None
                         };
                     }
-                    else if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol)) // check for Stream
+                    // check for Stream
+                    else if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol))
                     {
                         symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Stream);
                     }
-                    else if (returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte }) // check for byte[]
+                    // check for byte[]
+                    else if (isEnumerable && returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte })
                     {
                         symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.ByteArray);
                     }
-                    else if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default))) // IEnumerable<KeyValuePair<string, string>>
+                    // IEnumerable<KeyValuePair<string, string>>
+                    else if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default)))
                     {
                         symbolMetadata = new KeyValuePairSymbolMetadata(candidate, returnType, parameterName);
                     }
-                    else if (isEnumerable) // byte[]
+                    // IEnumerable
+                    else if (isEnumerable)
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
+
                         symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
@@ -287,7 +299,7 @@ namespace DragonFruit.Data.Roslyn
                     }
                     else
                     {
-                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Standard);
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName);
                     }
 
                     symbolMetadata.Depth = depth;
@@ -299,9 +311,21 @@ namespace DragonFruit.Data.Roslyn
                 depth++;
             } while (currentSymbol?.Equals(apiRequestBaseType, SymbolEqualityComparer.Default) == false);
 
+            // reverse by depth to put base properties first but retain order within each depth
+            foreach (var list in metadata.Properties.Values)
+            {
+                list.Sort((a, b) => b.Depth - a.Depth);
+            }
+
             return metadata;
         }
 
+        /// <summary>
+        /// Determines if a type derives from another type
+        /// </summary>
+        /// <param name="type">The <see cref="ITypeSymbol"/> to check</param>
+        /// <param name="baseType">The <see cref="ITypeSymbol"/> the <see cref="type"/> is supposed to inherit from</param>
+        /// <returns><c>true</c> if <see cref="type"/> derives from <see cref="baseType"/>, else <c>false</c></returns>
         internal static bool DerivesFrom(ITypeSymbol type, ITypeSymbol baseType)
         {
             var classSymbol = type.BaseType;
@@ -314,6 +338,36 @@ namespace DragonFruit.Data.Roslyn
                 }
 
                 classSymbol = classSymbol.BaseType;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type will overwrite any generated methods.
+        /// </summary>
+        /// <param name="type">The type to check</param>
+        /// <param name="baseType">The type to stop checking at</param>
+        /// <returns><c>true</c> if the type will generate a member that hides a base implementation, otherwise <c>false</c></returns>
+        private static bool WillHideOtherMembers(ITypeSymbol type, ISymbol baseType)
+        {
+            // if the type directly inherits from the base type, it will not overwrite any members
+            if (type.BaseType?.Equals(baseType, SymbolEqualityComparer.Default) == true)
+            {
+                return false;
+            }
+
+            // otherwise, all derived types until the baseType must be abstract
+            var next = type.BaseType;
+
+            while (next?.Equals(baseType, SymbolEqualityComparer.Default) == false)
+            {
+                if (!next.IsAbstract)
+                {
+                    return true;
+                }
+
+                next = next.BaseType;
             }
 
             return false;

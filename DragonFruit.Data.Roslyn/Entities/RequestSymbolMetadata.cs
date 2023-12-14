@@ -8,7 +8,7 @@ namespace DragonFruit.Data.Roslyn.Entities
 {
     internal class RequestSymbolMetadata
     {
-        public IReadOnlyDictionary<ParameterType, IList<SymbolMetadata>> Properties { get; set; }
+        public IReadOnlyDictionary<ParameterType, List<SymbolMetadata>> Properties { get; set; }
 
         public SymbolMetadata BodyProperty { get; set; }
 

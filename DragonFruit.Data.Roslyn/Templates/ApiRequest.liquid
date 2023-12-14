@@ -8,7 +8,7 @@ namespace {{ namespace }}
 {
     partial class {{ class_name }} : global::DragonFruit.Data.Requests.IRequestBuilder
     {
-        public new global::System.Net.Http.HttpRequestMessage BuildRequest(global::DragonFruit.Data.Serializers.SerializerResolver serializerResolver)
+        public {% if require_new_keyword %}new{% endif %} global::System.Net.Http.HttpRequestMessage BuildRequest(global::DragonFruit.Data.Serializers.SerializerResolver serializerResolver)
         {
             global::System.UriBuilder uriBuilder = new global::System.UriBuilder(this.RequestPath);
 
