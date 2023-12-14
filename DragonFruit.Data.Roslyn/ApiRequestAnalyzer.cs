@@ -58,8 +58,8 @@ namespace DragonFruit.Data.Roslyn
                 return;
             }
 
-            // check if class has partial keyword
-            if (!classDeclarationNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+            // check if class has partial keyword (and is not abstract)
+            if (!classDeclarationNode.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)) && !classDeclarationNode.Modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword)))
             {
                 context.ReportDiagnostic(Diagnostic.Create(PartialClassRule, classDeclarationNode.Identifier.GetLocation(), classDeclarationNode.Identifier.Text));
             }
