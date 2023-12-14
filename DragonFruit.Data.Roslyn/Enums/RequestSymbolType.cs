@@ -6,8 +6,11 @@ namespace DragonFruit.Data.Roslyn.Enums
     internal enum RequestSymbolType
     {
         Standard = 0,
+
         Enumerable = 1,
         Enum = 2,
         KeyValuePair = 3,
+        Stream = 4,
+        ByteArray = 5
     }
 }

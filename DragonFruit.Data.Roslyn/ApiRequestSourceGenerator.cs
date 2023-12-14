@@ -256,48 +256,38 @@ namespace DragonFruit.Data.Roslyn
 
                     var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
 
-                    // handle IEnumerable<KeyValuePair<string, string>>
-                    if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default)))
+                    if (returnType.TypeKind == TypeKind.Enum) // handle enums
+                    {
+                        var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
+                        symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
+                        {
+                            EnumOption = enumOptions != null ? (EnumOption)enumOptions.ConstructorArguments.ElementAt(0).Value : EnumOption.None
+                        };
+                    }
+                    else if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol)) // check for Stream
+                    {
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Stream);
+                    }
+                    else if (returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte }) // check for byte[]
+                    {
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.ByteArray);
+                    }
+                    else if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default))) // IEnumerable<KeyValuePair<string, string>>
                     {
                         symbolMetadata = new KeyValuePairSymbolMetadata(candidate, returnType, parameterName);
                     }
-                    // handle IEnumerable, Array[], etc.
-                    else if (isEnumerable)
+                    else if (isEnumerable) // byte[]
                     {
                         var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
-                        var enumerableType = (EnumerableOption?)enumerableOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumerableOption.Concatenated;
-
                         symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
                         {
                             Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
-                            EnumerableOption = enumerableType.ToString()
-                        };
-                    }
-                    // handle enums
-                    else if (returnType.TypeKind == TypeKind.Enum)
-                    {
-                        var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
-                        var enumType = (EnumOption?)enumOptions?.ConstructorArguments.ElementAt(0).Value ?? EnumOption.None;
-
-                        symbolMetadata = new EnumSymbolMetadata(candidate, returnType, parameterName)
-                        {
-                            EnumOption = enumType.ToString()
+                            EnumerableOption = enumerableOptions != null ? (EnumerableOption)enumerableOptions.ConstructorArguments.ElementAt(0).Value : EnumerableOption.Concatenated
                         };
                     }
                     else
                     {
-                        var psm = new PropertySymbolMetadata(candidate, returnType, parameterName);
-
-                        if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol))
-                        {
-                            psm.SpecialRequestParameter = SpecialRequestParameter.Stream;
-                        }
-                        else if (returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte })
-                        {
-                            psm.SpecialRequestParameter = SpecialRequestParameter.ByteArray;
-                        }
-
-                        symbolMetadata = psm;
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Standard);
                     }
 
                     symbolMetadata.Depth = depth;

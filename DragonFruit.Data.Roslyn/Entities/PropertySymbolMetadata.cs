@@ -8,15 +8,17 @@ namespace DragonFruit.Data.Roslyn.Entities
 {
     internal class PropertySymbolMetadata : SymbolMetadata
     {
-        public virtual RequestSymbolType Type => RequestSymbolType.Standard;
+        private readonly RequestSymbolType _type;
 
-        public PropertySymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName)
+        public virtual RequestSymbolType Type => _type;
+
+        public PropertySymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName, RequestSymbolType type = RequestSymbolType.Standard)
             : base(symbol, returnType)
         {
+            _type = type;
             ParameterName = parameterName;
         }
 
         public string ParameterName { get; }
-        public SpecialRequestParameter? SpecialRequestParameter { get; set; }
     }
 }

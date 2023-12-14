@@ -8,7 +8,7 @@ namespace {{ namespace }}
 {
     partial class {{ class_name }} : global::DragonFruit.Data.Requests.IRequestBuilder
     {
-        public global::System.Net.Http.HttpRequestMessage BuildRequest(global::DragonFruit.Data.Serializers.SerializerResolver serializerResolver)
+        public new global::System.Net.Http.HttpRequestMessage BuildRequest(global::DragonFruit.Data.Serializers.SerializerResolver serializerResolver)
         {
             global::System.UriBuilder uriBuilder = new global::System.UriBuilder(this.RequestPath);
 
@@ -69,18 +69,15 @@ namespace {{ namespace }}
                                     {
                                         content.Add(new global::System.Net.Http.StringContent(kvp.Value), kvp.Key);
                                     }
+                                {% comment %} 4 - Stream {% endcomment %}
+                                {% when 4 -%}
+                                    content.Add(new global::System.Net.Http.StreamContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
+                                {% comment %} 5 - ByteArray {% endcomment %}
+                                {% when 5 -%}
+                                    content.Add(new global::System.Net.Http.ByteArrayContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
+                                {% comment %} Handle other types using ToString {% endcomment %}
                                 {% else -%}
-                                    {% case multipart.special_request_parameter -%}
-                                        {% comment %} 0 - Stream {% endcomment %}
-                                        {% when 0 -%}
-                                            content.Add(new global::System.Net.Http.StreamContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
-                                        {% comment %} 1 - ByteArray {% endcomment %}
-                                        {% when 1 -%}
-                                            content.Add(new global::System.Net.Http.ByteArrayContent({{ multipart.accessor }}), "{{ multipart.parameter_name }}");
-                                        {% comment %} Handle other types using ToString {% endcomment %}
-                                        {% else -%}
-                                            content.Add(new global::System.Net.Http.StringContent({{ multipart.accessor }}.ToString()), "{{ multipart.parameter_name }}");
-                                    {% endcase -%}
+                                    content.Add(new global::System.Net.Http.StringContent({{ multipart.accessor }}.ToString()), "{{ multipart.parameter_name }}");
                              {% endcase -%}
                         {% endcapture -%}
 
@@ -104,7 +101,7 @@ namespace {{ namespace }}
                         {% capture uriparam_append -%}
                             {% case uriparam.type -%}
                                 {% when 1 -%}
-                                    global::DragonFruit.Data.Converters.EnumerableConverter.AppendEnumerable(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ uriparam.enumerable_option }}, "{{ uriparam.parameter_name }}", "{{ uriparam.separator }}");
+                                    global::DragonFruit.Data.Converters.EnumerableConverter.WriteEnumerable(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ uriparam.enumerable_option }}, "{{ uriparam.parameter_name }}", "{{ uriparam.separator }}");
                                 {% when 2 -%}
                                     global::DragonFruit.Data.Converters.EnumConverter.WriteEnum(formBuilder, {{ uriparam.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ uriparam.enum_option }}, "{{ uriparam.parameter_name }}");
                                 {% when 3 -%}
