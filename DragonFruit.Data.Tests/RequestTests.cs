@@ -59,6 +59,24 @@ namespace DragonFruit.Data.Tests
         }
 
         [Fact]
+        public void TestInheritedMultipartRequest()
+        {
+            var request = new InheritedMultipartEchoRequest();
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            Assert.True(sourceGenMessage.Content is MultipartFormDataContent);
+            Assert.True(reflectionGenMessage.Content is MultipartFormDataContent);
+
+            var baseRequest = new InheritedEchoRequest();
+            using var baseSourceGenMessage = ((IRequestBuilder)baseRequest).BuildRequest(null);
+            using var baseReflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(baseRequest, null);
+
+            Assert.True(baseSourceGenMessage.Content is StringContent);
+            Assert.True(baseReflectionGenMessage.Content is StringContent);
+        }
+
+        [Fact]
         public async void TestMultipartFormRequest()
         {
             // actually send requests because it's easier than inspecting the multipart content
