@@ -120,6 +120,12 @@ namespace {{ namespace }}
                             {{ uriparam_append }}
                         {% endif -%}
                     {% endfor -%}
+                
+                    {% comment %} remove trailing & {% endcomment %}
+                    if (formBuilder.Length > 0)
+                    {
+                        formBuilder.Length--;
+                    }
 
                     request.Content = new global::System.Net.Http.StringContent(formBuilder.ToString(), global::System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
 
