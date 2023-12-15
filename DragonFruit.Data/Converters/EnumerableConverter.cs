@@ -12,8 +12,8 @@ namespace DragonFruit.Data.Converters
 {
     public static class EnumerableConverter
     {
-        private const EnumerableOption DefaultOption = EnumerableOption.Concatenated;
-        private const string DefaultSeparator = ",";
+        public const EnumerableOption DefaultOption = EnumerableOption.Concatenated;
+        public const string DefaultSeparator = ",";
 
         /// <summary>
         /// Writes the provided <see cref="IEnumerable"/> to the <see cref="StringBuilder"/> using the specified <see cref="EnumerableOption"/>
