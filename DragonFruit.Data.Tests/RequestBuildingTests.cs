@@ -2,6 +2,10 @@
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
 using DragonFruit.Data.Tests.Requests;
@@ -51,6 +55,51 @@ namespace DragonFruit.Data.Tests
             var reflectionGenContent = await reflectionGenMessage.Content.ReadAsStringAsync();
 
             Assert.Equal(sourceGenContent, reflectionGenContent);
+        }
+
+        [Fact]
+        public async void TestMultipartFormRequest()
+        {
+            // actually send requests because it's easier than inspecting the multipart content
+            using var httpClient = new HttpClient();
+
+            var request = new MultipartFormRequest();
+            var processedResponses = new List<byte[]>();
+
+            var formats = new[]
+            {
+                // sourcegen
+                ((IRequestBuilder)request).BuildRequest(null),
+
+                // reflection
+                ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null)
+            };
+
+            foreach (var message in formats)
+            {
+                JsonObject json;
+
+                using (message)
+                {
+                    using var response = await httpClient.SendAsync(message);
+                    using var contentStream = await response.Content.ReadAsStreamAsync();
+
+                    json = await JsonSerializer.DeserializeAsync<JsonObject>(contentStream);
+                }
+
+                // check querystring
+                Assert.Equal("content", json["args"]["c"].ToString());
+
+                // check form contents
+                Assert.Equal("content", json["form"]["file"].ToString());
+                Assert.Equal("content", json["form"]["bytes"].ToString());
+
+                json.Remove("headers");
+                processedResponses.Add(JsonSerializer.SerializeToUtf8Bytes(json));
+            }
+
+            // compare remaining json
+            Assert.All(processedResponses, x => Assert.Equal(processedResponses[0], x));
         }
     }
 }
