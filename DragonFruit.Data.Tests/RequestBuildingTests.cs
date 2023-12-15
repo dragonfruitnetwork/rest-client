@@ -34,5 +34,23 @@ namespace DragonFruit.Data.Tests
             Assert.Contains("q2=test_query_2", sourceGenMessage.RequestUri.Query);
             Assert.Contains("q3=test_query_3", sourceGenMessage.RequestUri.Query); // static property
         }
+
+        [Fact]
+        public async void TestInheritedRequest()
+        {
+            var request = new InheritedEchoRequest();
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            Assert.NotNull(sourceGenMessage.Content);
+            Assert.NotNull(reflectionGenMessage.Content);
+
+            // check form contents match
+            var sourceGenContent = await sourceGenMessage.Content.ReadAsStringAsync();
+            var reflectionGenContent = await reflectionGenMessage.Content.ReadAsStringAsync();
+
+            Assert.Equal(sourceGenContent, reflectionGenContent);
+        }
     }
 }
