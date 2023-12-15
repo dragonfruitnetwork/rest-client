@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -115,6 +116,28 @@ namespace DragonFruit.Data.Tests
 
             Assert.Contains("users=test:test_1a", sourceGenMessage.RequestUri.Query);
             Assert.Contains("ids=1,2", sourceGenMessage.RequestUri.Query);
+        }
+
+        [Fact]
+        public async void TestAdditionalSpecialTypeHandling()
+        {
+            var request = new SpecialTypeAdditionalLocationsRequest();
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            // test headers
+            Assert.Equal("2", sourceGenMessage.Headers.GetValues("X-User-Option").Single());
+            Assert.Equal(3, sourceGenMessage.Headers.SingleOrDefault(x => x.Key == "X-User-Id-Value").Value.Count());
+
+            // check form contents match
+            var sourceGenContent = await sourceGenMessage.Content!.ReadAsStringAsync();
+            var reflectionGenContent = await reflectionGenMessage.Content!.ReadAsStringAsync();
+
+            Assert.Equal(sourceGenContent, reflectionGenContent);
+
+            Assert.Contains("id_opt=One", sourceGenContent);
+            Assert.Contains("ids=5c2a5585-2682-4c60-9bc7-b11874582af6,d85cf845-a35a-48e9-b629-700f77ab1c5d,885f37a8-6bf6-4d52-8092-71276ab706fd", sourceGenContent);
         }
     }
 }

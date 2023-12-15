@@ -35,7 +35,7 @@ namespace DragonFruit.Data.Tests.Requests
 
     public enum SourceGenTestEnum
     {
-        One,
-        Two
+        One = 1,
+        Two = 2
     }
 }
