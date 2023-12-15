@@ -20,7 +20,7 @@ namespace DragonFruit.Data.Converters
         public static HttpRequestMessage CreateHttpRequestMessage(ApiRequest request, SerializerResolver serializers)
         {
             var requestType = request.GetType();
-            var requestProperties = requestType.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            var requestProperties = requestType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             var requestParams = requestProperties.Select(GetPropertyInfo).Where(x => x != null).ToLookup(x => x.Value.ParameterType, x => (PropertyName: x.Value.ParameterName, x.Value.Accessor));
 
             var requestUri = new UriBuilder(request.RequestPath);
@@ -54,8 +54,7 @@ namespace DragonFruit.Data.Converters
             // check if there are any form params, if not, then check for a body property
             if (!requestParams[ParameterType.Form].Any())
             {
-                var bodyProperty = requestType.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
-                                              .FirstOrDefault(x => x.GetCustomAttribute<RequestBodyAttribute>() != null);
+                var bodyProperty = requestProperties.FirstOrDefault(x => x.GetCustomAttribute<RequestBodyAttribute>() != null);
 
                 if (bodyProperty != null)
                 {
