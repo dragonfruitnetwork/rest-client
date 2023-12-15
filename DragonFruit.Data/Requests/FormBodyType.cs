@@ -6,6 +6,6 @@ namespace DragonFruit.Data.Requests
     public enum FormBodyType
     {
         UriEncoded = 1,
-        MultipartForm = 2
+        Multipart = 2
     }
 }

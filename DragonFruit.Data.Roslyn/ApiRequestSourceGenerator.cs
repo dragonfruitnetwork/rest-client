@@ -92,7 +92,7 @@ namespace DragonFruit.Data.Roslyn
                 }
                 else if (metadata.Properties[ParameterType.Form].Any())
                 {
-                    requestBodyType = metadata.FormBodyType == FormBodyType.MultipartForm ? RequestBodyType.FormMultipart : RequestBodyType.FormUriEncoded;
+                    requestBodyType = metadata.FormBodyType == FormBodyType.Multipart ? RequestBodyType.FormMultipart : RequestBodyType.FormUriEncoded;
                 }
 
                 var parameterInfo = new
@@ -262,7 +262,8 @@ namespace DragonFruit.Data.Roslyn
 
                     var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
 
-                    if (returnType.TypeKind == TypeKind.Enum) // handle enums
+                    // handle enums
+                    if (returnType.TypeKind == TypeKind.Enum)
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
 
@@ -271,12 +272,12 @@ namespace DragonFruit.Data.Roslyn
                             EnumOption = enumOptions != null ? (EnumOption)enumOptions.ConstructorArguments.ElementAt(0).Value : EnumOption.None
                         };
                     }
-                    // check for Stream
+                    // Stream
                     else if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol))
                     {
                         symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Stream);
                     }
-                    // check for byte[]
+                    // byte[]
                     else if (isEnumerable && returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte })
                     {
                         symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.ByteArray);
