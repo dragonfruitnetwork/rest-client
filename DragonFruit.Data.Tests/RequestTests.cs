@@ -13,7 +13,7 @@ using Xunit;
 
 namespace DragonFruit.Data.Tests
 {
-    public class RequestBuildingTests
+    public class RequestTests
     {
         [Theory]
         [InlineData(typeof(BasicEchoRequest))]

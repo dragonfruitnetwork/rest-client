@@ -6,7 +6,7 @@ using DragonFruit.Data.Requests;
 
 namespace DragonFruit.Data.Tests.Requests
 {
-    public partial class AdditionalSpecialTypeLocationsRequest : ApiRequest
+    public partial class SpecialTypeAdditionalLocationsRequest : ApiRequest
     {
         private readonly string[] _ids =
         {
