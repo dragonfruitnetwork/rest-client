@@ -89,7 +89,8 @@ namespace DragonFruit.Data.Roslyn
 
                 if (metadata.BodyProperty != null)
                 {
-                    requestBodyType = DerivesFrom(metadata.BodyProperty.ReturnType, httpContentSymbol) ? RequestBodyType.CustomBodyDirect : RequestBodyType.CustomBodySerialized;
+                    var isHttpContent = metadata.BodyProperty.ReturnType.Equals(httpContentSymbol, SymbolEqualityComparer.Default) || DerivesFrom(metadata.BodyProperty.ReturnType, httpContentSymbol);
+                    requestBodyType = isHttpContent ? RequestBodyType.CustomBodyDirect : RequestBodyType.CustomBodySerialized;
                 }
                 else if (metadata.Properties[ParameterType.Form].Any())
                 {
