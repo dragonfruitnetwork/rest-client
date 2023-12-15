@@ -307,7 +307,7 @@ namespace DragonFruit.Data
 
             var requestMessage = request is IRequestBuilder rb
                 ? rb.BuildRequest(Serializers)
-                : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, this);
+                : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, Serializers);
 
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(expectedContentType));
             return requestMessage;
