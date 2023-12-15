@@ -97,9 +97,24 @@ namespace DragonFruit.Data.Roslyn
                     requestBodyType = metadata.FormBodyType == FormBodyType.Multipart ? RequestBodyType.FormMultipart : RequestBodyType.FormUriEncoded;
                 }
 
+                // build class name (adding generics if they're present)
+                var className = classSymbol.Name;
+
+                if (classSymbol.IsGenericType)
+                {
+                    var genericNameBuilder = new StringBuilder(classSymbol.Name);
+
+                    genericNameBuilder.Append("<");
+                    genericNameBuilder.Append(string.Join(", ", classSymbol.TypeArguments.Select(x => x.Name)));
+                    genericNameBuilder.Append(">");
+
+                    className = genericNameBuilder.ToString();
+                }
+
+                // create template info object
                 var parameterInfo = new
                 {
-                    ClassName = classSymbol.Name,
+                    ClassName = className,
                     Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
 
                     RequireNewKeyword = WillHideOtherMembers(classSymbol, compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName)),
