@@ -1,6 +1,7 @@
 // DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
+using System;
 using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
 using DragonFruit.Data.Tests.Requests;
@@ -10,10 +11,15 @@ namespace DragonFruit.Data.Tests
 {
     public class RequestBuildingTests
     {
-        [Fact]
-        public void TestBasicEchoRequest()
+        [Theory]
+        [InlineData(typeof(BasicEchoRequest))]
+        [InlineData(typeof(InheritedEchoRequest))]
+        public void TestBasicEchoRequest(Type requestType)
         {
-            var request = new BasicEchoRequest();
+            var request = Activator.CreateInstance(requestType) as ApiRequest;
+
+            Assert.NotNull(request);
+
             using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
             using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
 
