@@ -101,5 +101,20 @@ namespace DragonFruit.Data.Tests
             // compare remaining json
             Assert.All(processedResponses, x => Assert.Equal(processedResponses[0], x));
         }
+
+        [Fact]
+        public void TestSpecialTypeHandling()
+        {
+            var request = new SpecialTypeRequest();
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            // check query strings match expected output
+            Assert.Equal(sourceGenMessage.RequestUri!.Query, reflectionGenMessage.RequestUri!.Query);
+
+            Assert.Contains("users=test:test_1a", sourceGenMessage.RequestUri.Query);
+            Assert.Contains("ids=1,2", sourceGenMessage.RequestUri.Query);
+        }
     }
 }
