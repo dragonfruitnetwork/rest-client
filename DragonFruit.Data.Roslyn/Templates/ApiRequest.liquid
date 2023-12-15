@@ -148,7 +148,7 @@ namespace {{ namespace }}
                                 request.Headers.Add(kvp.Key, kvp.Value);
                             }
                         {% when 2 -%}
-                            request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Converters.EnumConverter.GetString({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
+                            request.Headers.Add("{{ header.parameter_name }}", global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumOption.{{ header.enum_option }}));
                         {% when 3 -%}
                             foreach (var kvp in (global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, string>>){{ header.accessor }})
                             {

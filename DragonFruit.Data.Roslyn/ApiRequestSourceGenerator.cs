@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
 using DragonFruit.Data.Roslyn.Entities;
 using DragonFruit.Data.Roslyn.Enums;
@@ -263,7 +264,7 @@ namespace DragonFruit.Data.Roslyn
                     var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
 
                     // handle enums
-                    if (returnType.SpecialType == SpecialType.System_Enum)
+                    if (returnType.TypeKind == TypeKind.Enum)
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
 
@@ -299,8 +300,8 @@ namespace DragonFruit.Data.Roslyn
 
                         symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
                         {
-                            Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? ",",
-                            EnumerableOption = enumerableOptions != null ? (EnumerableOption)enumerableOptions.ConstructorArguments.ElementAt(0).Value : EnumerableOption.Concatenated
+                            Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? EnumerableConverter.DefaultSeparator,
+                            EnumerableOption = enumerableOptions != null ? (EnumerableOption)enumerableOptions.ConstructorArguments.ElementAt(0).Value : EnumerableConverter.DefaultOption
                         };
                     }
                     else
