@@ -263,7 +263,7 @@ namespace DragonFruit.Data.Roslyn
                     var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
 
                     // handle enums
-                    if (returnType.TypeKind == TypeKind.Enum)
+                    if (returnType.SpecialType == SpecialType.System_Enum)
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
 
@@ -271,6 +271,11 @@ namespace DragonFruit.Data.Roslyn
                         {
                             EnumOption = enumOptions != null ? (EnumOption)enumOptions.ConstructorArguments.ElementAt(0).Value : EnumOption.None
                         };
+                    }
+                    // string (IEnumerable<char>)
+                    else if (returnType.SpecialType == SpecialType.System_String)
+                    {
+                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName);
                     }
                     // Stream
                     else if (streamTypeSymbol.Equals(returnType, SymbolEqualityComparer.Default) || DerivesFrom(returnType, streamTypeSymbol))

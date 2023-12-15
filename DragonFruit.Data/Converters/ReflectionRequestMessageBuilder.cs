@@ -128,6 +128,9 @@ namespace DragonFruit.Data.Converters
 
             switch (propertyValue)
             {
+                case string _:
+                    goto default;
+
                 // KeyValuePair<string, string>
                 case IEnumerable<KeyValuePair<string, string>> dynamicPairs:
                     KeyValuePairConverter.WriteKeyValuePairs(destination, dynamicPairs);
@@ -161,6 +164,9 @@ namespace DragonFruit.Data.Converters
 
             switch (propertyValue)
             {
+                case string _:
+                    goto default;
+
                 case IEnumerable<KeyValuePair<string, string>> dynamicPairs:
                 {
                     foreach (var kvp in dynamicPairs)
@@ -202,6 +208,9 @@ namespace DragonFruit.Data.Converters
             {
                 switch (value)
                 {
+                    case string _:
+                        goto default;
+
                     case Stream stream:
                         multipartForm.Add(new StreamContent(stream), parameterName);
                         break;
