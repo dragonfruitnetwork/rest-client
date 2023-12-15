@@ -261,8 +261,6 @@ namespace DragonFruit.Data.Roslyn
                     var parameterType = (ParameterType)parameterAttribute.ConstructorArguments[0].Value!;
                     var parameterName = (string)parameterAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
 
-                    var isEnumerable = SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default));
-
                     // handle enums
                     if (returnType.TypeKind == TypeKind.Enum)
                     {
@@ -283,30 +281,38 @@ namespace DragonFruit.Data.Roslyn
                     {
                         symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.Stream);
                     }
-                    // byte[]
-                    else if (isEnumerable && returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte })
-                    {
-                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.ByteArray);
-                    }
-                    // IEnumerable<KeyValuePair<string, string>>
-                    else if (isEnumerable && returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default)))
-                    {
-                        symbolMetadata = new KeyValuePairSymbolMetadata(candidate, returnType, parameterName);
-                    }
-                    // IEnumerable
-                    else if (isEnumerable)
-                    {
-                        var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
-
-                        symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
-                        {
-                            Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? EnumerableConverter.DefaultSeparator,
-                            EnumerableOption = enumerableOptions != null ? (EnumerableOption)enumerableOptions.ConstructorArguments.ElementAt(0).Value : EnumerableConverter.DefaultOption
-                        };
-                    }
                     else
                     {
-                        symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName);
+                        // other enumerable types (and default)
+                        switch (SupportedCollectionTypes.Contains(returnType.SpecialType) || returnType.AllInterfaces.Any(x => x.Equals(enumerableTypeSymbol, SymbolEqualityComparer.Default)))
+                        {
+                            // byte[]
+                            case true when returnType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Byte }:
+                                symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName, RequestSymbolType.ByteArray);
+                                break;
+
+                            // IEnumerable<KeyValuePair<string, string>>
+                            case true when returnType.AllInterfaces.Any(x => x.Equals(keyValuePairEnumerableTypeSymbol, SymbolEqualityComparer.Default)):
+                                symbolMetadata = new KeyValuePairSymbolMetadata(candidate, returnType, parameterName);
+                                break;
+
+                            // IEnumerable
+                            case true:
+                            {
+                                var enumerableOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumerableParameterAttribute, SymbolEqualityComparer.Default) == true);
+
+                                symbolMetadata = new EnumerableSymbolMetadata(candidate, returnType, parameterName)
+                                {
+                                    Separator = (string)enumerableOptions?.ConstructorArguments.ElementAtOrDefault(1).Value ?? EnumerableConverter.DefaultSeparator,
+                                    EnumerableOption = enumerableOptions != null ? (EnumerableOption)enumerableOptions.ConstructorArguments.ElementAt(0).Value : EnumerableConverter.DefaultOption
+                                };
+                                break;
+                            }
+
+                            default:
+                                symbolMetadata = new PropertySymbolMetadata(candidate, returnType, parameterName);
+                                break;
+                        }
                     }
 
                     symbolMetadata.Depth = depth;
