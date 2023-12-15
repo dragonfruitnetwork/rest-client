@@ -1,7 +1,6 @@
 ﻿// DragonFruit.Data Copyright DragonFruit Network
 // Licensed under the MIT License. Please refer to the LICENSE file at the root of this project for details
 
-using System.Collections.Generic;
 using System.Net.Http;
 using DragonFruit.Data.Requests;
 
@@ -17,9 +16,5 @@ namespace DragonFruit.Data.Tests.Requests
 
         [RequestParameter(ParameterType.Query, "q2")]
         public string Query2 => "test_query_2";
-
-        [RequestParameter(ParameterType.Form, "f1")]
-        [EnumerableOptions(EnumerableOption.Concatenated, ":")]
-        public IEnumerable<string> FormListing => new[] { "test_3", "test_3a" };
     }
 }

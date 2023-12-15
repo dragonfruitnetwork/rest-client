@@ -20,12 +20,4 @@
         <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Generated\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.ApiRequestSourceGenerator\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Generated\DragonFruit.Data.Roslyn\DragonFruit.Data.Roslyn.ApiRequestSourceGenerator\BasicPostRequest.g.cs" />
-    </ItemGroup>
-
 </Project>
