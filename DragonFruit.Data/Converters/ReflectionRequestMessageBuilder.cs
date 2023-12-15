@@ -32,7 +32,7 @@ namespace DragonFruit.Data.Converters
 
                 foreach (var queryParameter in requestParams[ParameterType.Query])
                 {
-                    WriteUriProperty(queryBuilder, queryParameter.PropertyName, queryParameter.Accessor);
+                    WriteUriProperty(queryBuilder, queryParameter.PropertyName, queryParameter.Accessor, request);
                 }
 
                 if (queryBuilder.Length > 0)
@@ -48,7 +48,7 @@ namespace DragonFruit.Data.Converters
             // add headers
             foreach (var headerParameter in requestParams[ParameterType.Header])
             {
-                WriteHeaderProperty(requestMessage.Headers, headerParameter.PropertyName, headerParameter.Accessor);
+                WriteHeaderProperty(requestMessage.Headers, headerParameter.PropertyName, headerParameter.Accessor, request);
             }
 
             // check if there are any form params, if not, then check for a body property
@@ -80,7 +80,7 @@ namespace DragonFruit.Data.Converters
 
                         foreach (var formParameter in requestParams[ParameterType.Form])
                         {
-                            WriteUriProperty(formBuilder, formParameter.PropertyName, formParameter.Accessor);
+                            WriteUriProperty(formBuilder, formParameter.PropertyName, formParameter.Accessor, request);
                         }
 
                         if (formBuilder.Length > 0)
@@ -99,7 +99,7 @@ namespace DragonFruit.Data.Converters
 
                         foreach (var formParameter in requestParams[ParameterType.Form])
                         {
-                            WriteMultipartProperty(multipartForm, formParameter.PropertyName, formParameter.Accessor);
+                            WriteMultipartProperty(multipartForm, formParameter.PropertyName, formParameter.Accessor, request);
                         }
 
                         requestMessage.Content = multipartForm;
@@ -114,9 +114,9 @@ namespace DragonFruit.Data.Converters
             return requestMessage;
         }
 
-        private static void WriteUriProperty(StringBuilder destination, string parameterName, PropertyInfo accessor)
+        private static void WriteUriProperty(StringBuilder destination, string parameterName, PropertyInfo accessor, object source)
         {
-            var propertyValue = accessor.GetValue(null);
+            var propertyValue = accessor.GetValue(source);
 
             if (accessor.PropertyType.IsEnum)
             {
@@ -148,9 +148,9 @@ namespace DragonFruit.Data.Converters
             }
         }
 
-        private static void WriteHeaderProperty(HttpHeaders collection, string parameterName, PropertyInfo accessor)
+        private static void WriteHeaderProperty(HttpHeaders collection, string parameterName, PropertyInfo accessor, object source)
         {
-            var propertyValue = accessor.GetValue(null);
+            var propertyValue = accessor.GetValue(source);
 
             if (accessor.PropertyType.IsEnum)
             {
@@ -189,9 +189,9 @@ namespace DragonFruit.Data.Converters
             }
         }
 
-        private static void WriteMultipartProperty(MultipartFormDataContent multipartForm, string parameterName, PropertyInfo accessor)
+        private static void WriteMultipartProperty(MultipartFormDataContent multipartForm, string parameterName, PropertyInfo accessor, object source)
         {
-            var value = accessor.GetValue(null);
+            var value = accessor.GetValue(source);
 
             if (accessor.PropertyType.IsEnum)
             {
