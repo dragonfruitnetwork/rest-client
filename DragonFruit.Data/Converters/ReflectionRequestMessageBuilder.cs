@@ -93,7 +93,7 @@ namespace DragonFruit.Data.Converters
                         break;
                     }
 
-                    case FormBodyType.MultipartForm:
+                    case FormBodyType.Multipart:
                     {
                         var multipartForm = new MultipartFormDataContent();
 
