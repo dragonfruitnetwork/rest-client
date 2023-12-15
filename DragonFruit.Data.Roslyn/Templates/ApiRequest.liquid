@@ -143,7 +143,7 @@ namespace {{ namespace }}
                 {% capture header_append -%}
                     {% case header.type -%}
                         {% when 1 -%}
-                            foreach (var kvp in global::DragonFruit.Data.Converters.EnumerableConverter.GetPairs({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ header.enumerable_option }}))
+                            foreach (var kvp in global::DragonFruit.Data.Converters.EnumerableConverter.GetPairs({{ header.accessor }}, global::DragonFruit.Data.Requests.EnumerableOption.{{ header.enumerable_option }}, "{{ header.parameter_name }}", "{{ header.separator }}"))
                             {
                                 request.Headers.Add(kvp.Key, kvp.Value);
                             }
