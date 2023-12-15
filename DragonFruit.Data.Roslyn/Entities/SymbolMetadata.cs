@@ -18,7 +18,14 @@ namespace DragonFruit.Data.Roslyn.Entities
         public ISymbol Symbol { get; }
         public ITypeSymbol ReturnType { get; }
 
-        public string Accessor => Symbol is IPropertySymbol ps ? $"this.{ps.Name}" : $"this.{Symbol.Name}()";
+        public string Accessor => Symbol switch
+        {
+            IPropertySymbol propertySymbol when Symbol.IsStatic => $"{propertySymbol.ContainingType.Name}.{propertySymbol.Name}",
+            IPropertySymbol propertySymbol => $"this.{propertySymbol.Name}",
+
+            _ => Symbol.IsStatic ? $"{Symbol.ContainingType.Name}.{Symbol.Name}" : $"this.{Symbol.Name}()"
+        };
+
         public bool Nullable => ReturnType.IsReferenceType || (ReturnType.IsValueType && ReturnType.NullableAnnotation == NullableAnnotation.Annotated);
     }
 }
