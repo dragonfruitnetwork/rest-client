@@ -10,9 +10,9 @@ namespace DragonFruit.Data.Converters
 {
     public static class EnumConverter
     {
-        public static void WriteEnum<T>(StringBuilder destination, T value, EnumOption mode, string propertyName) where T : Enum
+        public static void WriteEnum<T>(StringBuilder destination, T value, EnumOption mode, string parameterName) where T : Enum
         {
-            destination.AppendFormat("{0}={1}&", propertyName, GetEnumValue(value, mode));
+            destination.AppendFormat("{0}={1}&", parameterName, GetEnumValue(value, mode));
         }
 
         public static string GetEnumValue<T>(T value, EnumOption mode) where T : Enum

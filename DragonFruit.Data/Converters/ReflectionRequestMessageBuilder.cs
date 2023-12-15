@@ -21,7 +21,7 @@ namespace DragonFruit.Data.Converters
         {
             var requestType = request.GetType();
             var requestProperties = requestType.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-            var requestParams = requestProperties.Select(GetPropertyInfo).Where(x => x != null).ToLookup(x => x.Value.PropertyType, x => (x.Value.PropertyName, x.Value.Accessor));
+            var requestParams = requestProperties.Select(GetPropertyInfo).Where(x => x != null).ToLookup(x => x.Value.ParameterType, x => (PropertyName: x.Value.ParameterName, x.Value.Accessor));
 
             var requestUri = new UriBuilder(request.RequestPath);
 
@@ -239,7 +239,7 @@ namespace DragonFruit.Data.Converters
             }
         }
 
-        private static (ParameterType PropertyType, string PropertyName, PropertyInfo Accessor)? GetPropertyInfo(PropertyInfo property)
+        private static (ParameterType ParameterType, string ParameterName, PropertyInfo Accessor)? GetPropertyInfo(PropertyInfo property)
         {
             var attribute = property.GetCustomAttribute<RequestParameterAttribute>();
 
