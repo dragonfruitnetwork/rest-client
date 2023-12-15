@@ -15,9 +15,9 @@ using DragonFruit.Data.Serializers;
 
 namespace DragonFruit.Data.Converters
 {
-    internal static class ReflectionRequestMessageBuilder
+    public static class ReflectionRequestMessageBuilder
     {
-        public static HttpRequestMessage CreateHttpRequestMessage(ApiRequest request, ApiClient client)
+        public static HttpRequestMessage CreateHttpRequestMessage(ApiRequest request, SerializerResolver serializers)
         {
             var requestType = request.GetType();
             var requestProperties = requestType.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
@@ -66,7 +66,7 @@ namespace DragonFruit.Data.Converters
                         Stream stream => new StreamContent(stream),
                         byte[] byteArray => new ByteArrayContent(byteArray),
 
-                        _ => client.Serializers.Resolve(bodyProperty.PropertyType, DataDirection.Out).Serialize(bodyContent)
+                        _ => serializers.Resolve(bodyProperty.PropertyType, DataDirection.Out).Serialize(bodyContent)
                     };
                 }
             }
