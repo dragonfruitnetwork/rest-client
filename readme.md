@@ -1,23 +1,19 @@
 # DragonFruit.Data
+A lightweight, extensible HTTP/REST framework for .NET
 
-![CI Publish](https://github.com/dragonfruitnetwork/DragonFruit.Common/workflows/Publish/badge.svg)
-![CI Unit Tests](https://github.com/dragonfruitnetwork/DragonFruit.Common/workflows/Unit%20Tests/badge.svg)
-[![Nuget](https://img.shields.io/nuget/v/DragonFruit.Common.Data)](https://nuget.org/packages/DragonFruit.Common.Data)
-![Nuget Downloads](https://img.shields.io/nuget/dt/DragonFruit.Common.Data)
+[![Nuget](https://img.shields.io/nuget/v/DragonFruit.Data)](https://nuget.org/packages/DragonFruit.Data)
 [![DragonFruit Discord](https://img.shields.io/discord/482528405292843018?label=Discord&style=popout)](https://discord.gg/VA26u5Z)
 
 ### Overview
+This repo holds `DragonFruit.Data`, a .NET REST client framework and related projects:
 
-DragonFruit.Data provides the framework that all DragonFruit Apps and APIs rely on to deliver data from remote sources. This framework has been created with 5 points in mind:
+- `DragonFruit.Data` - The core library, containing the request and client classes as well as providing serializer support
+- `DragonFruit.Data.Roslyn` - A Roslyn code generator and source analyzer for pre-computing `ApiRequest` request message builders
+- `DragonFruit.Data.Serializers.Html` - A serializer for allowing `HtmlDocument` to be used as a response type
+- `DragonFruit.Data.Serializers.Newtonsoft` - A serializer for `Newtonsoft.Json`
 
-- Streamlined - Developers create a central `ApiClient` and pass `ApiRequest`s to be performed
-- Optimised - All official `ApiSerializer`s have been optimised for performance and memory usage
-- Expandable - `ApiSerializer` is abstract, allowing for custom serializers to be created
-- Ease of use - Requests use attributes which makes querystring and form parameter mapping easy
-- Integration - `ApiClient`s integrate with existing systems, including `HttpRequestMessage`/`HttpResponseMessage` and `HttpMessageHandler`
+### Usage/Getting Started
+TODO
 
-### Getting Started
-
-> The docs are slightly out of date, and we'll be revising them soon to bring them up-to-date
-
-See the [wiki](https://github.com/dragonfruitnetwork/DragonFruit.Common/wiki) to get started.
+### License
+The project is licensed under MIT. Refer to [license.md](license.md) for more information.
