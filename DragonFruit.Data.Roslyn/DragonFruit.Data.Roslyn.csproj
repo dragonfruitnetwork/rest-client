@@ -13,6 +13,7 @@
         <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -29,13 +30,14 @@
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
 
         <!-- https://stackoverflow.com/a/67074009 -->
+        <EmbeddedResource Include="$(OutputPath)\DragonFruit.Data.dll" Visible="false"/>
         <EmbeddedResource Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Visible="false"/>
 
         <!-- OutputItemType - see https://stackoverflow.com/a/71397443 -->
-        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj" OutputItemType="Analyzer"/>
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
 
-        <!-- Roslyn component output -->
-        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="tools" />
+        <!-- Roslyn component -->
+        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="tools"/>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
@@ -46,7 +48,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
-        <PackageReference Include="Scriban" Version="5.9.0" PrivateAssets="all" GeneratePathProperty="true"/>
+        <PackageReference Include="Scriban" Version="5.9.0" GeneratePathProperty="true"/>
     </ItemGroup>
 
 </Project>
