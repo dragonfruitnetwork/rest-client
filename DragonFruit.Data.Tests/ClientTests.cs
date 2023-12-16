@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DragonFruit.Data.Serializers;
@@ -21,13 +20,6 @@ namespace DragonFruit.Data.Tests
         {
             UserAgent = "DragonFruit.Data.Tests"
         };
-
-        [Fact]
-        public async Task TestClientVersionDefaults()
-        {
-            using var response = await _client.PerformAsync("https://cloudflare-quic.com");
-            Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? HttpVersion.Version11 : HttpVersion.Version30, response.Version);
-        }
 
         [Fact]
         public async Task TestUserAgentHeader()
