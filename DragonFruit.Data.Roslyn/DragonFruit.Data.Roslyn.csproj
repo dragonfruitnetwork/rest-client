@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <Import Project="../res/DragonFruit.Data.Nuget.props"/>
+
     <PropertyGroup>
         <LangVersion>latest</LangVersion>
         <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -8,6 +10,7 @@
         <AssemblyName>DragonFruit.Data.Roslyn</AssemblyName>
         <RootNamespace>DragonFruit.Data.Roslyn</RootNamespace>
 
+        <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
@@ -20,7 +23,7 @@
     <ItemGroup>
         <!-- Liquid templates -->
         <EmbeddedResource Include="Templates\*.liquid"/>
-        
+
         <!-- Analyzer release tracking -->
         <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
@@ -44,7 +47,5 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
         <PackageReference Include="Scriban" Version="5.9.0" PrivateAssets="all" GeneratePathProperty="true"/>
     </ItemGroup>
-
-    <Import Project="../res/DragonFruit.Data.Nuget.props"/>
 
 </Project>
