@@ -58,9 +58,9 @@ namespace DragonFruit.Data
         public SerializerResolver Serializers { get; }
 
         /// <summary>
-        /// User-Controlled method to create a <see cref="HttpClientHandler"/>
+        /// User-Controlled method to create a <see cref="HttpMessageHandler"/>
         /// </summary>
-        public Func<HttpClientHandler> Handler { get; set; }
+        public Func<HttpMessageHandler> Handler { get; set; }
 
         /// <summary>
         /// Gets the header container for the underlying <see cref="HttpClient"/>
