@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
+using DragonFruit.Data.Serializers;
 using DragonFruit.Data.Tests.Requests;
 using Xunit;
 
@@ -176,6 +177,31 @@ namespace DragonFruit.Data.Tests
 
             Assert.Equal(sourceGenContent, reflectionGenContent);
             Assert.False(string.IsNullOrEmpty(sourceGenContent));
+        }
+
+        private record TestRecord(string TestProperty);
+
+        [Fact]
+        public async Task TestCustomSerializedContentRequest()
+        {
+            var record = new TestRecord("Test Content");
+            var request = new CustomSerializedContentRequest<TestRecord>(record);
+            var serializers = new SerializerResolver(new ApiJsonSerializer());
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(serializers);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, serializers);
+
+            using (var sourceGenStream = await sourceGenMessage.Content!.ReadAsStreamAsync())
+            {
+                var sourceGenContent = serializers.Resolve<TestRecord>(DataDirection.In).Deserialize<TestRecord>(sourceGenStream);
+                Assert.True(sourceGenContent.Equals(record));
+            }
+
+            using (var reflectionGenStream = await reflectionGenMessage.Content!.ReadAsStreamAsync())
+            {
+                var reflectionGenContent = serializers.Resolve<TestRecord>(DataDirection.In).Deserialize<TestRecord>(reflectionGenStream);
+                Assert.True(reflectionGenContent.Equals(record));
+            }
         }
     }
 }
