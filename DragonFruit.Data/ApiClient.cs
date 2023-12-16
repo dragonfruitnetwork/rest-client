@@ -362,7 +362,7 @@ namespace DragonFruit.Data
             return requestMessage;
         }
 
-        private static HttpMessageHandler CreateDefaultHandler()
+        public static HttpMessageHandler CreateDefaultHandler()
         {
 #if NETSTANDARD2_0
             return new HttpClientHandler
