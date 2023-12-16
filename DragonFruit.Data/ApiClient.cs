@@ -103,8 +103,11 @@ namespace DragonFruit.Data
 
         private async Task<T> PerformAsyncInternal<T>(HttpRequestMessage request, ApiSerializer serializer, CancellationToken cancellationToken) where T : class
         {
-            var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            return await ValidateAndProcess<T>(responseMessage, serializer, cancellationToken).ConfigureAwait(false);
+            using (request)
+            {
+                var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                return await ValidateAndProcess<T>(responseMessage, serializer, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -285,7 +288,7 @@ namespace DragonFruit.Data
         /// <remarks>
         /// This is designed to be used by libraries requiring overall control of handlers (i.e. wrap the user-selected handler to provide additional functionality)
         /// </remarks>
-        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? CreateDefaultHandler();
+        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? ApiClient.CreateDefaultHandler();
 
         /// <summary>
         /// Overridable method used to control creation of a <see cref="HttpClient"/> used by the internal HTTP client.
@@ -353,7 +356,7 @@ namespace DragonFruit.Data
             return requestMessage;
         }
 
-        private HttpMessageHandler CreateDefaultHandler()
+        private static HttpMessageHandler CreateDefaultHandler()
         {
 #if NETSTANDARD2_0
             return new HttpClientHandler
