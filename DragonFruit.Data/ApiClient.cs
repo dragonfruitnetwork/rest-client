@@ -67,6 +67,19 @@ namespace DragonFruit.Data
         protected HttpClient Client => _client ??= CreateClient();
 
         /// <summary>
+        /// Sends a GET request to the provided <see cref="url"/>, returning a deserialized response.
+        /// </summary>
+        public Task<T> PerformAsync<T>(string url, CancellationToken cancellationToken = default) where T : class
+        {
+            var serializer = Serializers.Resolve<T>(DataDirection.In);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
+
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(serializer.ContentType));
+
+            return PerformAsyncInternal<T>(requestMessage, serializer, cancellationToken);
+        }
+
+        /// <summary>
         /// Builds and performs an <see cref="ApiRequest"/>, deserializing the results into the specified type.
         /// </summary>
         /// <remarks>
@@ -74,17 +87,32 @@ namespace DragonFruit.Data
         /// </remarks>
         public async Task<T> PerformAsync<T>(ApiRequest request, CancellationToken cancellationToken = default) where T : class
         {
-            using var requestMessage = await BuildRequest(request, Serializers.Resolve<T>(DataDirection.In).ContentType).ConfigureAwait(false);
-            return await PerformAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
+            var serializer = Serializers.Resolve<T>(DataDirection.In);
+            var requestMessage = await BuildRequest(request, serializer.ContentType).ConfigureAwait(false);
+
+            return await PerformAsyncInternal<T>(requestMessage, serializer, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Performs a prebuilt <see cref="HttpRequestMessage"/>, deserializing the results into the specified type.
         /// </summary>
-        public async Task<T> PerformAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default) where T : class
+        public Task<T> PerformAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default) where T : class
         {
-            using var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            return await ValidateAndProcess<T>(responseMessage, cancellationToken).ConfigureAwait(false);
+            return PerformAsyncInternal<T>(request, Serializers.Resolve<T>(DataDirection.In), cancellationToken);
+        }
+
+        private async Task<T> PerformAsyncInternal<T>(HttpRequestMessage request, ApiSerializer serializer, CancellationToken cancellationToken) where T : class
+        {
+            var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            return await ValidateAndProcess<T>(responseMessage, serializer, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a GET request to the provided <see cref="url"/>, returning the raw <see cref="HttpResponseMessage"/>
+        /// </summary>
+        public Task<HttpResponseMessage> PerformAsync(string url, CancellationToken cancellationToken = default)
+        {
+            return PerformAsync(new HttpRequestMessage(HttpMethod.Get, url), cancellationToken);
         }
 
         /// <summary>
@@ -92,8 +120,19 @@ namespace DragonFruit.Data
         /// </summary>
         public async Task<HttpResponseMessage> PerformAsync(ApiRequest request, CancellationToken cancellationToken = default)
         {
-            using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
-            return await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
+            return await PerformAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends a prebuilt <see cref="HttpRequestMessage"/>, returning the raw <see cref="HttpResponseMessage"/>
+        /// </summary>
+        public async Task<HttpResponseMessage> PerformAsync(HttpRequestMessage requestMessage, CancellationToken cancellationToken = default)
+        {
+            using (requestMessage)
+            {
+                return await Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -267,24 +306,25 @@ namespace DragonFruit.Data
         /// <summary>
         /// Overridable handler for validating and processing a <see cref="HttpResponseMessage"/>
         /// </summary>
-        protected virtual async Task<T> ValidateAndProcess<T>(HttpResponseMessage response, CancellationToken cancellationToken) where T : class
+        protected virtual async Task<T> ValidateAndProcess<T>(HttpResponseMessage response, ApiSerializer serializer, CancellationToken cancellationToken) where T : class
         {
-            response.EnsureSuccessStatusCode();
+            using (response)
+            {
+                response.EnsureSuccessStatusCode();
 
 #if NETSTANDARD2_0
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
 
-            var serializer = Serializers.Resolve<T>(DataDirection.In);
+                if (serializer is IAsyncSerializer asyncSerializer)
+                {
+                    return await asyncSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
+                }
 
-            if (serializer is IAsyncSerializer asyncSerializer)
-            {
-                return await asyncSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
+                return serializer.Deserialize<T>(stream);
             }
-
-            return serializer.Deserialize<T>(stream);
         }
 
         /// <summary>
