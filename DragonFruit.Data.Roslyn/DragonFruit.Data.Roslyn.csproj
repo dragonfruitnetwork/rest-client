@@ -20,7 +20,12 @@
         <PackageId>DragonFruit.Data.Roslyn</PackageId>
         <Description>Source generation and analysis tools for DragonFruit.Data</Description>
     </PropertyGroup>
-
+    
+    <!-- OutputItemType - see https://stackoverflow.com/a/71397443 -->
+    <ItemGroup>
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj" OutputItemType="Analyzer"/>
+    </ItemGroup>
+    
     <ItemGroup>
         <!-- Liquid templates -->
         <EmbeddedResource Include="Templates\*.liquid"/>
@@ -30,15 +35,12 @@
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
 
         <!-- https://stackoverflow.com/a/67074009 -->
-        <EmbeddedResource Include="$(OutputPath)\DragonFruit.Data.dll" Visible="false"/>
         <EmbeddedResource Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Visible="false"/>
 
-        <!-- OutputItemType - see https://stackoverflow.com/a/71397443 -->
-        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
-
         <!-- Roslyn component -->
-        <None Update="tools\*.ps1" Pack="true" PackagePath="tools" CopyToOutputDirectory="Always"/>
+        <None Include="tools\*.ps1" Pack="true" PackagePath="tools"/>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\DragonFruit.Data.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
     <ItemGroup>
