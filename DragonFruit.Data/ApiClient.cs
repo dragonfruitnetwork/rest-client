@@ -294,7 +294,7 @@ namespace DragonFruit.Data
         /// <remarks>
         /// This is designed to be used by libraries requiring overall control of handlers (i.e. wrap the user-selected handler to provide additional functionality)
         /// </remarks>
-        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? ApiClient.CreateDefaultHandler();
+        protected virtual HttpMessageHandler CreateHandler() => Handler?.Invoke() ?? CreateDefaultHandler();
 
         /// <summary>
         /// Overridable method used to control creation of a <see cref="HttpClient"/> used by the internal HTTP client.
@@ -367,7 +367,7 @@ namespace DragonFruit.Data
 #if NETSTANDARD2_0
             return new HttpClientHandler
             {
-                UseCookies = true,
+                UseCookies = false,
                 AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip
             };
 #else
