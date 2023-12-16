@@ -21,9 +21,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Roslyn.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Tests", "DragonFruit.Data.Tests\DragonFruit.Data.Tests.csproj", "{3526B57B-615F-48AC-ABC4-A2A8E5F659AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Serializers.Newtonsoft", "serializers\DragonFruit.Data.Serializers.Newtonsoft\DragonFruit.Data.Serializers.Newtonsoft.csproj", "{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Serializers.Html", "DragonFruit.Data.Serializers.Html\DragonFruit.Data.Serializers.Html.csproj", "{DDC1C284-917D-487D-BB7D-D0A2F85F3D93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Serializers.Html", "serializers\DragonFruit.Data.Serializers.Html\DragonFruit.Data.Serializers.Html.csproj", "{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DragonFruit.Data.Serializers.Newtonsoft", "DragonFruit.Data.Serializers.Newtonsoft\DragonFruit.Data.Serializers.Newtonsoft.csproj", "{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,14 +47,14 @@ Global
 		{3526B57B-615F-48AC-ABC4-A2A8E5F659AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3526B57B-615F-48AC-ABC4-A2A8E5F659AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3526B57B-615F-48AC-ABC4-A2A8E5F659AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDC1C284-917D-487D-BB7D-D0A2F85F3D93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDC1C284-917D-487D-BB7D-D0A2F85F3D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDC1C284-917D-487D-BB7D-D0A2F85F3D93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDC1C284-917D-487D-BB7D-D0A2F85F3D93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,7 +63,7 @@ Global
 		SolutionGuid = {368819C7-3F6F-4B76-BBF1-F581D180EA8F}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{58B033DF-A94A-4C97-A5DF-6AFD2C1E924C} = {5A8982CD-EEF9-4B9F-AF74-C8D45241E137}
-		{C2CB8DC2-D583-4612-9B4E-837EFB8BE6C5} = {5A8982CD-EEF9-4B9F-AF74-C8D45241E137}
+		{DDC1C284-917D-487D-BB7D-D0A2F85F3D93} = {5A8982CD-EEF9-4B9F-AF74-C8D45241E137}
+		{BA2CC215-DE9C-40BD-9FAF-2090EFB647A1} = {5A8982CD-EEF9-4B9F-AF74-C8D45241E137}
 	EndGlobalSection
 EndGlobal
