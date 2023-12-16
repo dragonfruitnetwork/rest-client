@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <TargetFramework>netstandard2.0</TargetFramework>
+
+        <AssemblyName>DragonFruit.Data.Roslyn</AssemblyName>
+        <RootNamespace>DragonFruit.Data.Roslyn</RootNamespace>
+
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>DragonFruit.Data.Roslyn</PackageId>
+        <Description>Source generation and analysis tools for DragonFruit.Data</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Liquid templates -->
+        <EmbeddedResource Include="Templates\*.liquid"/>
+        
+        <!-- Analyzer release tracking -->
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
+
+        <!-- https://stackoverflow.com/a/67074009 -->
+        <EmbeddedResource Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Visible="false"/>
+
+        <!-- OutputItemType - see https://stackoverflow.com/a/71397443 -->
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj" OutputItemType="Analyzer"/>
+
+        <!-- Roslyn component output -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
+        <PackageReference Include="Scriban" Version="5.9.0" PrivateAssets="all" GeneratePathProperty="true"/>
+    </ItemGroup>
+
+    <Import Project="../res/DragonFruit.Data.Nuget.props"/>
+
+</Project>

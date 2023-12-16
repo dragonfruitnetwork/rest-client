@@ -1,15 +1,15 @@
 <Project>
 
     <PropertyGroup>
-        <LangVersion>8</LangVersion>
+        <LangVersion>latest</LangVersion>
         <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- by importing the latest data lib, the sdk targets are added -->
-        <ProjectReference Include="$(SolutionDir)src\DragonFruit.Data.csproj"/>
+        <ProjectReference Include="..\src\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
-    <Import Project="$(SolutionDir)res\DragonFruit.Data.Nuget.props"/>
+    <Import Project="..\res\DragonFruit.Data.Nuget.props"/>
 
 </Project>

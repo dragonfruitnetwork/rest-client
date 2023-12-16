@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>DragonFruit.Data.Serializers.Html</PackageId>
+        <Description>HtmlDocument processing support for DragonFruit.Data</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.55"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
+    </ItemGroup>
+
+    <Import Project="..\res\DragonFruit.Data.Nuget.props"/>
+
+</Project>
