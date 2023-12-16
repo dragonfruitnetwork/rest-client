@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
 using DragonFruit.Data.Tests.Requests;
@@ -156,6 +157,25 @@ namespace DragonFruit.Data.Tests
 
             Assert.Contains("id_opt=One", sourceGenContent);
             Assert.Contains("ids=5c2a5585-2682-4c60-9bc7-b11874582af6,d85cf845-a35a-48e9-b629-700f77ab1c5d,885f37a8-6bf6-4d52-8092-71276ab706fd", sourceGenContent);
+        }
+
+        [Fact]
+        public async Task TestCustomHttpContentRequest()
+        {
+            var request = new CustomHttpContentRequest();
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            Assert.NotNull(sourceGenMessage.Content);
+            Assert.NotNull(reflectionGenMessage.Content);
+
+            // check form contents match
+            var sourceGenContent = await sourceGenMessage.Content.ReadAsStringAsync();
+            var reflectionGenContent = await reflectionGenMessage.Content.ReadAsStringAsync();
+
+            Assert.Equal(sourceGenContent, reflectionGenContent);
+            Assert.False(string.IsNullOrEmpty(sourceGenContent));
         }
     }
 }
