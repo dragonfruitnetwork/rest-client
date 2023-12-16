@@ -16,6 +16,12 @@ using DragonFruit.Data.Serializers;
 namespace DragonFruit.Data
 {
     /// <summary>
+    /// Represents a strongly-typed serializer version of <see cref="ApiClient"/>
+    /// </summary>
+    /// <typeparam name="T">The type of the <see cref="ApiSerializer"/></typeparam>
+    public class ApiClient<T>() : ApiClient(Activator.CreateInstance<T>()) where T : ApiSerializer, new();
+
+    /// <summary>
     /// The <see cref="ApiClient"/> responsible for building, submitting and processing HTTP requests
     /// </summary>
     public class ApiClient
@@ -372,18 +378,6 @@ namespace DragonFruit.Data
                 PooledConnectionLifetime = TimeSpan.FromMinutes(10)
             };
 #endif
-        }
-    }
-
-    /// <summary>
-    /// Represents a strongly-typed serializer version of <see cref="ApiClient"/>
-    /// </summary>
-    /// <typeparam name="T">The type of the <see cref="ApiSerializer"/></typeparam>
-    public class ApiClient<T> : ApiClient where T : ApiSerializer, new()
-    {
-        public ApiClient()
-            : base(Activator.CreateInstance<T>())
-        {
         }
     }
 }
