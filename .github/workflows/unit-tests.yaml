@@ -8,30 +8,21 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: false
   
-  testproject: './DragonFruit.Common.Data.Tests/DragonFruit.Common.Data.Tests.csproj'
-  
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        include:
-          - dotnet: '6.0.x'
-            dotnet-tfm: 'net6.0'
-            dotnet-test-tfm: 'net6.0'
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install .NET
-        uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          dotnet-version: 8.0.x
 
       - name: Build
-        run: dotnet build -c Debug
+        run: dotnet build -c Release
+
+      - name: Unit Tests (Roslyn)
+        run: dotnet test -f net8.0 -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Roslyn.Tests
 
       - name: Unit Tests
-        run: dotnet test -f ${{ matrix.dotnet-test-tfm }}
+        run: dotnet test -f net8.0 -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Tests
