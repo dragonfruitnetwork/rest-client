@@ -117,6 +117,11 @@ namespace DragonFruit.Data.Converters
         {
             var propertyValue = accessor.GetValue(source);
 
+            if (propertyValue == null)
+            {
+                return;
+            }
+
             if (accessor.PropertyType.IsEnum)
             {
                 var options = accessor.GetCustomAttribute<EnumOptionsAttribute>()?.Options ?? EnumOption.None;
@@ -153,6 +158,11 @@ namespace DragonFruit.Data.Converters
         private static void WriteHeaderProperty(HttpHeaders collection, string parameterName, PropertyInfo accessor, object source)
         {
             var propertyValue = accessor.GetValue(source);
+
+            if (propertyValue == null)
+            {
+                return;
+            }
 
             if (accessor.PropertyType.IsEnum)
             {
@@ -197,6 +207,11 @@ namespace DragonFruit.Data.Converters
         private static void WriteMultipartProperty(MultipartFormDataContent multipartForm, string parameterName, PropertyInfo accessor, object source)
         {
             var value = accessor.GetValue(source);
+
+            if (value == null)
+            {
+                return;
+            }
 
             if (accessor.PropertyType.IsEnum)
             {
