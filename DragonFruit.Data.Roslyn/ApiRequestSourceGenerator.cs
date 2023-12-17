@@ -63,7 +63,7 @@ namespace DragonFruit.Data.Roslyn
                 predicate: (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax classDecl && classDecl.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)),
                 transform: (generatorSyntaxContext, _) => GetSemanticTarget(generatorSyntaxContext));
 
-            IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Collect());
+            var targets = context.CompilationProvider.Combine(apiRequestDerivedClasses.Where(x => x != null).Collect());
             context.RegisterSourceOutput(targets, (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
