@@ -7,8 +7,11 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using DragonFruit.Data.Converters;
 using DragonFruit.Data.Requests;
 using DragonFruit.Data.Serializers;
@@ -36,6 +39,21 @@ namespace DragonFruit.Data
         ~ApiClient()
         {
             _client?.Dispose();
+        }
+
+        static ApiClient()
+        {
+            // register generic xml document type
+            SerializerResolver.Register<XmlDocument, ApiXmlSerializer>();
+
+            // register system.text.json types
+            SerializerResolver.Register<JsonObject, ApiJsonSerializer>();
+            SerializerResolver.Register<JsonDocument, ApiJsonSerializer>();
+
+            // register stream resolver types (inwards only)
+            SerializerResolver.Register<Stream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<FileStream, InternalStreamSerializer>(DataDirection.In);
+            SerializerResolver.Register<MemoryStream, InternalStreamSerializer>(DataDirection.In);
         }
 
         /// <summary>
