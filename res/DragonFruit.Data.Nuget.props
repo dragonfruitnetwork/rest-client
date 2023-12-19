@@ -21,7 +21,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <None Include="..\res\icon.png" Pack="true" PackagePath="."/>
+        <None Include="..\res\icon.png" Pack="true" PackagePath="." Visible="false"/>
     </ItemGroup>
 
 </Project>
