@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="../readme.md" Pack="true" Path="."/>
+        <None Include="../readme.md" Pack="true" Path="." Visible="false"/>
     </ItemGroup>
     
     <Import Project="../res/DragonFruit.Data.Nuget.props"/>
