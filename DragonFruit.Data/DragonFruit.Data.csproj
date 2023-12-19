@@ -19,6 +19,10 @@
         <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="../readme.md" Pack="true" Path="."/>
+    </ItemGroup>
+    
     <Import Project="../res/DragonFruit.Data.Nuget.props"/>
 
 </Project>
