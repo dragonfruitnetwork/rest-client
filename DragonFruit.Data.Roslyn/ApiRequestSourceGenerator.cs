@@ -224,7 +224,6 @@ namespace DragonFruit.Data.Roslyn
                     // only allow public, protected and protected internal properties
                     if (candidate.DeclaredAccessibility is Accessibility.Private or Accessibility.Internal)
                     {
-                        // todo diagnostic warning
                         continue;
                     }
 
@@ -239,7 +238,6 @@ namespace DragonFruit.Data.Roslyn
                     // if a method is declared, ensure it's not void
                     if (returnType.SpecialType == SpecialType.System_Void)
                     {
-                        // todo return diagnostic warning
                         continue;
                     }
 
@@ -254,14 +252,12 @@ namespace DragonFruit.Data.Roslyn
 
                     if (candidateMethod == null)
                     {
-                        // todo return diagnostic warning (no getter)
                         continue;
                     }
 
                     // inherited properties that are private or internal are ignored
                     if (depth > 0 && candidateMethod.DeclaredAccessibility is Accessibility.Private or Accessibility.Internal)
                     {
-                        // todo return diagnostic warning (getter not accessible)
                         continue;
                     }
 
