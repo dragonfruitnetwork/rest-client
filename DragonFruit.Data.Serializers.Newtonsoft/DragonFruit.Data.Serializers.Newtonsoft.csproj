@@ -11,15 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj" />
+        <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="readme.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="readme.md" Pack="true" PackagePath="docs" Visible="false"/>
     </ItemGroup>
 
     <Import Project="..\res\DragonFruit.Data.Nuget.props"/>

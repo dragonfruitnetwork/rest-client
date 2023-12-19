@@ -11,7 +11,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <PackageIcon>icon.png</PackageIcon>
-        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageReadmeFile>docs/readme.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>api, rest, http, sourcegen, client, httpclient</PackageTags>
         <PackageProjectUrl>https://github.com/dragonfruitnetwork/rest-client</PackageProjectUrl>

@@ -20,16 +20,16 @@
         <PackageId>DragonFruit.Data.Roslyn</PackageId>
         <Description>Source generation and analysis tools for DragonFruit.Data</Description>
     </PropertyGroup>
-    
+
     <!-- OutputItemType - see https://stackoverflow.com/a/71397443 -->
     <ItemGroup>
         <ProjectReference Include="..\DragonFruit.Data\DragonFruit.Data.csproj" OutputItemType="Analyzer"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <!-- readme.md-->
-        <None Include="readme.md" Pack="true" PackagePath="." Visible="false"/>
-        
+        <None Include="readme.md" Pack="true" PackagePath="docs" Visible="false"/>
+
         <!-- Liquid templates -->
         <EmbeddedResource Include="Templates\*.liquid"/>
 
