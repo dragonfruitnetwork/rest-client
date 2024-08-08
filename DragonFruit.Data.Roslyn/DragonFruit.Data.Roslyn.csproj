@@ -38,7 +38,7 @@
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
 
         <!-- https://stackoverflow.com/a/67074009 -->
-        <EmbeddedResource Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Visible="false"/>
+        <EmbeddedResource Include="$(PkgStrawberryShake_CodeGeneration_CSharp)\lib\netstandard2.0\*.dll" Visible="false"/>
 
         <!-- Roslyn component -->
         <None Include="tools\*.ps1" Pack="true" PackagePath="tools"/>
@@ -53,8 +53,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
-        <PackageReference Include="Scriban" Version="5.9.0" GeneratePathProperty="true"/>
-        <PackageReference Include="StrawberryShake.CodeGeneration.CSharp" Version="12.22.4" />
+        <PackageReference Include="StrawberryShake.CodeGeneration.CSharp" GeneratePathProperty="true" Version="12.22.4" />
     </ItemGroup>
 
 </Project>
