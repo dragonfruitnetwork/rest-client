@@ -23,7 +23,7 @@ namespace DragonFruit.Data.Converters
             var requestProperties = requestType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             var requestParams = requestProperties.Select(GetPropertyInfo).Where(x => x != null).ToLookup(x => x.Value.ParameterType, x => (PropertyName: x.Value.ParameterName, x.Value.Accessor));
 
-            var requestUri = new UriBuilder(request.RequestPath);
+            var requestUri = new StringBuilder(request.RequestPath);
 
             // build query
             if (requestParams[ParameterType.Query].Any())
@@ -39,11 +39,11 @@ namespace DragonFruit.Data.Converters
                 {
                     // trim trailing &
                     queryBuilder.Length--;
-                    requestUri.Query = queryBuilder.ToString();
+                    requestUri.Append('?').Append(queryBuilder);
                 }
             }
 
-            var requestMessage = new HttpRequestMessage(request.RequestMethod, requestUri.Uri);
+            var requestMessage = new HttpRequestMessage(request.RequestMethod, requestUri.ToString());
 
             // add headers
             foreach (var headerParameter in requestParams[ParameterType.Header])
