@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace DragonFruit.Data.Roslyn.Entities
 {
-    internal class KeyValuePairSymbolMetadata : PropertySymbolMetadata
+    internal class KeyValuePairSymbolMetadata : ParameterSymbolMetadata
     {
         public override RequestSymbolType Type => RequestSymbolType.KeyValuePair;
 

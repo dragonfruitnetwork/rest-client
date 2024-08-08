@@ -6,11 +6,11 @@ using Microsoft.CodeAnalysis;
 
 namespace DragonFruit.Data.Roslyn.Entities
 {
-    internal class PropertySymbolMetadata : SymbolMetadata
+    internal class ParameterSymbolMetadata : SymbolMetadata
     {
         public virtual RequestSymbolType Type { get; }
 
-        public PropertySymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName, RequestSymbolType type = RequestSymbolType.Standard)
+        public ParameterSymbolMetadata(ISymbol symbol, ITypeSymbol returnType, string parameterName, RequestSymbolType type = RequestSymbolType.Standard)
             : base(symbol, returnType)
         {
             Type = type;
