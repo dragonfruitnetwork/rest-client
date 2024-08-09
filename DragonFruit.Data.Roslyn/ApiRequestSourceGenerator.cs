@@ -74,7 +74,8 @@ namespace DragonFruit.Data.Roslyn
                     requestBodyType = metadata.FormBodyType == FormBodyType.Multipart ? RequestBodyType.FormMultipart : RequestBodyType.FormUriEncoded;
                 }
 
-                context.AddSource($"{classSymbol.Name}.dragonfruit.g.cs", ApiRequestSourceBuilder.Build(classSymbol, metadata, requestBodyType));
+                var requireNewKeyword = WillHideOtherMembers(classSymbol, compilation.GetTypeByMetadataName(typeof(ApiRequest).FullName));
+                context.AddSource($"{classSymbol.Name}.dragonfruit.g.cs", ApiRequestSourceBuilder.Build(classSymbol, metadata, requestBodyType, requireNewKeyword));
             }
         }
 

@@ -32,7 +32,7 @@ internal static class ApiRequestSourceBuilder
         SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("DragonFruit.Data.Requests"))
     ];
 
-    public static SourceText Build(INamedTypeSymbol classSymbol, RequestSymbolMetadata metadata, RequestBodyType requestBodyType)
+    public static SourceText Build(INamedTypeSymbol classSymbol, RequestSymbolMetadata metadata, RequestBodyType requestBodyType, bool requireNewKeyword = false)
     {
         // classes are partial by default
         var classBuilder = new ClassBuilder()
@@ -50,15 +50,14 @@ internal static class ApiRequestSourceBuilder
                             .AddParameter(serializerMethodParamBuilder);
 
         // create a new UriBuilder called uriBuilder pulling in the uri from this.RequestPath
-        var methodBodyBuilder = new CodeBlockBuilder()
-                                .AddCode("var uriBuilder = new global::System.Text.StringBuilder(this.RequestPath);")
-                                .AddEmptyLine();
+        var methodBodyBuilder = new CodeBlockBuilder();
+        var buildQueryString = metadata.Properties[ParameterType.Query].Any();
 
         // process queries
-        if (metadata.Properties[ParameterType.Query].Any())
+        if (buildQueryString)
         {
-            methodBodyBuilder.AddCode("var queryBuilder = new global::System.Text.StringBuilder();");
-            methodBodyBuilder.AddEmptyLine();
+            methodBodyBuilder.AddCode("var uriBuilder = new global::System.Text.StringBuilder(this.RequestPath);").AddEmptyLine();
+            methodBodyBuilder.AddCode("var queryBuilder = new global::System.Text.StringBuilder();").AddEmptyLine();
 
             WriteUriQueryBuilder(methodBodyBuilder, metadata.Properties[ParameterType.Query].OfType<ParameterSymbolMetadata>(), "queryBuilder");
 
@@ -69,8 +68,9 @@ internal static class ApiRequestSourceBuilder
             methodBodyBuilder.AddEmptyLine();
         }
 
-        // create request body
-        methodBodyBuilder.AddCode("var request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, uriBuilder.ToString());").AddEmptyLine();
+        // create request body (w/ shortcut to reduce allocations when no query is generated)
+        var uriAccessor = buildQueryString ? "uriBuilder.ToString()" : "this.RequestPath";
+        methodBodyBuilder.AddCode($"var request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, {uriAccessor});").AddEmptyLine();
 
         // process body content
         switch (requestBodyType)
@@ -204,12 +204,29 @@ internal static class ApiRequestSourceBuilder
                                                                   .AddCode("request.Headers.Add(kvp.Key, kvp.Value);"));
                         break;
 
+                    // enums are the only thing here that may/may not be nullable
                     case EnumSymbolMetadata enumSymbol:
-                        headerHandler.AddCode($"request.Headers.Add(\"{symbol.ParameterName}\", global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({symbol.Accessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}));");
-                        break;
+                        var enumBlock = $"request.Headers.Add(\"{symbol.ParameterName}\", global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({symbol.Accessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}));";
+
+                        if (symbol.Nullable)
+                        {
+                            headerHandler.AddCode(enumBlock);
+                            break;
+                        }
+
+                        methodBodyBuilder.AddCode(enumBlock);
+                        continue;
 
                     default:
-                        headerHandler.AddCode($"request.Headers.Add(\"{symbol.ParameterName}\", {symbol.Accessor}.ToString());");
+                        var block = $"request.Headers.Add(\"{symbol.ParameterName}\", {symbol.Accessor}.ToString());";
+
+                        if (symbol.Nullable)
+                        {
+                            headerHandler.AddCode(block);
+                            break;
+                        }
+
+                        methodBodyBuilder.AddCode(block);
                         break;
                 }
 
@@ -232,6 +249,14 @@ internal static class ApiRequestSourceBuilder
         var tree = CSharpSyntaxTree.ParseText(SourceText.From(code.ToString()));
         var classNode = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
         var ns = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(classSymbol.ContainingNamespace.ToDisplayString()));
+
+        if (requireNewKeyword)
+        {
+            var method = classNode.DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+            var newModifiers = method.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.NewKeyword));
+
+            classNode = classNode.ReplaceNode(method, method.WithModifiers(newModifiers));
+        }
 
         return SyntaxFactory.CompilationUnit()
                             .AddUsings(DefaultUsingStatements)
