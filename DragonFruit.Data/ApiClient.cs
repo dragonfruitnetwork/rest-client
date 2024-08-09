@@ -22,7 +22,18 @@ namespace DragonFruit.Data
     /// Represents a strongly-typed serializer version of <see cref="ApiClient"/>
     /// </summary>
     /// <typeparam name="T">The type of the <see cref="ApiSerializer"/></typeparam>
-    public class ApiClient<T>() : ApiClient(Activator.CreateInstance<T>()) where T : ApiSerializer, new();
+    public class ApiClient<T> : ApiClient where T : ApiSerializer, new()
+    {
+        public ApiClient()
+            : base(new T())
+        {
+        }
+
+        public ApiClient(Uri baseAddress)
+            : base(new T(), baseAddress)
+        {
+        }
+    }
 
     /// <summary>
     /// The <see cref="ApiClient"/> responsible for building, submitting and processing HTTP requests
@@ -30,10 +41,17 @@ namespace DragonFruit.Data
     public class ApiClient
     {
         private HttpClient _client;
+        private Uri _baseAddress;
 
         public ApiClient(ApiSerializer serializer)
         {
             Serializers = new SerializerResolver(serializer);
+        }
+
+        public ApiClient(ApiSerializer serializer, Uri baseAddress)
+            : this(serializer)
+        {
+            _baseAddress = baseAddress;
         }
 
         ~ApiClient()
@@ -66,6 +84,23 @@ namespace DragonFruit.Data
             {
                 Client.DefaultRequestHeaders.UserAgent.Clear();
                 Client.DefaultRequestHeaders.UserAgent.ParseAdd(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Uri"/> that should act as the base address for relative-URI requests
+        /// </summary>
+        public Uri BaseAddress
+        {
+            get => _client?.BaseAddress ?? _baseAddress;
+            set
+            {
+                _baseAddress = value;
+
+                if (_client != null)
+                {
+                    _client.BaseAddress = value;
+                }
             }
         }
 
@@ -327,6 +362,7 @@ namespace DragonFruit.Data
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 #endif
 
+            client.BaseAddress = _baseAddress;
             return client;
         }
 
@@ -362,40 +398,41 @@ namespace DragonFruit.Data
         /// <returns>The <see cref="HttpRequestMessage"/> to send</returns>
         protected virtual async ValueTask<HttpRequestMessage> BuildRequest(ApiRequest request, string expectedContentType)
         {
-            if (request is IRequestExecutingCallback callback)
+            switch (request)
             {
-                callback.OnRequestExecuting(this);
+                case IRequestExecutingCallback callback:
+                    callback.OnRequestExecuting(this);
+                    break;
+
+                case IAsyncRequestExecutingCallback asyncCallback:
+                    await asyncCallback.OnRequestExecuting(this);
+                    break;
             }
 
-            if (request is IAsyncRequestExecutingCallback asyncCallback)
-            {
-                await asyncCallback.OnRequestExecuting(this);
-            }
-
-            var requestMessage = request is IRequestBuilder rb
-                ? rb.BuildRequest(Serializers)
-                : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, Serializers);
-
+            var requestMessage = (request as IRequestBuilder)?.BuildRequest(Serializers) ?? ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, Serializers);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(expectedContentType));
+
             return requestMessage;
         }
 
         public static HttpMessageHandler CreateDefaultHandler()
         {
-#if NETSTANDARD2_0
+#if !NETSTANDARD2_0
+            if (SocketsHttpHandler.IsSupported)
+            {
+                return new SocketsHttpHandler
+                {
+                    UseCookies = false,
+                    AutomaticDecompression = DecompressionMethods.All,
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(10)
+                };
+            }
+#endif
             return new HttpClientHandler
             {
                 UseCookies = false,
                 AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip
             };
-#else
-            return new SocketsHttpHandler
-            {
-                UseCookies = false,
-                AutomaticDecompression = DecompressionMethods.All,
-                PooledConnectionLifetime = TimeSpan.FromMinutes(10)
-            };
-#endif
         }
     }
 }
