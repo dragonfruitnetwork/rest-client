@@ -387,40 +387,41 @@ namespace DragonFruit.Data
         /// <returns>The <see cref="HttpRequestMessage"/> to send</returns>
         protected virtual async ValueTask<HttpRequestMessage> BuildRequest(ApiRequest request, string expectedContentType)
         {
-            if (request is IRequestExecutingCallback callback)
+            switch (request)
             {
-                callback.OnRequestExecuting(this);
+                case IRequestExecutingCallback callback:
+                    callback.OnRequestExecuting(this);
+                    break;
+
+                case IAsyncRequestExecutingCallback asyncCallback:
+                    await asyncCallback.OnRequestExecuting(this);
+                    break;
             }
 
-            if (request is IAsyncRequestExecutingCallback asyncCallback)
-            {
-                await asyncCallback.OnRequestExecuting(this);
-            }
-
-            var requestMessage = request is IRequestBuilder rb
-                ? rb.BuildRequest(Serializers)
-                : ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, Serializers);
-
+            var requestMessage = (request as IRequestBuilder)?.BuildRequest(Serializers) ?? ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, Serializers);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(expectedContentType));
+
             return requestMessage;
         }
 
         public static HttpMessageHandler CreateDefaultHandler()
         {
-#if NETSTANDARD2_0
+#if !NETSTANDARD2_0
+            if (SocketsHttpHandler.IsSupported)
+            {
+                return new SocketsHttpHandler
+                {
+                    UseCookies = false,
+                    AutomaticDecompression = DecompressionMethods.All,
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(10)
+                };
+            }
+#endif
             return new HttpClientHandler
             {
                 UseCookies = false,
                 AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip
             };
-#else
-            return new SocketsHttpHandler
-            {
-                UseCookies = false,
-                AutomaticDecompression = DecompressionMethods.All,
-                PooledConnectionLifetime = TimeSpan.FromMinutes(10)
-            };
-#endif
         }
     }
 }
