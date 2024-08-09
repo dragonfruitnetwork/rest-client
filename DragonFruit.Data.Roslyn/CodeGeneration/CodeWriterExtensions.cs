@@ -20,7 +20,7 @@ public static class CodeWriterExtensions
 #else
         writer.WriteIndentedLine(
             "[global::System.CodeDom.Compiler.GeneratedCode(" +
-            $"\"StrawberryShake\", \"{version}\")]");
+            $"\"DragonFruit.Data\", \"{version}\")]");
 #endif
     }
 
