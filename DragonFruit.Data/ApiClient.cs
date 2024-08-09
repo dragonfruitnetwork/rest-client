@@ -22,7 +22,18 @@ namespace DragonFruit.Data
     /// Represents a strongly-typed serializer version of <see cref="ApiClient"/>
     /// </summary>
     /// <typeparam name="T">The type of the <see cref="ApiSerializer"/></typeparam>
-    public class ApiClient<T>() : ApiClient(new T()) where T : ApiSerializer, new();
+    public class ApiClient<T> : ApiClient where T : ApiSerializer, new()
+    {
+        public ApiClient()
+            : base(new T())
+        {
+        }
+
+        public ApiClient(Uri baseAddress)
+            : base(new T(), baseAddress)
+        {
+        }
+    }
 
     /// <summary>
     /// The <see cref="ApiClient"/> responsible for building, submitting and processing HTTP requests
