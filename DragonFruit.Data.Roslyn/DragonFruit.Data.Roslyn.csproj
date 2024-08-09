@@ -10,6 +10,7 @@
         <AssemblyName>DragonFruit.Data.Roslyn</AssemblyName>
         <RootNamespace>DragonFruit.Data.Roslyn</RootNamespace>
 
+        <NoWarn>CS8669,$(NoWarn)</NoWarn>
         <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
@@ -30,15 +31,9 @@
         <!-- readme.md-->
         <None Include="readme.md" Pack="true" PackagePath="docs" Visible="false"/>
 
-        <!-- Liquid templates -->
-        <EmbeddedResource Include="Templates\*.liquid"/>
-
         <!-- Analyzer release tracking -->
         <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
-
-        <!-- https://stackoverflow.com/a/67074009 -->
-        <EmbeddedResource Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Visible="false"/>
 
         <!-- Roslyn component -->
         <None Include="tools\*.ps1" Pack="true" PackagePath="tools"/>
@@ -51,9 +46,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
-        <PackageReference Include="Scriban" Version="5.9.0" GeneratePathProperty="true"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" />
     </ItemGroup>
 
 </Project>

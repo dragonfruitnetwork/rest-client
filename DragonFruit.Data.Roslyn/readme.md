@@ -8,6 +8,8 @@ A Roslyn source-generator and code-analyzer for DragonFruit.Data
 DragonFruit.Data.Roslyn is a source-generator and code-analyzer for DragonFruit.Data that allows the request-building logic for `ApiRequest` classes to be generated at compile-time, rather than at runtime for each request.
 It also provides code-analysis to ensure attributes are applied correctly and design rules are followed.
 
+> Some aspects of the source generator are based on [ChilliCream's StrawberryShake code generation tooling](https://github.com/ChilliCream/graphql-platform/tree/13.9.11/src/StrawberryShake/CodeGeneration/src/CodeGeneration.CSharp) (MIT Licensed)
+
 ## Usage/Getting Started
 **Note: while semantic versioning is used, it is best to ensure the versions of `DragonFruit.Data` and `DragonFruit.Data.Roslyn` are the same.**
 

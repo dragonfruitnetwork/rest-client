@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace DragonFruit.Data.Roslyn.Entities
 {
-    internal class EnumerableSymbolMetadata : PropertySymbolMetadata
+    internal class EnumerableSymbolMetadata : ParameterSymbolMetadata
     {
         public override RequestSymbolType Type => RequestSymbolType.Enumerable;
 
