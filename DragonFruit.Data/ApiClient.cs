@@ -30,10 +30,17 @@ namespace DragonFruit.Data
     public class ApiClient
     {
         private HttpClient _client;
+        private Uri _baseAddress;
 
         public ApiClient(ApiSerializer serializer)
         {
             Serializers = new SerializerResolver(serializer);
+        }
+
+        public ApiClient(ApiSerializer serializer, Uri baseAddress)
+            : this(serializer)
+        {
+            _baseAddress = baseAddress;
         }
 
         ~ApiClient()
@@ -66,6 +73,23 @@ namespace DragonFruit.Data
             {
                 Client.DefaultRequestHeaders.UserAgent.Clear();
                 Client.DefaultRequestHeaders.UserAgent.ParseAdd(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Uri"/> that should act as the base address for relative-URI requests
+        /// </summary>
+        public Uri BaseAddress
+        {
+            get => _client?.BaseAddress ?? _baseAddress;
+            set
+            {
+                _baseAddress = value;
+
+                if (_client != null)
+                {
+                    _client.BaseAddress = value;
+                }
             }
         }
 
@@ -327,6 +351,7 @@ namespace DragonFruit.Data
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 #endif
 
+            client.BaseAddress = _baseAddress;
             return client;
         }
 
