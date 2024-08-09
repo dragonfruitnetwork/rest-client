@@ -7,14 +7,12 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <TargetFramework>netstandard2.0</TargetFramework>
 
-        <NoWarn>CS8669,$(NoWarn)</NoWarn>
-
         <AssemblyName>DragonFruit.Data.Roslyn</AssemblyName>
         <RootNamespace>DragonFruit.Data.Roslyn</RootNamespace>
 
+        <NoWarn>CS8669,$(NoWarn)</NoWarn>
         <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     </PropertyGroup>
@@ -38,7 +36,8 @@
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
 
         <!-- Roslyn component -->
-        <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="tools\*.ps1" Pack="true" PackagePath="tools"/>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\DragonFruit.Data.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
@@ -47,7 +46,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" />
     </ItemGroup>
+
 </Project>
