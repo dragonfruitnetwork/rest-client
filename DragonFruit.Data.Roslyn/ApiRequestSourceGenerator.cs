@@ -35,11 +35,6 @@ namespace DragonFruit.Data.Roslyn
             }
         ];
 
-        static ApiRequestSourceGenerator()
-        {
-            ExternalDependencyLoader.RegisterDependencyLoader();
-        }
-
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var apiRequestDerivedClasses = context.SyntaxProvider.CreateSyntaxProvider(

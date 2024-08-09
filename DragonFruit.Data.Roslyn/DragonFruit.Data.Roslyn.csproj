@@ -7,11 +7,14 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <TargetFramework>netstandard2.0</TargetFramework>
 
+        <NoWarn>CS8669,$(NoWarn)</NoWarn>
+
         <AssemblyName>DragonFruit.Data.Roslyn</AssemblyName>
         <RootNamespace>DragonFruit.Data.Roslyn</RootNamespace>
 
         <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     </PropertyGroup>
@@ -30,19 +33,12 @@
         <!-- readme.md-->
         <None Include="readme.md" Pack="true" PackagePath="docs" Visible="false"/>
 
-        <!-- Liquid templates -->
-        <EmbeddedResource Include="Templates\*.liquid"/>
-
         <!-- Analyzer release tracking -->
         <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
 
-        <!-- https://stackoverflow.com/a/67074009 -->
-        <EmbeddedResource Include="$(PkgStrawberryShake_CodeGeneration_CSharp)\lib\netstandard2.0\*.dll" Visible="false"/>
-
         <!-- Roslyn component -->
-        <None Include="tools\*.ps1" Pack="true" PackagePath="tools"/>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="$(OutputPath)\DragonFruit.Data.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
@@ -53,7 +49,5 @@
         </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
-        <PackageReference Include="StrawberryShake.CodeGeneration.CSharp" GeneratePathProperty="true" Version="12.22.4" />
     </ItemGroup>
-
 </Project>
