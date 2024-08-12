@@ -57,10 +57,11 @@ internal static class ApiRequestSourceBuilder
         if (buildQueryString)
         {
             methodBodyBuilder.AddCode("var uriBuilder = new global::System.Text.StringBuilder(this.RequestPath);").AddEmptyLine();
-            methodBodyBuilder.AddCode("var queryBuilder = new global::System.Text.StringBuilder();").AddEmptyLine();
+            methodBodyBuilder.AddCode("var queryBuilder = new global::System.Text.StringBuilder();").AddEmptyLine().AddEmptyLine();
 
             WriteUriQueryBuilder(methodBodyBuilder, metadata.Properties[ParameterType.Query].OfType<ParameterSymbolMetadata>(), "queryBuilder");
 
+            methodBodyBuilder.AddEmptyLine().AddEmptyLine();
             methodBodyBuilder.AddCode(new IfBuilder().SetCondition("queryBuilder.Length > 0")
                                                      .AddCode("queryBuilder.Length--;")
                                                      .AddCode("uriBuilder.Append(\"?\").Append(queryBuilder);"));
@@ -70,7 +71,7 @@ internal static class ApiRequestSourceBuilder
 
         // create request body (w/ shortcut to reduce allocations when no query is generated)
         var uriAccessor = buildQueryString ? "uriBuilder.ToString()" : "this.RequestPath";
-        methodBodyBuilder.AddCode($"var request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, {uriAccessor});").AddEmptyLine();
+        methodBodyBuilder.AddCode($"var request = new global::System.Net.Http.HttpRequestMessage(this.RequestMethod, {uriAccessor});").AddEmptyLine().AddEmptyLine();
 
         // process body content
         switch (requestBodyType)
