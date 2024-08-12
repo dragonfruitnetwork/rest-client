@@ -64,7 +64,7 @@ internal static class ApiRequestSourceBuilder
             methodBodyBuilder.AddEmptyLine().AddEmptyLine();
             methodBodyBuilder.AddCode(new IfBuilder().SetCondition("queryBuilder.Length > 0")
                                                      .AddCode("queryBuilder.Length--;")
-                                                     .AddCode("uriBuilder.Append(\"?\").Append(queryBuilder);"));
+                                                     .AddCode("uriBuilder.Append('?').Append(queryBuilder);"));
             methodBodyBuilder.AddEmptyLine();
             methodBodyBuilder.AddEmptyLine();
         }
