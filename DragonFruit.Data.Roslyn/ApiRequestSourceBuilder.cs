@@ -36,8 +36,16 @@ internal static class ApiRequestSourceBuilder
     {
         // classes are partial by default
         var classBuilder = new ClassBuilder()
+                           .AddImplements("global::DragonFruit.Data.Requests.IRequestBuilder")
                            .SetName(classSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
-                           .AddImplements("global::DragonFruit.Data.Requests.IRequestBuilder");
+                           .SetAccessModifier(classSymbol.DeclaredAccessibility switch
+                           {
+                               Accessibility.Public => AccessModifier.Public,
+                               Accessibility.Internal => AccessModifier.Internal,
+                               Accessibility.Private => AccessModifier.Private,
+
+                               _ => AccessModifier.Protected
+                           });
 
         var serializerMethodParamBuilder = new ParameterBuilder()
                                            .SetType("global::DragonFruit.Data.Serializers.SerializerResolver")
