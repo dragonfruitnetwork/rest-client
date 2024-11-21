@@ -3,7 +3,7 @@
     <PropertyGroup Label="Assembly Metadata">
         <Product>DragonFruit Data</Product>
         <Authors>DragonFruit Network</Authors>
-        <Copyright>Copyright 2023 (C) DragonFruit Network</Copyright>
+        <Copyright>Copyright 2024 (C) DragonFruit Network</Copyright>
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet">
