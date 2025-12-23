@@ -6,13 +6,8 @@ using System;
 namespace DragonFruit.Data.Requests
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class FormBodyTypeAttribute : Attribute
+    public class FormBodyTypeAttribute(FormBodyType bodyType) : Attribute
     {
-        public FormBodyTypeAttribute(FormBodyType bodyType)
-        {
-            BodyType = bodyType;
-        }
-
-        public FormBodyType BodyType { get; }
+        public FormBodyType BodyType { get; } = bodyType;
     }
 }

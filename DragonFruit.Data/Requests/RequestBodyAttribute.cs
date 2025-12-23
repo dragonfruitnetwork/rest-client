@@ -14,7 +14,5 @@ namespace DragonFruit.Data.Requests
     /// There must not be any more than one property/method that is decorated with this attribute.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class RequestBodyAttribute : Attribute
-    {
-    }
+    public class RequestBodyAttribute : Attribute;
 }

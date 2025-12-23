@@ -9,22 +9,16 @@ namespace DragonFruit.Data.Requests
     /// Marks a property or method to be included as a parameter in the HTTP request
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class RequestParameterAttribute : Attribute
+    public class RequestParameterAttribute(ParameterType parameterType, string name) : Attribute
     {
-        public RequestParameterAttribute(ParameterType parameterType, string name)
-        {
-            ParameterType = parameterType;
-            Name = name;
-        }
-
         /// <summary>
         /// The type/location the value should be stored under
         /// </summary>
-        public ParameterType ParameterType { get; }
+        public ParameterType ParameterType { get; } = parameterType;
 
         /// <summary>
         /// The name the value should be written under
         /// </summary>
-        public string Name { get; }
+        public string Name { get; } = name;
     }
 }
