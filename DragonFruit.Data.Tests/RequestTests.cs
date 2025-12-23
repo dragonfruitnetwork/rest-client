@@ -179,6 +179,67 @@ namespace DragonFruit.Data.Tests
             Assert.False(string.IsNullOrEmpty(sourceGenContent));
         }
 
+        [Fact]
+        public void TestNullableEnumRequest()
+        {
+            var request = new NullableEnumRequest
+            {
+                QueryEnum = NullableTestEnum.Active,
+                QueryEnumNumeric = NullableTestEnum.Inactive,
+                QueryEnumLower = NullableTestEnum.Pending,
+                HeaderEnum = NullableTestEnum.Active,
+                HeaderEnumNumeric = NullableTestEnum.Inactive
+            };
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            Assert.NotNull(sourceGenMessage.RequestUri);
+            Assert.NotNull(reflectionGenMessage.RequestUri);
+
+            // verify query strings match between source-generated and reflection-based
+            Assert.Equal(sourceGenMessage.RequestUri.Query, reflectionGenMessage.RequestUri.Query);
+
+            // verify query string contains expected enum values
+            Assert.Contains("status=Active", sourceGenMessage.RequestUri.Query);
+            Assert.Contains("status_numeric=2", sourceGenMessage.RequestUri.Query);
+            Assert.Contains("status_lower=pending", sourceGenMessage.RequestUri.Query);
+
+            // verify headers match
+            Assert.Equal(sourceGenMessage.Headers.GetValues("X-Status").Single(), reflectionGenMessage.Headers.GetValues("X-Status").Single());
+            Assert.Equal(sourceGenMessage.Headers.GetValues("X-Status-Numeric").Single(), reflectionGenMessage.Headers.GetValues("X-Status-Numeric").Single());
+
+            Assert.Equal("Active", sourceGenMessage.Headers.GetValues("X-Status").Single());
+            Assert.Equal("2", sourceGenMessage.Headers.GetValues("X-Status-Numeric").Single());
+        }
+
+        [Fact]
+        public void TestNullableEnumRequest_NullValues()
+        {
+            var request = new NullableEnumRequest
+            {
+                QueryEnum = null,
+                QueryEnumNumeric = null,
+                QueryEnumLower = null,
+                HeaderEnum = null,
+                HeaderEnumNumeric = null
+            };
+
+            using var sourceGenMessage = ((IRequestBuilder)request).BuildRequest(null);
+            using var reflectionGenMessage = ReflectionRequestMessageBuilder.CreateHttpRequestMessage(request, null);
+
+            Assert.NotNull(sourceGenMessage.RequestUri);
+            Assert.NotNull(reflectionGenMessage.RequestUri);
+
+            // verify query strings are empty (no enum params when null)
+            Assert.True(string.IsNullOrEmpty(sourceGenMessage.RequestUri.Query));
+            Assert.True(string.IsNullOrEmpty(reflectionGenMessage.RequestUri.Query));
+
+            // verify headers are not present
+            Assert.False(sourceGenMessage.Headers.Contains("X-Status"));
+            Assert.False(sourceGenMessage.Headers.Contains("X-Status-Numeric"));
+        }
+
         private record TestRecord(string TestProperty);
 
         [Fact]

@@ -131,7 +131,9 @@ internal static class ApiRequestSourceBuilder
 
                         case RequestSymbolType.Enum when symbol is EnumSymbolMetadata enumSymbol:
                         {
-                            var line = $"global::System.Net.Http.StringContent(global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({symbol.Accessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption})), \"{symbol.ParameterName};\");";
+                            // use .Value for nullable enums to unwrap the Nullable<T>
+                            var enumAccessor = symbol.Nullable ? $"{symbol.Accessor}.Value" : symbol.Accessor;
+                            var line = $"global::System.Net.Http.StringContent(global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({enumAccessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption})), \"{symbol.ParameterName};\");";
 
                             if (symbol.Nullable)
                             {
@@ -215,7 +217,9 @@ internal static class ApiRequestSourceBuilder
 
                     // enums are the only thing here that may/may not be nullable
                     case EnumSymbolMetadata enumSymbol:
-                        var enumBlock = $"request.Headers.Add(\"{symbol.ParameterName}\", global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({symbol.Accessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}));";
+                        // use .Value for nullable enums to unwrap the Nullable<T>
+                        var headerEnumAccessor = symbol.Nullable ? $"{symbol.Accessor}.Value" : symbol.Accessor;
+                        var enumBlock = $"request.Headers.Add(\"{symbol.ParameterName}\", global::DragonFruit.Data.Converters.EnumConverter.GetEnumValue({headerEnumAccessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}));";
 
                         if (symbol.Nullable)
                         {
@@ -279,10 +283,11 @@ internal static class ApiRequestSourceBuilder
     {
         foreach (var querySymbol in symbols)
         {
+            // use .Value for nullable enums to unwrap the Nullable<T>
             var codeBlock = querySymbol switch
             {
                 EnumerableSymbolMetadata enumerableSymbol => $"global::DragonFruit.Data.Converters.EnumerableConverter.WriteEnumerable({builderName}, {querySymbol.Accessor}, global::DragonFruit.Data.Requests.EnumerableOption.{enumerableSymbol.EnumerableOption}, \"{querySymbol.ParameterName}\", \"{enumerableSymbol.Separator}\");",
-                EnumSymbolMetadata enumSymbol => $"global::DragonFruit.Data.Converters.EnumConverter.WriteEnum({builderName}, {querySymbol.Accessor}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}, \"{querySymbol.ParameterName}\");",
+                EnumSymbolMetadata enumSymbol => $"global::DragonFruit.Data.Converters.EnumConverter.WriteEnum({builderName}, {(querySymbol.Nullable ? $"{querySymbol.Accessor}.Value" : querySymbol.Accessor)}, global::DragonFruit.Data.Requests.EnumOption.{enumSymbol.EnumOption}, \"{querySymbol.ParameterName}\");",
                 KeyValuePairSymbolMetadata => $"global::DragonFruit.Data.Converters.KeyValuePairConverter.WriteKeyValuePairs({builderName}, {querySymbol.Accessor});",
 
                 _ => $"{builderName}.AppendFormat(\"{{0}}={{1}}&\", \"{querySymbol.ParameterName}\", global::System.Uri.EscapeDataString({querySymbol.Accessor}.ToString()));"

@@ -122,7 +122,7 @@ namespace DragonFruit.Data.Converters
                 return;
             }
 
-            if (accessor.PropertyType.IsEnum)
+            if (IsEnumType(accessor.PropertyType))
             {
                 var options = accessor.GetCustomAttribute<EnumOptionsAttribute>()?.Options ?? EnumOption.None;
                 EnumConverter.WriteEnum(destination, (Enum)propertyValue, options, parameterName);
@@ -164,7 +164,7 @@ namespace DragonFruit.Data.Converters
                 return;
             }
 
-            if (accessor.PropertyType.IsEnum)
+            if (IsEnumType(accessor.PropertyType))
             {
                 var options = accessor.GetCustomAttribute<EnumOptionsAttribute>()?.Options ?? EnumOption.None;
                 collection.Add(parameterName, EnumConverter.GetEnumValue((Enum)propertyValue, options));
@@ -213,7 +213,7 @@ namespace DragonFruit.Data.Converters
                 return;
             }
 
-            if (accessor.PropertyType.IsEnum)
+            if (IsEnumType(accessor.PropertyType))
             {
                 var options = accessor.GetCustomAttribute<EnumOptionsAttribute>()?.Options ?? EnumOption.None;
                 multipartForm.Add(new StringContent(EnumConverter.GetEnumValue((Enum)value, options)), parameterName);
@@ -272,6 +272,16 @@ namespace DragonFruit.Data.Converters
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Checks if a type is an enum or a nullable enum.
+        /// </summary>
+        /// <param name="type">The type to check</param>
+        /// <returns><c>true</c> if the type is an enum or <see cref="Nullable{T}"/> where T is an enum</returns>
+        private static bool IsEnumType(Type type)
+        {
+            return type.IsEnum || (Nullable.GetUnderlyingType(type)?.IsEnum ?? false);
         }
     }
 }

@@ -219,8 +219,9 @@ namespace DragonFruit.Data.Roslyn
                     var parameterType = (ParameterType)parameterAttribute.ConstructorArguments[0].Value!;
                     var parameterName = (string)parameterAttribute.ConstructorArguments.ElementAtOrDefault(1).Value ?? candidate.Name;
 
-                    // handle enums
-                    if (returnType.TypeKind == TypeKind.Enum)
+                    // handle enums (including nullable enums)
+                    var underlyingEnumType = GetUnderlyingEnumType(returnType);
+                    if (underlyingEnumType != null)
                     {
                         var enumOptions = candidate.GetAttributes().SingleOrDefault(x => x.AttributeClass?.Equals(enumParameterAttribute, SymbolEqualityComparer.Default) == true);
 
@@ -289,6 +290,33 @@ namespace DragonFruit.Data.Roslyn
             }
 
             return metadata;
+        }
+
+        /// <summary>
+        /// Gets the underlying enum type from a type symbol.
+        /// If the type is an enum, returns the type itself.
+        /// If the type is <see cref="Nullable{T}"/> where T is an enum, returns T.
+        /// Otherwise, returns null.
+        /// </summary>
+        /// <param name="type">The <see cref="ITypeSymbol"/> to check</param>
+        /// <returns>The underlying enum type, or null if not an enum</returns>
+        private static ITypeSymbol GetUnderlyingEnumType(ITypeSymbol type)
+        {
+            // direct enum check
+            if (type.TypeKind == TypeKind.Enum)
+            {
+                return type;
+            }
+
+            // nullable enum check (Nullable<T> where T is an enum)
+            if (type is INamedTypeSymbol { IsGenericType: true } namedType &&
+                namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+                namedType.TypeArguments[0].TypeKind == TypeKind.Enum)
+            {
+                return namedType.TypeArguments[0];
+            }
+
+            return null;
         }
 
         /// <summary>
