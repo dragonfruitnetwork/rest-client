@@ -3,15 +3,10 @@
 
 namespace DragonFruit.Data.Tests.Requests
 {
-    public partial class DummyFileDownloadRequest : ApiRequest
+    public partial class DummyFileDownloadRequest(string fileSize) : ApiRequest
     {
         public override string RequestPath => $"http://xcal1.vodafone.co.uk/{FileSize}.zip";
 
-        public DummyFileDownloadRequest(string fileSize)
-        {
-            FileSize = fileSize;
-        }
-
-        public string FileSize { get; set; }
+        public string FileSize { get; set; } = fileSize;
     }
 }

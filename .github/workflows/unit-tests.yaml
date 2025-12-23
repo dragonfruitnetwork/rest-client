@@ -17,14 +17,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.0.x
-            9.0.x
+            10.0.x
 
       - name: Build
         run: dotnet build -c Release
 
       - name: Unit Tests (Roslyn)
-        run: dotnet test -f net8.0 -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Roslyn.Tests
+        run: dotnet test -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Roslyn.Tests
 
       - name: Unit Tests
-        run: dotnet test -f net8.0 -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Tests
+        run: dotnet test -c Release --no-build --no-restore --verbosity normal DragonFruit.Data.Tests

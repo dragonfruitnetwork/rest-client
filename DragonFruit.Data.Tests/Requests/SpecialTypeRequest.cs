@@ -12,10 +12,10 @@ namespace DragonFruit.Data.Tests.Requests
 
         [RequestParameter(ParameterType.Query, "users")]
         [EnumerableOptions(EnumerableOption.Concatenated, ":")]
-        public IReadOnlyCollection<string> Usernames => new[] { "test", "test_1a" };
+        public IReadOnlyCollection<string> Usernames => ["test", "test_1a"];
 
         [RequestParameter(ParameterType.Query, "ids")]
         [EnumerableOptions(EnumerableOption.Concatenated)]
-        public IEnumerable<int> UserIds => new[] { 1, 2 };
+        public IEnumerable<int> UserIds => [1, 2];
     }
 }

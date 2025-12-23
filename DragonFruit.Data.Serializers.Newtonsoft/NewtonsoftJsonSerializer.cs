@@ -11,14 +11,12 @@ namespace DragonFruit.Data.Serializers.Newtonsoft
 {
     public class NewtonsoftJsonSerializer : ApiSerializer
     {
-        private JsonSerializer _serializer;
-
         public override string ContentType => "application/json";
 
         public JsonSerializer Serializer
         {
-            get => _serializer ??= new JsonSerializer { Culture = CultureInfo.InvariantCulture };
-            set => _serializer = value;
+            get => field ??= new JsonSerializer { Culture = CultureInfo.InvariantCulture };
+            set;
         }
 
         public override HttpContent Serialize<T>(T input)

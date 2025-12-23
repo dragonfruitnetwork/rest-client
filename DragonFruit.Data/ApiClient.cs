@@ -38,15 +38,10 @@ namespace DragonFruit.Data
     /// <summary>
     /// The <see cref="ApiClient"/> responsible for building, submitting and processing HTTP requests
     /// </summary>
-    public class ApiClient
+    public class ApiClient(ApiSerializer serializer)
     {
-        private HttpClient _client;
-        private Uri _baseAddress;
-
-        public ApiClient(ApiSerializer serializer)
-        {
-            Serializers = new SerializerResolver(serializer);
-        }
+        private HttpClient? _client;
+        private Uri? _baseAddress;
 
         public ApiClient(ApiSerializer serializer, Uri baseAddress)
             : this(serializer)
@@ -90,17 +85,13 @@ namespace DragonFruit.Data
         /// <summary>
         /// Gets or sets the <see cref="Uri"/> that should act as the base address for relative-URI requests
         /// </summary>
-        public Uri BaseAddress
+        public Uri? BaseAddress
         {
             get => _client?.BaseAddress ?? _baseAddress;
             set
             {
                 _baseAddress = value;
-
-                if (_client != null)
-                {
-                    _client.BaseAddress = value;
-                }
+                _client?.BaseAddress = value;
             }
         }
 
@@ -108,12 +99,12 @@ namespace DragonFruit.Data
         /// The <see cref="SerializerResolver"/> instance used to resolve serializers for requests.
         /// Caches and reused serializers where possible.
         /// </summary>
-        public SerializerResolver Serializers { get; }
+        public SerializerResolver Serializers { get; } = new(serializer);
 
         /// <summary>
         /// User-Controlled method to create a <see cref="HttpMessageHandler"/>
         /// </summary>
-        public Func<HttpMessageHandler> Handler { get; set; }
+        public Func<HttpMessageHandler>? Handler { get; set; }
 
         /// <summary>
         /// Gets the header container for the underlying <see cref="HttpClient"/>
@@ -209,7 +200,7 @@ namespace DragonFruit.Data
         /// <param name="truncate">(Optional) whether to truncate the destination stream, if content is written. Defaults to true</param>
         /// <param name="safe">(Optional) whether to copy to a temporary buffer before writing to destination. When enabled provides greater redundancy from network failure. Defaults to false</param>
         /// <param name="cancellationToken">(Optional) cancellation request</param>
-        public async Task<HttpStatusCode> PerformDownload(ApiRequest request, Stream destination, IProgress<(long, long?)> progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
+        public async Task<HttpStatusCode> PerformDownload(ApiRequest request, Stream destination, IProgress<(long, long?)>? progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
         {
             using var requestMessage = await BuildRequest(request, "*/*").ConfigureAwait(false);
             return await PerformDownload(requestMessage, destination, progress, truncate, safe, cancellationToken).ConfigureAwait(false);
@@ -227,7 +218,7 @@ namespace DragonFruit.Data
         /// <param name="truncate">(Optional) whether to truncate the destination stream, if content is written. Defaults to true</param>
         /// <param name="safe">(Optional) whether to copy to a temporary buffer before writing to destination. When enabled provides greater redundancy from network failure. Defaults to false</param>
         /// <param name="cancellationToken">(Optional) cancellation request</param>
-        public async Task<HttpStatusCode> PerformDownload(HttpRequestMessage request, Stream destination, IProgress<(long, long?)> progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
+        public async Task<HttpStatusCode> PerformDownload(HttpRequestMessage request, Stream destination, IProgress<(long, long?)>? progress = null, bool truncate = true, bool safe = false, CancellationToken cancellationToken = default)
         {
             using var responseMessage = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 

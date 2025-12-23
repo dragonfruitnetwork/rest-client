@@ -6,20 +6,15 @@ using System;
 namespace DragonFruit.Data.Requests
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class EnumerableOptionsAttribute : Attribute
+    public class EnumerableOptionsAttribute(EnumerableOption options) : Attribute
     {
-        public EnumerableOptionsAttribute(EnumerableOption options)
-        {
-            Options = options;
-        }
-
         public EnumerableOptionsAttribute(EnumerableOption options, string separator)
             : this(options)
         {
             Separator = separator;
         }
 
-        public EnumerableOption Options { get; }
-        public string Separator { get; }
+        public EnumerableOption Options { get; } = options;
+        public string? Separator { get; }
     }
 }

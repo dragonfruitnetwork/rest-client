@@ -10,8 +10,6 @@ namespace DragonFruit.Data
 {
     public abstract class ApiSerializer
     {
-        private Encoding _encoding;
-
         /// <summary>
         /// The Content-Type/Accept header value
         /// </summary>
@@ -30,8 +28,8 @@ namespace DragonFruit.Data
         /// </summary>
         public virtual Encoding Encoding
         {
-            get => _encoding ??= new UTF8Encoding(false);
-            set => _encoding = value;
+            get => field ??= new UTF8Encoding(false);
+            set;
         }
 
         /// <summary>

@@ -14,13 +14,26 @@ namespace DragonFruit.Data.Serializers
     {
         public override string ContentType => "application/xml";
 
+        /// <summary>
+        /// <see cref="XmlReaderSettings"/> to use when deserializing XML content.
+        /// If <c>null</c>, default settings provided by the serializer will be used.
+        /// </summary>
+        public XmlReaderSettings? ReaderSettings { get; set; }
+
+        /// <summary>
+        /// <see cref="XmlWriterSettings"/> to use when serializing XML content.
+        /// If <c>null</c>, default settings provided by the serializer will be used.
+        /// </summary>
+        public XmlWriterSettings? WriterSettings { get; set; }
+
         public override HttpContent Serialize<T>(T input)
         {
             var stream = new MemoryStream(4096);
 
             using (var writer = new StreamWriter(stream, Encoding, 4096, true))
+            using (var xmlWriter = XmlWriter.Create(writer, WriterSettings))
             {
-                new XmlSerializer(input.GetType()).Serialize(writer, input);
+                new XmlSerializer(input.GetType()).Serialize(xmlWriter, input);
             }
 
             var xmlContent = new ByteArrayContent(stream.GetBuffer(), 0, (int)stream.Length);
@@ -36,7 +49,7 @@ namespace DragonFruit.Data.Serializers
         public override T Deserialize<T>(Stream input) where T : class
         {
             var serializer = new XmlSerializer(typeof(T));
-            using var reader = XmlReader.Create(input);
+            using var reader = XmlReader.Create(input, ReaderSettings);
 
             if (serializer.CanDeserialize(reader))
             {

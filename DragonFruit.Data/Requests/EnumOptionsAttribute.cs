@@ -6,13 +6,8 @@ using System;
 namespace DragonFruit.Data.Requests
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class EnumOptionsAttribute : Attribute
+    public class EnumOptionsAttribute(EnumOption options) : Attribute
     {
-        public EnumOptionsAttribute(EnumOption options)
-        {
-            Options = options;
-        }
-
-        public EnumOption Options { get; set; }
+        public EnumOption Options { get; set; } = options;
     }
 }

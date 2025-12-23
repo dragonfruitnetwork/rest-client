@@ -27,7 +27,7 @@ namespace DragonFruit.Data.Tests
 
             if (builder.Length == 0)
             {
-                Assert.True(false, "Builder was empty");
+                Assert.Fail("Builder was empty");
             }
 
             builder.Length--; // remove the trailing &
@@ -48,7 +48,7 @@ namespace DragonFruit.Data.Tests
 
             if (builder.Length == 0)
             {
-                Assert.True(false, "Builder was empty");
+                Assert.Fail("Builder was empty");
             }
 
             builder.Length--; // remove the trailing &
@@ -79,7 +79,7 @@ namespace DragonFruit.Data.Tests
 
             if (builder.Length == 0)
             {
-                Assert.True(false, "Builder was empty");
+                Assert.Fail("Builder was empty");
             }
 
             builder.Length--; // remove the trailing &
