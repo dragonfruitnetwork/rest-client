@@ -9,11 +9,11 @@ namespace DragonFruit.Data.Tests.Requests
     public partial class SpecialTypeAdditionalLocationsRequest : ApiRequest
     {
         private readonly string[] _ids =
-        {
+        [
             "5c2a5585-2682-4c60-9bc7-b11874582af6",
             "d85cf845-a35a-48e9-b629-700f77ab1c5d",
             "885f37a8-6bf6-4d52-8092-71276ab706fd"
-        };
+        ];
 
         public override string RequestPath => "https://example.com";
 

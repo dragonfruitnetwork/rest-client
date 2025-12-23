@@ -107,7 +107,7 @@ namespace DragonFruit.Data.Roslyn.Tests
             await test.RunAsync();
         }
 
-        private string GetSolutionRoot()
+        private static string GetSolutionRoot()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
 

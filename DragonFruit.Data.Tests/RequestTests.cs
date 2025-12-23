@@ -43,7 +43,7 @@ namespace DragonFruit.Data.Tests
         }
 
         [Fact]
-        public async void TestInheritedRequest()
+        public async Task TestInheritedRequest()
         {
             var request = new InheritedEchoRequest();
 
@@ -79,7 +79,7 @@ namespace DragonFruit.Data.Tests
         }
 
         [Fact]
-        public async void TestMultipartFormRequest()
+        public async Task TestMultipartFormRequest()
         {
             // actually send requests because it's easier than inspecting the multipart content
             using var httpClient = new HttpClient();
@@ -139,7 +139,7 @@ namespace DragonFruit.Data.Tests
         }
 
         [Fact]
-        public async void TestAdditionalSpecialTypeHandling()
+        public async Task TestAdditionalSpecialTypeHandling()
         {
             var request = new SpecialTypeAdditionalLocationsRequest();
 

@@ -6,17 +6,13 @@ using DragonFruit.Data.Requests;
 
 namespace DragonFruit.Data.Tests.Requests
 {
-    public partial class CustomSerializedContentRequest<T> : ApiRequest where T : class
+    public partial class CustomSerializedContentRequest<T>(T requestContent) : ApiRequest
+        where T : class
     {
         public override string RequestPath => "https://postman-echo.com/patch";
         public override HttpMethod RequestMethod => HttpMethod.Patch;
 
-        public CustomSerializedContentRequest(T requestContent)
-        {
-            RequestContent = requestContent;
-        }
-
         [RequestBody]
-        public T RequestContent { get; }
+        public T RequestContent { get; } = requestContent;
     }
 }
